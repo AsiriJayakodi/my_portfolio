@@ -23,6 +23,31 @@ function useInView(threshold = 0.15) {
 export default function Contact() {
   const { ref, visible } = useInView();
   const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' });
+  interface ProfileData {
+    name: string;
+    email: string;
+    phone: string;
+    location: string;
+    github: string;
+    linkedin: string;
+  }
+  const [profile, setProfile] = useState<ProfileData | null>(null);
+
+  useEffect(() => {
+    async function loadProfile() {
+      try {
+        const res = await fetch('/api/profile');
+        if (res.ok) {
+          const data = await res.json();
+          setProfile(data);
+        }
+      } catch {
+        // Fallback
+      }
+    }
+    loadProfile();
+  }, []);
+
   const [status, setStatus] = useState<{ type: 'idle' | 'loading' | 'success' | 'error'; message: string }>({
     type: 'idle',
     message: ''
@@ -79,17 +104,25 @@ export default function Contact() {
           <div className={`${styles.leftContent} ${visible ? styles.visible : ''}`}>
             <div className={styles.infoList}>
               {[
-                { label: 'WhatsApp', value: '+94 078 4 38 38 98', icon: '📞' },
-                { label: 'Email', value: 'asiriindrajithjayakodi@gmail.com', icon: '✉' },
-                { label: 'LinkedIn', value: 'Asiri Indrajith', icon: '💼' },
-                { label: 'GitHub', value: 'Asiri Jayakodi', icon: '⚡' },
-                { label: 'Address', value: '446/1, Badalgama, Malagane, Wariyapola', icon: '📍' },
+                { label: 'WhatsApp', value: profile?.phone || '+94 078 4 38 38 98', icon: '📞' },
+                { label: 'Email', value: profile?.email || 'asiriindrajithjayakodi@gmail.com', icon: '✉', link: profile?.email ? `mailto:${profile.email}` : undefined },
+                { label: 'LinkedIn', value: profile?.name ? 'Asiri Indrajith' : 'Asiri Indrajith', icon: '💼', link: profile?.linkedin || 'https://linkedin.com/in/asiri-jayakodi' },
+                { label: 'GitHub', value: profile?.name ? 'Asiri Jayakodi' : 'Asiri Jayakodi', icon: '⚡', link: profile?.github || 'https://github.com/AsiriJayakodi' },
+                { label: 'Address', value: profile?.location || '446/1, Badalgama, Malagane, Wariyapola', icon: '📍' },
               ].map(item => (
                 <div key={item.label} className={styles.infoItem}>
                   <div className={styles.infoIcon}>{item.icon}</div>
                   <div>
                     <div className={styles.infoLabel}>{item.label}</div>
-                    <div className={styles.infoValue}>{item.value}</div>
+                    <div className={styles.infoValue}>
+                      {item.link ? (
+                        <a href={item.link} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'none' }}>
+                          {item.value}
+                        </a>
+                      ) : (
+                        item.value
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}

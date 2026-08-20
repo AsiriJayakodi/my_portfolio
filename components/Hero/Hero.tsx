@@ -17,7 +17,9 @@ function useTypewriter(items: string[], speed = 80) {
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
-    const current = items[idx];
+    if (!items || items.length === 0) return;
+    const current = items[idx % items.length];
+    if (!current) return;
     const delay = deleting ? speed / 2 : charIdx === current.length ? 1800 : speed;
     const timer = setTimeout(() => {
       if (!deleting && charIdx < current.length) {
@@ -39,8 +41,107 @@ function useTypewriter(items: string[], speed = 80) {
   return display;
 }
 
-export default function Hero() {
-  const role = useTypewriter(ROLES);
+interface ProfileData {
+  name: string;
+  titles: string[];
+  bio: string;
+  intro: string;
+  email: string;
+  phone: string;
+  location: string;
+  github: string;
+  linkedin: string;
+  resumeUrl: string;
+}
+
+export default function Hero({ isAdmin = false }: { isAdmin?: boolean }) {
+  const [profile, setProfile] = useState<ProfileData | null>(null);
+
+  // Modal States
+  const [showModal, setShowModal] = useState(false);
+  const [formName, setFormName] = useState('');
+  const [formTitles, setFormTitles] = useState('');
+  const [formIntro, setFormIntro] = useState('');
+  const [formBio, setFormBio] = useState('');
+  const [formEmail, setFormEmail] = useState('');
+  const [formPhone, setFormPhone] = useState('');
+  const [formLocation, setFormLocation] = useState('');
+  const [formResumeUrl, setFormResumeUrl] = useState('');
+  const [formGithub, setFormGithub] = useState('');
+  const [formLinkedin, setFormLinkedin] = useState('');
+
+  const loadProfile = async () => {
+    try {
+      const res = await fetch('/api/profile');
+      if (res.ok) {
+        const data = await res.json();
+        setProfile(data);
+      }
+    } catch {
+      // Fallback
+    }
+  };
+
+  /* eslint-disable react-hooks/set-state-in-effect */
+  useEffect(() => {
+    loadProfile();
+  }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
+
+  const openFormModal = () => {
+    if (profile) {
+      setFormName(profile.name || '');
+      setFormTitles(profile.titles ? profile.titles.join(', ') : '');
+      setFormIntro(profile.intro || '');
+      setFormBio(profile.bio || '');
+      setFormEmail(profile.email || '');
+      setFormPhone(profile.phone || '');
+      setFormLocation(profile.location || '');
+      setFormResumeUrl(profile.resumeUrl || '');
+      setFormGithub(profile.github || '');
+      setFormLinkedin(profile.linkedin || '');
+    }
+    setShowModal(true);
+  };
+
+  const handleModalSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const titlesArray = formTitles.split(',').map(t => t.trim()).filter(t => t.length > 0);
+
+    const payload = {
+      name: formName,
+      titles: titlesArray,
+      intro: formIntro,
+      bio: formBio,
+      email: formEmail,
+      phone: formPhone,
+      location: formLocation,
+      resumeUrl: formResumeUrl,
+      github: formGithub,
+      linkedin: formLinkedin,
+    };
+
+    try {
+      const res = await fetch('/api/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) {
+        setShowModal(false);
+        // Refresh page to load updated profile across all components (Navbar, Hero, About, Contact)
+        window.location.reload();
+      } else {
+        alert('Failed to save profile details');
+      }
+    } catch {
+      alert('An error occurred during save');
+    }
+  };
+
+  const rolesToUse = profile?.titles && profile.titles.length > 0 ? profile.titles : ROLES;
+  const role = useTypewriter(rolesToUse);
   const [cursor, setCursor] = useState({ x: 0, y: 0 });
   const ref = useRef<HTMLDivElement>(null);
 
@@ -48,6 +149,28 @@ export default function Hero() {
     const rect = ref.current?.getBoundingClientRect();
     if (rect) setCursor({ x: e.clientX - rect.left, y: e.clientY - rect.top });
   }, []);
+
+  // Split name for visual glitch styling in three rows
+  const nameToUse = profile?.name || "Asiri Indrajith Jayakodi";
+  const nameParts = nameToUse.split(' ').filter(part => part.trim().length > 0);
+
+  let row1 = "";
+  let row2 = "";
+  let row3 = "";
+
+  if (nameParts.length >= 3) {
+    row1 = nameParts[0];
+    row2 = nameParts[1];
+    row3 = nameParts.slice(2).join(' ') + '.';
+  } else if (nameParts.length === 2) {
+    row1 = nameParts[0];
+    row2 = "";
+    row3 = nameParts[1] + '.';
+  } else {
+    row1 = "";
+    row2 = "";
+    row3 = nameToUse + '.';
+  }
 
   return (
     <section id="hero" ref={ref} onMouseMove={handleMouse} className={styles.heroSection}>
@@ -75,14 +198,25 @@ export default function Hero() {
               <span className={styles.statusText}>Undergrad at Uni of Moratuwa • CGPA 3.56</span>
             </div>
 
-            {/* Name with glitch */}
-            <div className={styles.nameContainer}>
-              <h1 className={styles.nameBase}>Asiri Indrajith</h1>
-              <div className={styles.glitchContainer}>
-                <h1 className={styles.glitchBase}>Jayakodi.</h1>
-                <h1 aria-hidden className={`${styles.glitchLayer} ${styles.glitch1}`}>Jayakodi.</h1>
-                <h1 aria-hidden className={`${styles.glitchLayer} ${styles.glitch2}`}>Jayakodi.</h1>
+            {/* Name with glitch & Edit button stacked in three rows */}
+            <div className={styles.nameContainer} style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                {row1 && <h1 className={styles.nameBase} style={{ margin: 0 }}>{row1}</h1>}
+                {row2 && <h1 className={styles.nameBase} style={{ margin: 0 }}>{row2}</h1>}
+                <div className={styles.glitchContainer}>
+                  <h1 className={styles.glitchBase} style={{ margin: 0 }}>{row3}</h1>
+                  <h1 aria-hidden className={`${styles.glitchLayer} ${styles.glitch1}`} style={{ margin: 0 }}>{row3}</h1>
+                  <h1 aria-hidden className={`${styles.glitchLayer} ${styles.glitch2}`} style={{ margin: 0 }}>{row3}</h1>
+                </div>
               </div>
+              {isAdmin && (
+                <button
+                  onClick={openFormModal}
+                  style={{ background: 'rgba(0, 245, 212, 0.15)', border: '1px solid rgba(0, 245, 212, 0.3)', color: '#00f5d4', cursor: 'pointer', fontSize: '13px', padding: '5px 12px', borderRadius: '6px', fontFamily: 'Rajdhani, sans-serif', fontWeight: 'bold', alignSelf: 'flex-start', marginTop: '10px' }}
+                >
+                  ✏️ Edit Profile
+                </button>
+              )}
             </div>
 
             {/* Typewriter role */}
@@ -95,7 +229,7 @@ export default function Hero() {
             </div>
 
             <p className={styles.description}>
-              I have a strong academic foundation in IT. My studies have equipped me with comprehensive skills applicable to the IT industry, including expertise in web development and modern technologies.
+              {profile?.intro || "I have a strong academic foundation in IT. My studies have equipped me with comprehensive skills applicable to the IT industry, including expertise in web development and modern technologies."}
             </p>
 
             {/* CTA Buttons */}
@@ -104,7 +238,7 @@ export default function Hero() {
                 View Projects
               </Link>
               <a
-                href="/cv.pdf"
+                href={profile?.resumeUrl || "/cv.pdf"}
                 target="_blank"
                 rel="noopener noreferrer"
                 className={styles.secondaryBtn}
@@ -133,89 +267,174 @@ export default function Hero() {
 
               {/* Card */}
               <div className={styles.avatarCard}>
-                <div className={styles.scanLine} />
-                <div className={styles.avatarPlaceholder}>
-                  <AvatarLoader />
+                <div className={styles.avatarGlow} />
+                <div className={styles.cardHeaderGlow} />
+                
+                {/* Photo frame */}
+                <div className={styles.photoFrame}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="https://avatars.githubusercontent.com/u/104332924?v=4"
+                    alt="Asiri Indrajith"
+                    className={styles.profileImg}
+                  />
+                  <div className={styles.scanline} />
+                  <div className={styles.photoOverlay} />
                 </div>
-                <div className={styles.gradientOverlay} />
 
-                {/* Info badge */}
-                <div className={styles.infoBadge}>
-                  <div className={styles.badgeName}>Asiri Indrajith</div>
-                  <div className={styles.badgeDetails}>IT • Univ of Moratuwa</div>
+                {/* Card Info */}
+                <div className={styles.cardInfo}>
+                  <div className={styles.cardInfoTitle}>ASIRI INDRAJITH</div>
+                  <div className={styles.cardInfoSubtitle}>UNDERGRADUATE • UOM</div>
+                  <div className={styles.cardMeta}>
+                    <span>LOC: COLOMBO, LK</span>
+                    <span className={styles.metaDivider} />
+                    <span>SYS: ONLINE</span>
+                  </div>
                 </div>
-                <div className={styles.cornerAccent} />
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Profile Editor Modal */}
+      {showModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0, 0, 0, 0.75)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyItems: 'center', justifyContent: 'center', zIndex: 10000, padding: '24px' }}>
+          <div style={{ background: '#0a0f1d', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', maxWidth: '520px', width: '100%', padding: '28px', color: '#f3f4f6', fontFamily: 'sans-serif' }}>
+            <h3 style={{ fontSize: '20px', margin: '0 0 20px', color: '#00f5d4', fontFamily: 'Rajdhani, sans-serif', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              Edit Profile Information
+            </h3>
+            <form onSubmit={handleModalSubmit}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '70vh', overflowY: 'auto', paddingRight: '8px' }}>
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', fontFamily: 'monospace' }}>Full Name</label>
+                    <input
+                      type="text"
+                      required
+                      style={{ padding: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#fff', fontSize: '14px', outline: 'none' }}
+                      value={formName}
+                      onChange={e => setFormName(e.target.value)}
+                    />
+                  </div>
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', fontFamily: 'monospace' }}>Job Titles (Comma-separated)</label>
+                    <input
+                      type="text"
+                      required
+                      style={{ padding: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#fff', fontSize: '14px', outline: 'none' }}
+                      value={formTitles}
+                      onChange={e => setFormTitles(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', fontFamily: 'monospace' }}>Hero Introduction</label>
+                  <input
+                    type="text"
+                    required
+                    style={{ padding: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#fff', fontSize: '14px', outline: 'none' }}
+                    value={formIntro}
+                    onChange={e => setFormIntro(e.target.value)}
+                  />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', fontFamily: 'monospace' }}>Biography (About Section)</label>
+                  <textarea
+                    required
+                    rows={4}
+                    style={{ padding: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#fff', fontSize: '14px', outline: 'none', resize: 'none' }}
+                    value={formBio}
+                    onChange={e => setFormBio(e.target.value)}
+                  />
+                </div>
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', fontFamily: 'monospace' }}>Email</label>
+                    <input
+                      type="email"
+                      required
+                      style={{ padding: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#fff', fontSize: '14px', outline: 'none' }}
+                      value={formEmail}
+                      onChange={e => setFormEmail(e.target.value)}
+                    />
+                  </div>
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', fontFamily: 'monospace' }}>Phone</label>
+                    <input
+                      type="text"
+                      required
+                      style={{ padding: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#fff', fontSize: '14px', outline: 'none' }}
+                      value={formPhone}
+                      onChange={e => setFormPhone(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', fontFamily: 'monospace' }}>Location</label>
+                    <input
+                      type="text"
+                      required
+                      style={{ padding: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#fff', fontSize: '14px', outline: 'none' }}
+                      value={formLocation}
+                      onChange={e => setFormLocation(e.target.value)}
+                    />
+                  </div>
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', fontFamily: 'monospace' }}>Resume PDF Link</label>
+                    <input
+                      type="text"
+                      required
+                      style={{ padding: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#fff', fontSize: '14px', outline: 'none' }}
+                      value={formResumeUrl}
+                      onChange={e => setFormResumeUrl(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', fontFamily: 'monospace' }}>GitHub Link</label>
+                    <input
+                      type="text"
+                      required
+                      style={{ padding: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#fff', fontSize: '14px', outline: 'none' }}
+                      value={formGithub}
+                      onChange={e => setFormGithub(e.target.value)}
+                    />
+                  </div>
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', fontFamily: 'monospace' }}>LinkedIn Link</label>
+                    <input
+                      type="text"
+                      required
+                      style={{ padding: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#fff', fontSize: '14px', outline: 'none' }}
+                      value={formLinkedin}
+                      onChange={e => setFormLinkedin(e.target.value)}
+                    />
+                  </div>
+                </div>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '28px' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowModal(false)}
+                  style={{ padding: '8px 16px', background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: '#9ca3af', borderRadius: '6px', cursor: 'pointer', fontSize: '13px' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  style={{ padding: '8px 20px', background: '#00f5d4', border: 'none', color: '#050810', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}
+                >
+                  Save Profile
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </section>
-  );
-}
-
-function AvatarLoader() {
-  const [imgError, setImgError] = useState(false);
-
-  if (imgError) {
-    return <HologramAvatar />;
-  }
-
-  return (
-    <img
-      src="/profile.jpg"
-      alt="Asiri Indrajith Jayakodi"
-      onError={() => setImgError(true)}
-      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-    />
-  );
-}
-
-function HologramAvatar() {
-  return (
-    <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0a101f' }}>
-      {/* Grid Pattern Background */}
-      <svg width="100%" height="100%" style={{ position: 'absolute', inset: 0, opacity: 0.15 }}>
-        <defs>
-          <pattern id="avatar-grid" width="20" height="20" patternUnits="userSpaceOnUse">
-            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#00f5d4" strokeWidth="0.5" />
-          </pattern>
-        </defs>
-        <rect width="100%" height="100%" fill="url(#avatar-grid)" />
-      </svg>
-
-      {/* Cyber Human Vector / Hologram */}
-      <svg viewBox="0 0 200 200" width="80%" height="80%" style={{ zIndex: 2 }}>
-        {/* Glow Defs */}
-        <defs>
-          <filter id="glow-cyber" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur stdDeviation="3" result="blur" />
-            <feComposite in="SourceGraphic" in2="blur" operator="over" />
-          </filter>
-        </defs>
-
-        {/* Outer Tech Circle Radar */}
-        <circle cx="100" cy="100" r="85" fill="none" stroke="#00f5d4" strokeWidth="1" strokeDasharray="5 15" opacity="0.3" />
-        <circle cx="100" cy="100" r="75" fill="none" stroke="#6366f1" strokeWidth="1.5" strokeDasharray="40 10 10 10" opacity="0.5" />
-
-        {/* Head/Brain lines */}
-        <path d="M100 40 C85 40 75 50 75 70 C75 80 80 90 85 95 L85 105 L100 115 L115 105 L115 95 C120 90 125 80 125 70 C125 50 115 40 100 40 Z"
-          fill="none" stroke="#00f5d4" strokeWidth="2" filter="url(#glow-cyber)" />
-
-        {/* Shoulders */}
-        <path d="M50 160 C50 135 75 130 85 125 L92 120 L100 125 L108 120 L115 125 C125 130 150 135 150 160"
-          fill="none" stroke="#00f5d4" strokeWidth="2" filter="url(#glow-cyber)" opacity="0.85" />
-
-        {/* Nodes and circuit lines on head */}
-        <circle cx="100" cy="55" r="3.5" fill="#6366f1" />
-        <circle cx="85" cy="75" r="3.0" fill="#00f5d4" />
-        <circle cx="115" cy="75" r="3.0" fill="#00f5d4" />
-        <line x1="100" y1="55" x2="85" y2="75" stroke="#6366f1" strokeWidth="1" />
-        <line x1="100" y1="55" x2="115" y2="75" stroke="#6366f1" strokeWidth="1" />
-
-        <line x1="85" y1="75" x2="85" y2="125" stroke="#00f5d4" strokeWidth="0.8" strokeDasharray="3 3" />
-        <line x1="115" y1="75" x2="115" y2="125" stroke="#00f5d4" strokeWidth="0.8" strokeDasharray="3 3" />
-      </svg>
-    </div>
   );
 }

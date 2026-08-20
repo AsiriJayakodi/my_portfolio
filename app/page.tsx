@@ -7,10 +7,10 @@ import Contact from "@/components/Contact/Contact";
 export default function Home() {
   return (
     <main>
-      <Hero />
+      <Hero isAdmin={false} />
       <About />
-      <Skills />
-      <Projects />
+      <Skills isAdmin={false} />
+      <Projects isAdmin={false} />
       <Contact />
     </main>
   );

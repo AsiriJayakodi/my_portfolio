@@ -8,6 +8,22 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+  const [name, setName] = useState('Asiri Indrajith');
+
+  useEffect(() => {
+    async function loadProfile() {
+      try {
+        const res = await fetch('/api/profile');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.name) setName(data.name);
+        }
+      } catch {
+        // Fallback
+      }
+    }
+    loadProfile();
+  }, []);
 
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
@@ -48,9 +64,12 @@ export default function Navbar() {
         <div className={styles.inner}>
           {/* Logo */}
           <Link href="#hero" className={styles.logoLink}>
-            <div className={styles.logoBox}>AI</div>
+            <div className={styles.logoBox}>
+              {name.split(' ')[0] ? name.split(' ')[0][0] : 'A'}
+              {name.split(' ')[1] ? name.split(' ')[1][0] : 'I'}
+            </div>
             <span className={styles.logoText}>
-              Asiri<span style={{ color: '#00f5d4' }}>Indrajith</span>
+              {name.split(' ')[0]}<span style={{ color: '#00f5d4' }}>{name.split(' ').slice(1).join(' ')}</span>
             </span>
           </Link>
 
@@ -101,7 +120,7 @@ export default function Navbar() {
               )}
             </button>
 
-            <Link href="mailto:asiriindrajithjayakodi@gmail.com" className={styles.hireBtn}>
+            <Link href="#contact" className={styles.hireBtn}>
               Hire Me
             </Link>
           </div>

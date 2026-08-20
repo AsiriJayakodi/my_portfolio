@@ -110,14 +110,42 @@ function ProjectVisualFallback({ tags, color }: { tags: string[]; color: string 
   );
 }
 
-function ProjectCard({ p, i }: { p: ProjectType; i: number }) {
+function ProjectCard({
+  p,
+  i,
+  isAdmin,
+  onEdit,
+  onDelete
+}: {
+  p: ProjectType;
+  i: number;
+  isAdmin?: boolean;
+  onEdit?: () => void;
+  onDelete?: () => void;
+}) {
   const { ref, visible } = useInView(0.15);
   const [hover, setHover] = useState(false);
 
   const color = p.color || '#00f5d4';
 
   return (
-    <div ref={ref} className={`${styles.cardReveal} ${visible ? styles.visible : ''}`} style={{ transitionDelay: `${i * 0.08}s` }}>
+    <div ref={ref} className={`${styles.cardReveal} ${visible ? styles.visible : ''}`} style={{ transitionDelay: `${i * 0.08}s`, position: 'relative' }}>
+      {isAdmin && (
+        <div style={{ position: 'absolute', top: '15px', right: '15px', zIndex: 100, display: 'flex', gap: '8px' }}>
+          <button
+            onClick={(e) => { e.stopPropagation(); onEdit?.(); }}
+            style={{ padding: '4px 10px', background: 'rgba(0, 245, 212, 0.2)', border: '1px solid rgba(0, 245, 212, 0.4)', borderRadius: '6px', color: '#00f5d4', cursor: 'pointer', fontSize: '11px', fontWeight: 'bold' }}
+          >
+            ✏️ Edit
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); onDelete?.(); }}
+            style={{ padding: '4px 10px', background: 'rgba(239, 68, 68, 0.2)', border: '1px solid rgba(239, 68, 68, 0.4)', borderRadius: '6px', color: '#ef4444', cursor: 'pointer', fontSize: '11px', fontWeight: 'bold' }}
+          >
+            🗑️ Delete
+          </button>
+        </div>
+      )}
       <div
         onMouseEnter={() => setHover(true)}
         onMouseLeave={() => setHover(false)}
@@ -169,33 +197,114 @@ function ProjectCard({ p, i }: { p: ProjectType; i: number }) {
   );
 }
 
-export default function Projects() {
+export default function Projects({ isAdmin = false }: { isAdmin?: boolean }) {
   const { ref, visible } = useInView();
   const [projects, setProjects] = useState<ProjectType[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedFilter, setSelectedFilter] = useState('All');
 
-  useEffect(() => {
-    async function fetchProjects() {
-      try {
-        const res = await fetch('/api/projects');
-        const data = await res.json();
-        if (Array.isArray(data)) {
-          setProjects(data);
-        } else {
-          console.warn("Invalid projects API response:", data);
-          setProjects([]);
-        }
-      } catch (error) {
-        console.error("Failed to fetch projects:", error);
-        setProjects([]);
-      } finally {
-        setLoading(false);
-      }
-    }
+  // Modal States
+  const [showModal, setShowModal] = useState(false);
+  const [editingProject, setEditingProject] = useState<ProjectType | null>(null);
+  const [formTitle, setFormTitle] = useState('');
+  const [formDesc, setFormDesc] = useState('');
+  const [formImage, setFormImage] = useState('');
+  const [formTags, setFormTags] = useState('');
+  const [formGithub, setFormGithub] = useState('');
+  const [formLive, setFormLive] = useState('');
+  const [formColor, setFormColor] = useState('#00f5d4');
 
-    fetchProjects();
+  const loadProjects = async () => {
+    try {
+      const res = await fetch('/api/projects');
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        setProjects(data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch projects:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /* eslint-disable react-hooks/set-state-in-effect */
+  useEffect(() => {
+    loadProjects();
   }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
+
+  const openFormModal = (project: ProjectType | null = null) => {
+    if (project) {
+      setEditingProject(project);
+      setFormTitle(project.title);
+      setFormDesc(project.description);
+      setFormImage(project.image);
+      setFormTags(project.tags.join(', '));
+      setFormGithub(project.githubUrl || '');
+      setFormLive(project.liveUrl || '');
+      setFormColor(project.color || '#00f5d4');
+    } else {
+      setEditingProject(null);
+      setFormTitle('');
+      setFormDesc('');
+      setFormImage('');
+      setFormTags('');
+      setFormGithub('');
+      setFormLive('');
+      setFormColor('#00f5d4');
+    }
+    setShowModal(true);
+  };
+
+  const handleModalSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const tagsArray = formTags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+
+    const projectData = {
+      title: formTitle,
+      description: formDesc,
+      image: formImage || '/projects/fallback.jpg',
+      tags: tagsArray,
+      githubUrl: formGithub || undefined,
+      liveUrl: formLive || undefined,
+      color: formColor,
+    };
+
+    try {
+      const url = editingProject ? `/api/projects/${editingProject._id}` : '/api/projects';
+      const method = editingProject ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(projectData),
+      });
+
+      if (res.ok) {
+        setShowModal(false);
+        loadProjects();
+      } else {
+        alert('Failed to save project');
+      }
+    } catch {
+      alert('An error occurred during save');
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this project?')) return;
+    try {
+      const res = await fetch(`/api/projects/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        loadProjects();
+      } else {
+        alert('Failed to delete project');
+      }
+    } catch {
+      alert('An error occurred during deletion');
+    }
+  };
 
   const filteredProjects = projects.filter(p => {
     if (selectedFilter === 'All') return true;
@@ -207,9 +316,19 @@ export default function Projects() {
       <div className={styles.container}>
         <div ref={ref} className={`${styles.header} ${visible ? styles.visible : ''}`}>
           <div className={styles.sectionLabel}>{"// featured.work"}</div>
-          <div className={styles.headerFlex}>
+          <div className={styles.headerFlex} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
             <h2 className={styles.heading}>Selected Projects</h2>
-            <a href="https://github.com/AsiriJayakodi" target="_blank" rel="noopener noreferrer" className={styles.githubLink}>All on GitHub →</a>
+            <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+              {isAdmin && (
+                <button
+                  onClick={() => openFormModal(null)}
+                  style={{ padding: '8px 16px', background: 'rgba(0, 245, 212, 0.15)', border: '1px solid rgba(0, 245, 212, 0.3)', color: '#00f5d4', cursor: 'pointer', fontSize: '13px', borderRadius: '6px', fontFamily: 'Rajdhani, sans-serif', fontWeight: 'bold' }}
+                >
+                  + Add Project
+                </button>
+              )}
+              <a href="https://github.com/AsiriJayakodi" target="_blank" rel="noopener noreferrer" className={styles.githubLink}>All on GitHub →</a>
+            </div>
           </div>
         </div>
 
@@ -236,10 +355,120 @@ export default function Projects() {
           </div>
         ) : (
           <div className={styles.grid}>
-            {filteredProjects.map((p, i) => <ProjectCard key={p._id || p.title} p={p} i={i} />)}
+            {filteredProjects.map((p, i) => (
+              <ProjectCard
+                key={p._id || p.title}
+                p={p}
+                i={i}
+                isAdmin={isAdmin}
+                onEdit={() => openFormModal(p)}
+                onDelete={() => p._id && handleDelete(p._id)}
+              />
+            ))}
           </div>
         )}
       </div>
+
+      {/* Inline Project Editor Modal */}
+      {showModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0, 0, 0, 0.75)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyItems: 'center', justifyContent: 'center', zIndex: 10000, padding: '24px' }}>
+          <div style={{ background: '#0a0f1d', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', maxWidth: '480px', width: '100%', padding: '28px', color: '#f3f4f6', fontFamily: 'sans-serif' }}>
+            <h3 style={{ fontSize: '20px', margin: '0 0 20px', color: '#00f5d4', fontFamily: 'Rajdhani, sans-serif', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              {editingProject ? 'Edit Project parameters' : 'Register New Project'}
+            </h3>
+            <form onSubmit={handleModalSubmit}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', maxHeight: '70vh', overflowY: 'auto', paddingRight: '8px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', fontFamily: 'monospace' }}>Title</label>
+                  <input
+                    type="text"
+                    required
+                    style={{ padding: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#fff', fontSize: '14px', outline: 'none' }}
+                    value={formTitle}
+                    onChange={e => setFormTitle(e.target.value)}
+                    placeholder="e.g. Smart Greenhouse"
+                  />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', fontFamily: 'monospace' }}>Tags (Comma-separated)</label>
+                  <input
+                    type="text"
+                    required
+                    style={{ padding: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#fff', fontSize: '14px', outline: 'none' }}
+                    value={formTags}
+                    onChange={e => setFormTags(e.target.value)}
+                    placeholder="React, Node.js, IoT"
+                  />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', fontFamily: 'monospace' }}>Description</label>
+                  <textarea
+                    required
+                    rows={3}
+                    style={{ padding: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#fff', fontSize: '14px', outline: 'none', resize: 'none' }}
+                    value={formDesc}
+                    onChange={e => setFormDesc(e.target.value)}
+                    placeholder="Project details..."
+                  />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', fontFamily: 'monospace' }}>Accent Color</label>
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <input
+                      type="color"
+                      style={{ border: 'none', background: 'none', width: '38px', height: '38px', padding: '0', cursor: 'pointer' }}
+                      value={formColor}
+                      onChange={e => setFormColor(e.target.value)}
+                    />
+                    <input
+                      type="text"
+                      required
+                      style={{ flex: 1, padding: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#fff', fontSize: '14px', outline: 'none' }}
+                      value={formColor}
+                      onChange={e => setFormColor(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', fontFamily: 'monospace' }}>GitHub URL</label>
+                  <input
+                    type="text"
+                    style={{ padding: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#fff', fontSize: '14px', outline: 'none' }}
+                    value={formGithub}
+                    onChange={e => setFormGithub(e.target.value)}
+                    placeholder="https://github.com/..."
+                  />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', fontFamily: 'monospace' }}>Live Demo URL</label>
+                  <input
+                    type="text"
+                    style={{ padding: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#fff', fontSize: '14px', outline: 'none' }}
+                    value={formLive}
+                    onChange={e => setFormLive(e.target.value)}
+                    placeholder="https://..."
+                  />
+                </div>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '28px' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowModal(false)}
+                  style={{ padding: '8px 16px', background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: '#9ca3af', borderRadius: '6px', cursor: 'pointer', fontSize: '13px' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  style={{ padding: '8px 20px', background: '#00f5d4', border: 'none', color: '#050810', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}
+                >
+                  Save Project
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

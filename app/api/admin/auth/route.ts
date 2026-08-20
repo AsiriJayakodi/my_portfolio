@@ -1,11 +1,26 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { checkAdminSession } from '@/lib/auth';
+import fs from 'fs';
+import path from 'path';
 
 export async function POST(request: Request) {
   try {
     const { password } = await request.json();
-    const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
+    let adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
+
+    try {
+      const envPath = path.join(process.cwd(), '.env.local');
+      if (fs.existsSync(envPath)) {
+        const envContent = fs.readFileSync(envPath, 'utf8');
+        const match = envContent.match(/ADMIN_PASSWORD=([^\r\n]+)/);
+        if (match) {
+          adminPassword = match[1].trim();
+        }
+      }
+    } catch (e) {
+      console.warn("Could not read .env.local dynamically in auth handler:", e);
+    }
 
     if (password === adminPassword) {
       const cookieStore = await cookies();
