@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import connectToDatabase from '../../../lib/db';
 import Project from '../../../models/Project';
+import { checkAdminSession } from '@/lib/auth';
 
 const DEFAULT_PROJECTS = [
   {
@@ -76,6 +77,11 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    const isAuthorized = await checkAdminSession();
+    if (!isAuthorized) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     await connectToDatabase();
     
     const body = await request.json();
