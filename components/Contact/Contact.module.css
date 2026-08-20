@@ -1,0 +1,258 @@
+.contactSection {
+  padding: 100px 0 0 0;
+  background: linear-gradient(180deg, var(--bg-primary), var(--bg-tertiary));
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px 100px 24px;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 64px;
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.header.visible {
+  opacity: 1; transform: translateY(0);
+}
+
+.sectionLabel {
+  font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #00f5d4;
+  letter-spacing: 0.1em; margin-bottom: 12px;
+}
+
+.heading {
+  font-family: 'Rajdhani', sans-serif; font-weight: 700;
+  font-size: clamp(36px, 4vw, 52px);
+  color: var(--text-primary); margin: 0 0 16px;
+}
+
+.subtitle {
+  color: var(--text-secondary); max-width: 480px; margin: 0 auto; font-size: 15px;
+}
+
+.grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 48px; max-width: 900px; margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+  .grid { grid-template-columns: 1fr; }
+}
+
+.leftContent {
+  opacity: 0; transform: translateX(-28px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+  transition-delay: 0.1s;
+}
+.leftContent.visible {
+  opacity: 1; transform: translateX(0);
+}
+
+.infoList {
+  margin-bottom: 40px;
+}
+
+.infoItem {
+  display: flex; gap: 16px; align-items: flex-start; margin-bottom: 24px;
+}
+
+.infoIcon {
+  width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
+  background: rgba(0,245,212,0.08); border: 1px solid rgba(0,245,212,0.14);
+  display: flex; align-items: center; justify-content: center; font-size: 16px;
+}
+
+.infoLabel {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  color: var(--text-secondary); letter-spacing: 0.06em; margin-bottom: 4px;
+}
+
+.infoValue {
+  color: var(--text-primary); font-size: 14px;
+}
+
+.badge {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 10px 18px; border-radius: 100px;
+  background: rgba(0,245,212,0.06); border: 1px solid rgba(0,245,212,0.18);
+}
+
+.badgeDot {
+  width: 8px; height: 8px; border-radius: 50%; background: #00f5d4;
+  box-shadow: 0 0 8px #00f5d4; display: inline-block;
+  animation: pulse-cyan 2s ease-in-out infinite;
+}
+
+.badgeText {
+  font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #00f5d4;
+}
+
+.rightContent {
+  opacity: 0; transform: translateX(28px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+  transition-delay: 0.15s;
+}
+.rightContent.visible {
+  opacity: 1; transform: translateX(0);
+}
+
+.experienceTitle {
+  font-family: 'Rajdhani', sans-serif; font-weight: 700;
+  font-size: 28px; color: var(--text-primary); margin-bottom: 24px;
+}
+
+.expCard {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 16px;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.expCard:hover {
+  border-color: rgba(0,245,212,0.35);
+  background: rgba(0,245,212,0.04);
+}
+
+.expCard h4 {
+  font-family: 'Rajdhani', sans-serif; font-size: 18px; color: var(--text-primary); margin-bottom: 8px;
+}
+
+.expCompany {
+  font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--text-secondary);
+}
+
+.formTitle {
+  font-family: 'Rajdhani', sans-serif; font-weight: 700;
+  font-size: 28px; color: var(--text-primary); margin-bottom: 24px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.formLabel {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text-secondary);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.inputField, .textareaField {
+  background: var(--input-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-primary);
+  padding: 12px 16px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  outline: none;
+  transition: all 0.25s ease;
+}
+
+.inputField:focus, .textareaField:focus {
+  border-color: #00f5d4;
+  box-shadow: 0 0 10px rgba(0, 245, 212, 0.15), inset 0 0 4px rgba(0, 245, 212, 0.05);
+}
+
+.textareaField {
+  resize: vertical;
+  min-height: 120px;
+}
+
+.submitBtn {
+  background: linear-gradient(135deg, #00f5d4, #00bbf9);
+  color: #050810;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 14px 24px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 15px rgba(0, 245, 212, 0.25);
+}
+
+.submitBtn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 245, 212, 0.4);
+}
+
+.submitBtn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.submitBtn:disabled {
+  background: rgba(255, 255, 255, 0.05);
+  color: #555;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.formStatus {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  padding: 12px;
+  border-radius: 8px;
+  margin-top: 10px;
+}
+
+.formStatusSuccess {
+  background: rgba(0, 245, 212, 0.06);
+  border: 1px solid rgba(0, 245, 212, 0.2);
+  color: #00f5d4;
+}
+
+.formStatusError {
+  background: rgba(239, 68, 68, 0.06);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+.footer {
+  background: var(--bg-tertiary);
+  border-top: 1px solid var(--border-color);
+  padding: 32px 24px;
+}
+
+.footerInner {
+  max-width: 1200px; margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 16px;
+}
+
+.footerText {
+  font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-secondary);
+}
+
+.status {
+  display: flex; align-items: center; gap: 8px;
+  font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-secondary);
+}
+
+.statusDot {
+  width: 6px; height: 6px; border-radius: 50%; background: #00f5d4;
+  box-shadow: 0 0 8px #00f5d4; display: inline-block;
+  animation: pulse-cyan 2s ease-in-out infinite;
+}

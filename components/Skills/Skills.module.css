@@ -1,0 +1,118 @@
+.skillsSection {
+  padding: 100px 0;
+  background: linear-gradient(180deg, var(--bg-primary), var(--bg-tertiary), var(--bg-primary));
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 64px;
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.header.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.sectionLabel {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: #6366f1;
+  letter-spacing: 0.1em;
+  margin-bottom: 12px;
+}
+
+.heading {
+  font-family: 'Rajdhani', sans-serif; font-weight: 700;
+  font-size: clamp(36px, 4vw, 52px);
+  color: var(--text-primary); margin: 0;
+}
+
+.subtitle {
+  color: var(--text-secondary); margin-top: 16px; font-size: 15px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
+}
+
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.card {
+  background: var(--bg-secondary);
+  border-radius: 20px;
+  padding: 28px;
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.card.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 28px;
+}
+
+.cardDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.cardTitle {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: 0.08em;
+}
+
+.skillBarWrapper {
+  margin-bottom: 20px;
+}
+
+.skillHeader {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.skillName {
+  font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--text-primary);
+}
+
+.skillLevel {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+}
+
+.barTrack {
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  border-radius: 2px;
+}
