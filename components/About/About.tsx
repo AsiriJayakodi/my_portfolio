@@ -200,8 +200,6 @@ export default function About({ isAdmin = false }: { isAdmin?: boolean }) {
 
   return (
     <section id="about" ref={ref} className={styles.aboutSection}>
-      <div className={styles.bgOrb} />
-
       <div className={styles.container}>
         <div className={styles.grid}>
 
@@ -210,7 +208,7 @@ export default function About({ isAdmin = false }: { isAdmin?: boolean }) {
             {isAdmin && (
               <button
                 onClick={openEduModal}
-                style={{ position: 'absolute', top: '-15px', right: '10px', zIndex: 100, background: 'rgba(0, 245, 212, 0.15)', border: '1px solid rgba(0, 245, 212, 0.3)', color: '#00f5d4', cursor: 'pointer', fontSize: '12px', padding: '5px 12px', borderRadius: '6px', fontFamily: 'Rajdhani, sans-serif', fontWeight: 'bold' }}
+                style={{ position: 'absolute', top: '-15px', right: '10px', zIndex: 100, background: 'var(--border-subtle)', border: '1px solid var(--border-strong)', color: 'var(--text-primary)', cursor: 'pointer', fontSize: '12px', padding: '5px 12px', borderRadius: '6px', fontFamily: 'var(--font-sans)', fontWeight: '600' }}
               >
                 ✏️ Edit Education
               </button>
@@ -219,8 +217,6 @@ export default function About({ isAdmin = false }: { isAdmin?: boolean }) {
             <div className={styles.cardBg} />
 
             <div className={styles.mainCard}>
-              <div className={styles.cardOverlay} />
-
               <div className={styles.educationList}>
                 <h3 className={styles.eduTitle}>Education Journey</h3>
 
@@ -256,7 +252,7 @@ export default function About({ isAdmin = false }: { isAdmin?: boolean }) {
               {isAdmin && (
                 <button
                   onClick={openBioModal}
-                  style={{ background: 'rgba(0, 245, 212, 0.15)', border: '1px solid rgba(0, 245, 212, 0.3)', color: '#00f5d4', cursor: 'pointer', fontSize: '12px', padding: '5px 12px', borderRadius: '6px', fontFamily: 'Rajdhani, sans-serif', fontWeight: 'bold' }}
+                  style={{ background: 'var(--border-subtle)', border: '1px solid var(--border-strong)', color: 'var(--text-primary)', cursor: 'pointer', fontSize: '12px', padding: '5px 12px', borderRadius: '6px', fontFamily: 'var(--font-sans)', fontWeight: '600' }}
                 >
                   ✏️ Edit Bio &amp; Soft Skills
                 </button>
@@ -285,8 +281,8 @@ export default function About({ isAdmin = false }: { isAdmin?: boolean }) {
       {/* Pane 1: Education Journey Manager Modal */}
       {showEduModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0, 0, 0, 0.75)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyItems: 'center', justifyContent: 'center', zIndex: 10000, padding: '24px' }}>
-          <div style={{ background: '#0a0f1d', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', maxWidth: '580px', width: '100%', padding: '28px', color: '#f3f4f6', fontFamily: 'sans-serif' }}>
-            <h3 style={{ fontSize: '20px', margin: '0 0 20px', color: '#00f5d4', fontFamily: 'Rajdhani, sans-serif', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          <div style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '16px', maxWidth: '580px', width: '100%', padding: '28px', color: 'var(--text-primary)', fontFamily: 'var(--font-sans)' }}>
+            <h3 style={{ fontSize: '20px', margin: '0 0 20px', color: 'var(--text-primary)', fontFamily: 'var(--font-heading)', fontWeight: '700', letterSpacing: '-0.01em' }}>
               Education &amp; Certifications Settings
             </h3>
             <form onSubmit={handleEduSubmit}>
@@ -295,21 +291,21 @@ export default function About({ isAdmin = false }: { isAdmin?: boolean }) {
                 {/* CGPA */}
                 <div style={{ display: 'flex', gap: '12px' }}>
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <label style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', fontFamily: 'monospace' }}>CGPA Value</label>
+                    <label style={{ fontSize: '11px', color: 'var(--text-secondary)', textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>CGPA Value</label>
                     <input
                       type="text"
                       required
-                      style={{ padding: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#fff', fontSize: '14px', outline: 'none' }}
+                      style={{ padding: '10px', background: 'var(--input-bg)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-primary)', fontSize: '14px', outline: 'none' }}
                       value={formCgpaVal}
                       onChange={e => setFormCgpaVal(e.target.value)}
                     />
                   </div>
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <label style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', fontFamily: 'monospace' }}>CGPA Institution</label>
+                    <label style={{ fontSize: '11px', color: 'var(--text-secondary)', textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>CGPA Institution</label>
                     <input
                       type="text"
                       required
-                      style={{ padding: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#fff', fontSize: '14px', outline: 'none' }}
+                      style={{ padding: '10px', background: 'var(--input-bg)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-primary)', fontSize: '14px', outline: 'none' }}
                       value={formCgpaLabel}
                       onChange={e => setFormCgpaLabel(e.target.value)}
                     />
@@ -318,24 +314,24 @@ export default function About({ isAdmin = false }: { isAdmin?: boolean }) {
 
                 {/* Certifications */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <label style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', fontFamily: 'monospace' }}>Certifications (Comma-separated)</label>
+                  <label style={{ fontSize: '11px', color: 'var(--text-secondary)', textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>Certifications (Comma-separated)</label>
                   <input
                     type="text"
                     required
-                    style={{ padding: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#fff', fontSize: '14px', outline: 'none' }}
+                    style={{ padding: '10px', background: 'var(--input-bg)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-primary)', fontSize: '14px', outline: 'none' }}
                     value={formCertifications}
                     onChange={e => setFormCertifications(e.target.value)}
                   />
                 </div>
 
                 {/* Dynamic Education list */}
-                <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '12px', marginTop: '6px' }}>
+                <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '12px', marginTop: '6px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                    <h4 style={{ margin: 0, fontSize: '13px', color: '#00f5d4', textTransform: 'uppercase', fontFamily: 'monospace' }}>Education Journey Items</h4>
+                    <h4 style={{ margin: 0, fontSize: '13px', color: 'var(--text-primary)', textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>Education Journey Items</h4>
                     <button
                       type="button"
                       onClick={handleAddEduItem}
-                      style={{ padding: '3px 10px', background: 'rgba(0, 245, 212, 0.15)', border: '1px solid rgba(0, 245, 212, 0.3)', color: '#00f5d4', borderRadius: '4px', cursor: 'pointer', fontSize: '11px', fontWeight: 'bold' }}
+                      style={{ padding: '4px 12px', background: 'var(--border-subtle)', border: '1px solid var(--border-strong)', color: 'var(--text-primary)', borderRadius: '4px', cursor: 'pointer', fontSize: '11px', fontWeight: '600' }}
                     >
                       + Add New Card
                     </button>
@@ -343,34 +339,34 @@ export default function About({ isAdmin = false }: { isAdmin?: boolean }) {
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     {formEducation.map((edu, idx) => (
-                      <div key={idx} style={{ display: 'flex', flexDirection: 'column', gap: '6px', border: '1px solid rgba(255,255,255,0.06)', padding: '12px', borderRadius: '8px', position: 'relative' }}>
+                      <div key={idx} style={{ display: 'flex', flexDirection: 'column', gap: '6px', border: '1px solid var(--border-color)', padding: '12px', borderRadius: '8px', position: 'relative' }}>
                         <button
                           type="button"
                           onClick={() => handleRemoveEduItem(idx)}
-                          style={{ position: 'absolute', top: '10px', right: '10px', background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)', color: '#ef4444', padding: '2px 6px', borderRadius: '4px', cursor: 'pointer', fontSize: '10px' }}
+                          style={{ position: 'absolute', top: '10px', right: '10px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', color: '#ef4444', padding: '2px 6px', borderRadius: '4px', cursor: 'pointer', fontSize: '10px' }}
                         >
                           Remove
                         </button>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', width: '85%' }}>
-                          <label style={{ fontSize: '10px', color: '#9ca3af', textTransform: 'uppercase' }}>Degree / Title</label>
+                          <label style={{ fontSize: '10px', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Degree / Title</label>
                           <input
                             type="text"
                             required
                             value={edu.title}
                             onChange={e => handleUpdateEduItem(idx, 'title', e.target.value)}
                             placeholder="e.g. BSc (Hons) in Information Technology"
-                            style={{ padding: '8px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '4px', color: '#fff', fontSize: '13px', outline: 'none' }}
+                            style={{ padding: '8px', background: 'var(--input-bg)', border: '1px solid var(--border-color)', borderRadius: '4px', color: 'var(--text-primary)', fontSize: '13px', outline: 'none' }}
                           />
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '2px' }}>
-                          <label style={{ fontSize: '10px', color: '#9ca3af', textTransform: 'uppercase' }}>Subheading / School</label>
+                          <label style={{ fontSize: '10px', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Subheading / School</label>
                           <input
                             type="text"
                             required
                             value={edu.subtitle}
                             onChange={e => handleUpdateEduItem(idx, 'subtitle', e.target.value)}
                             placeholder="e.g. University of Moratuwa • CGPA 3.56/4.0"
-                            style={{ padding: '8px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '4px', color: '#fff', fontSize: '13px', outline: 'none' }}
+                            style={{ padding: '8px', background: 'var(--input-bg)', border: '1px solid var(--border-color)', borderRadius: '4px', color: 'var(--text-primary)', fontSize: '13px', outline: 'none' }}
                           />
                         </div>
                       </div>
@@ -383,13 +379,13 @@ export default function About({ isAdmin = false }: { isAdmin?: boolean }) {
                 <button
                   type="button"
                   onClick={() => setShowEduModal(false)}
-                  style={{ padding: '8px 16px', background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: '#9ca3af', borderRadius: '6px', cursor: 'pointer', fontSize: '13px' }}
+                  style={{ padding: '8px 16px', background: 'none', border: '1px solid var(--border-color)', color: 'var(--text-secondary)', borderRadius: '6px', cursor: 'pointer', fontSize: '13px' }}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  style={{ padding: '8px 20px', background: '#00f5d4', border: 'none', color: '#050810', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}
+                  style={{ padding: '8px 20px', background: 'var(--btn-primary-bg)', border: '1px solid var(--border-strong)', color: 'var(--btn-primary-text)', borderRadius: '6px', cursor: 'pointer', fontWeight: '600', fontSize: '13px' }}
                 >
                   Save Education
                 </button>
@@ -402,30 +398,30 @@ export default function About({ isAdmin = false }: { isAdmin?: boolean }) {
       {/* Pane 2: Biography & Soft Skills Modal */}
       {showBioModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0, 0, 0, 0.75)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyItems: 'center', justifyContent: 'center', zIndex: 10000, padding: '24px' }}>
-          <div style={{ background: '#0a0f1d', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', maxWidth: '520px', width: '100%', padding: '28px', color: '#f3f4f6', fontFamily: 'sans-serif' }}>
-            <h3 style={{ fontSize: '20px', margin: '0 0 20px', color: '#00f5d4', fontFamily: 'Rajdhani, sans-serif', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          <div style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '16px', maxWidth: '520px', width: '100%', padding: '28px', color: 'var(--text-primary)', fontFamily: 'var(--font-sans)' }}>
+            <h3 style={{ fontSize: '20px', margin: '0 0 20px', color: 'var(--text-primary)', fontFamily: 'var(--font-heading)', fontWeight: '700', letterSpacing: '-0.01em' }}>
               Biography &amp; Soft Skills Settings
             </h3>
             <form onSubmit={handleBioSubmit}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <label style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', fontFamily: 'monospace' }}>Bio Paragraph</label>
+                  <label style={{ fontSize: '11px', color: 'var(--text-secondary)', textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>Bio Paragraph</label>
                   <textarea
                     required
                     rows={6}
-                    style={{ padding: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#fff', fontSize: '14px', outline: 'none', resize: 'none' }}
+                    style={{ padding: '10px', background: 'var(--input-bg)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-primary)', fontSize: '14px', outline: 'none', resize: 'none' }}
                     value={formBio}
                     onChange={e => setFormBio(e.target.value)}
                   />
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <label style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', fontFamily: 'monospace' }}>Soft Skills (Comma-separated)</label>
+                  <label style={{ fontSize: '11px', color: 'var(--text-secondary)', textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>Soft Skills (Comma-separated)</label>
                   <input
                     type="text"
                     required
-                    style={{ padding: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#fff', fontSize: '14px', outline: 'none' }}
+                    style={{ padding: '10px', background: 'var(--input-bg)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-primary)', fontSize: '14px', outline: 'none' }}
                     value={formSoftSkills}
                     onChange={e => setFormSoftSkills(e.target.value)}
                   />
@@ -436,13 +432,13 @@ export default function About({ isAdmin = false }: { isAdmin?: boolean }) {
                 <button
                   type="button"
                   onClick={() => setShowBioModal(false)}
-                  style={{ padding: '8px 16px', background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: '#9ca3af', borderRadius: '6px', cursor: 'pointer', fontSize: '13px' }}
+                  style={{ padding: '8px 16px', background: 'none', border: '1px solid var(--border-color)', color: 'var(--text-secondary)', borderRadius: '6px', cursor: 'pointer', fontSize: '13px' }}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  style={{ padding: '8px 20px', background: '#00f5d4', border: 'none', color: '#050810', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}
+                  style={{ padding: '8px 20px', background: 'var(--btn-primary-bg)', border: '1px solid var(--border-strong)', color: 'var(--btn-primary-text)', borderRadius: '6px', cursor: 'pointer', fontWeight: '600', fontSize: '13px' }}
                 >
                   Save Changes
                 </button>

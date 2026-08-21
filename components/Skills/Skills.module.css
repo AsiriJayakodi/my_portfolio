@@ -1,6 +1,6 @@
 .skillsSection {
   padding: 120px 0;
-  background: linear-gradient(180deg, var(--bg-primary), var(--bg-tertiary), var(--bg-primary));
+  background: transparent;
 }
 
 .container {
@@ -23,18 +23,18 @@
 }
 
 .sectionLabel {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 12px;
-  color: #6366f1;
-  letter-spacing: 0.12em;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
   margin-bottom: 12px;
   text-transform: uppercase;
 }
 
 .heading {
-  font-family: 'Rajdhani', sans-serif;
+  font-family: var(--font-heading);
   font-weight: 700;
-  font-size: clamp(38px, 5vw, 54px);
+  font-size: clamp(34px, 4vw, 48px);
   color: var(--text-primary);
   margin: 0;
   letter-spacing: -0.02em;
@@ -43,38 +43,38 @@
 .subtitle {
   color: var(--text-secondary);
   margin-top: 16px;
-  font-size: 16px;
-  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  font-family: var(--font-sans);
 }
 
 .grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 40px;
+  gap: 32px;
 }
 
 @media (max-width: 950px) {
   .grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 32px;
+    gap: 24px;
   }
 }
 
 @media (max-width: 650px) {
   .grid {
     grid-template-columns: 1fr;
-    gap: 40px;
+    gap: 32px;
   }
 }
 
 .card {
-  background: rgba(13, 21, 37, 0.25);
-  border: 1px solid rgba(255, 255, 255, 0.03);
-  border-top: 3px solid var(--accent-color);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-top: 2px solid var(--border-strong);
   border-radius: 16px;
   padding: 36px;
   opacity: 0;
-  transform: translateY(28px);
+  transform: translateY(24px);
   transition: opacity 0.7s ease, transform 0.7s ease, border-color 0.3s ease;
   display: flex;
   flex-direction: column;
@@ -85,34 +85,36 @@
   transform: translateY(0);
 }
 
+.card:hover {
+  border-color: var(--border-hover);
+}
+
 .categoryIndex {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 32px;
-  font-weight: 200;
-  color: var(--accent-color);
-  opacity: 0.4;
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: 300;
+  color: var(--text-muted);
   line-height: 1;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 }
 
 .cardHeader {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .cardTitle {
-  font-family: 'Rajdhani', sans-serif;
+  font-family: var(--font-heading);
   font-weight: 700;
-  font-size: 24px;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  font-size: 20px;
+  letter-spacing: -0.01em;
   color: var(--text-primary);
 }
 
 .categoryDesc {
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: 13px;
   color: var(--text-secondary);
   line-height: 1.6;
@@ -120,7 +122,7 @@
 }
 
 .separator {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--border-color);
   margin-bottom: 20px;
 }
 
@@ -134,8 +136,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 14px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-  transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+  border-bottom: 1px solid var(--border-subtle);
+  transition: all 0.25s ease;
   position: relative;
   overflow: hidden;
 }
@@ -153,7 +155,7 @@
 }
 
 .techRowName {
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: 15px;
   font-weight: 500;
   color: var(--text-primary);
@@ -161,16 +163,16 @@
 }
 
 .techRowDesc {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 11px;
-  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  color: var(--text-muted);
   transition: color 0.25s ease;
 }
 
 .techArrow {
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: 14px;
-  color: var(--accent-color);
+  color: var(--text-primary);
   opacity: 0;
   transform: translateX(-8px);
   transition: opacity 0.25s ease, transform 0.25s ease;
@@ -179,32 +181,24 @@
 }
 
 .techRow:hover .techRowInfo {
-  transform: translateX(12px);
-}
-
-.techRow:hover .techRowName {
-  color: var(--accent-color);
-}
-
-.techRow:hover .techRowDesc {
-  color: rgba(255, 255, 255, 0.4);
+  transform: translateX(10px);
 }
 
 .techRow:hover .techArrow {
   opacity: 1;
-  transform: translateX(4px);
+  transform: translateX(0);
 }
 
 .adminControls {
   position: absolute;
   right: 0;
   display: flex;
-  gap: 4px;
+  gap: 6px;
   opacity: 0;
   transition: opacity 0.2s ease;
   z-index: 10;
-  background: linear-gradient(90deg, transparent, rgba(10, 15, 29, 0.9) 20%);
-  padding-left: 24px;
+  background: var(--bg-secondary);
+  padding-left: 16px;
   height: 100%;
   align-items: center;
 }
@@ -214,30 +208,28 @@
 }
 
 .adminBtn {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--border-subtle);
+  border: 1px solid var(--border-color);
   color: var(--text-primary);
   cursor: pointer;
-  font-size: 9px;
-  width: 22px;
-  height: 22px;
+  font-size: 10px;
+  width: 24px;
+  height: 24px;
   border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.2s;
-  font-family: 'Rajdhani', sans-serif;
-  font-weight: bold;
+  font-family: var(--font-sans);
+  font-weight: 600;
 }
 
 .adminBtn:hover {
-  background: var(--accent-color);
-  color: var(--bg-primary);
-  border-color: var(--accent-color);
+  background: var(--border-strong);
 }
 
 .adminBtnDelete:hover {
-  background: #ef4444;
-  color: #fff;
-  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.3);
 }

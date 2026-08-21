@@ -2,16 +2,8 @@
   min-height: 100vh;
   background: var(--bg-primary);
   color: var(--text-primary);
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-sans);
   padding: 80px 24px 40px;
-}
-
-/* Grid Overlay & Blur effects matching site theme */
-.adminBg {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
 }
 
 .loginContainer {
@@ -19,23 +11,21 @@
   margin: 100px auto 0;
   padding: 40px 32px;
   background: var(--bg-secondary);
-  border-radius: 20px;
+  border-radius: 16px;
   border: 1px solid var(--border-color);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--shadow-md);
   position: relative;
   z-index: 10;
 }
 
 .title {
-  font-family: 'Rajdhani', sans-serif;
+  font-family: var(--font-heading);
   font-weight: 700;
-  font-size: 32px;
+  font-size: 28px;
   margin-bottom: 8px;
   text-align: center;
-  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-indigo));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
 }
 
 .subtitle {
@@ -43,15 +33,16 @@
   color: var(--text-secondary);
   text-align: center;
   margin-bottom: 32px;
+  font-family: var(--font-sans);
 }
 
 .formGroup {
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .label {
   display: block;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 11px;
   text-transform: uppercase;
   color: var(--text-secondary);
@@ -67,45 +58,43 @@
   border-radius: 8px;
   color: var(--text-primary);
   font-size: 14px;
+  font-family: var(--font-sans);
   outline: none;
-  transition: all 0.25s ease;
+  transition: border-color 0.2s ease;
 }
 
 .input:focus {
-  border-color: var(--accent-cyan);
-  box-shadow: 0 0 12px var(--shadow-color);
+  border-color: var(--border-hover);
 }
 
 .loginBtn {
   width: 100%;
-  padding: 14px;
+  padding: 12px 20px;
   border-radius: 8px;
-  background: linear-gradient(135deg, var(--accent-cyan), #0d9488);
-  color: #050810;
-  font-family: 'Rajdhani', sans-serif;
-  font-weight: 700;
-  font-size: 16px;
-  letter-spacing: 0.06em;
-  border: none;
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 14px;
+  border: 1px solid var(--border-strong);
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
-  box-shadow: 0 4px 20px var(--shadow-color);
+  transition: opacity 0.2s ease;
+  margin-top: 8px;
 }
 
 .loginBtn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 30px var(--shadow-color);
+  opacity: 0.9;
 }
 
 .error {
-  color: #f87171;
+  color: #ef4444;
   font-size: 13px;
   margin-top: 12px;
   text-align: center;
-  background: rgba(248, 113, 113, 0.08);
+  background: rgba(239, 68, 68, 0.08);
   padding: 8px 12px;
   border-radius: 6px;
-  border: 1px solid rgba(248, 113, 113, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.2);
 }
 
 /* Dashboard Layout */
@@ -120,60 +109,69 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 40px;
+  margin-bottom: 32px;
   border-bottom: 1px solid var(--border-color);
-  padding-bottom: 24px;
+  padding-bottom: 20px;
 }
 
 .headerTitle {
-  font-family: 'Rajdhani', sans-serif;
+  font-family: var(--font-heading);
   font-weight: 700;
-  font-size: 36px;
+  font-size: 28px;
   color: var(--text-primary);
+  letter-spacing: -0.01em;
 }
 
 .logoutBtn {
   padding: 8px 16px;
   border-radius: 6px;
-  background: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
-  border: 1px solid rgba(239, 68, 68, 0.2);
+  background: var(--border-subtle);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
   cursor: pointer;
-  font-family: 'Rajdhani', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 600;
-  font-size: 14px;
+  font-size: 13px;
   transition: all 0.2s;
 }
 
 .logoutBtn:hover {
-  background: #ef4444;
-  color: white;
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.25);
 }
 
 .tabs {
   display: flex;
-  gap: 16px;
+  gap: 10px;
   margin-bottom: 32px;
   border-bottom: 1px solid var(--border-color);
   padding-bottom: 12px;
+  flex-wrap: wrap;
 }
 
 .tab {
-  padding: 8px 20px;
+  padding: 8px 18px;
   border-radius: 6px;
   background: none;
-  border: none;
+  border: 1px solid transparent;
   color: var(--text-secondary);
   cursor: pointer;
-  font-family: 'Rajdhani', sans-serif;
-  font-weight: 600;
-  font-size: 16px;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 14px;
   transition: all 0.2s;
 }
 
+.tab:hover {
+  color: var(--text-primary);
+}
+
 .tabActive {
-  background: var(--border-hover);
-  color: var(--accent-cyan);
+  background: var(--border-subtle);
+  border-color: var(--border-strong);
+  color: var(--text-primary);
+  font-weight: 600;
 }
 
 /* Messages Inbox Grid */
@@ -190,6 +188,7 @@
   padding: 24px;
   position: relative;
   transition: border-color 0.3s;
+  box-shadow: var(--shadow-sm);
 }
 
 .messageCard:hover {
@@ -210,16 +209,16 @@
 }
 
 .msgDate {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 11px;
-  color: var(--text-secondary);
+  color: var(--text-muted);
 }
 
 .msgEmail {
   display: block;
   font-size: 13px;
-  color: var(--accent-cyan);
-  text-decoration: none;
+  color: var(--text-secondary);
+  text-decoration: underline;
   margin-bottom: 12px;
 }
 
@@ -247,14 +246,14 @@
 
 .deleteBtn {
   background: none;
-  border: none;
+  border: 1px solid transparent;
   color: #ef4444;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 13px;
-  font-family: 'Rajdhani', sans-serif;
+  font-size: 12px;
+  font-family: var(--font-sans);
   font-weight: 600;
   padding: 6px 12px;
   border-radius: 4px;
@@ -263,6 +262,7 @@
 
 .deleteBtn:hover {
   background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.2);
 }
 
 /* Projects Manager */
@@ -274,25 +274,27 @@
 }
 
 .sectionTitle {
-  font-family: 'Rajdhani', sans-serif;
-  font-size: 24px;
+  font-family: var(--font-heading);
+  font-size: 22px;
+  font-weight: 700;
   color: var(--text-primary);
 }
 
 .addBtn {
-  padding: 8px 16px;
+  padding: 8px 18px;
   border-radius: 6px;
-  background: var(--accent-cyan);
-  color: #050810;
-  border: none;
-  font-family: 'Rajdhani', sans-serif;
-  font-weight: 700;
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+  border: 1px solid var(--border-strong);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 13px;
   cursor: pointer;
-  transition: transform 0.2s;
+  transition: opacity 0.2s;
 }
 
 .addBtn:hover {
-  transform: scale(1.02);
+  opacity: 0.9;
 }
 
 .projectsTable {
@@ -306,13 +308,14 @@
 
 .tableTh {
   text-align: left;
-  padding: 16px;
-  background: rgba(255, 255, 255, 0.02);
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
-  color: var(--text-secondary);
+  padding: 14px 16px;
+  background: var(--border-subtle);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
   border-bottom: 1px solid var(--border-color);
   text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .tableTd {
@@ -335,35 +338,43 @@
 .tagBadge {
   font-size: 11px;
   padding: 2px 8px;
-  border-radius: 100px;
-  background: var(--border-hover);
-  color: var(--accent-cyan);
+  border-radius: 4px;
+  background: var(--border-subtle);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
 }
 
 .editActionBtn {
-  background: none;
-  border: none;
-  color: var(--accent-cyan);
+  background: var(--border-subtle);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
   cursor: pointer;
-  font-family: 'Rajdhani', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 600;
-  margin-right: 12px;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  margin-right: 8px;
 }
 
 .deleteActionBtn {
-  background: none;
-  border: none;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
   color: #ef4444;
   cursor: pointer;
-  font-family: 'Rajdhani', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 600;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 4px;
 }
 
 /* Modal and Project Form Panel */
 .modalOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.75);
   backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
@@ -375,7 +386,7 @@
 .modalContent {
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
-  border-radius: 20px;
+  border-radius: 16px;
   max-width: 600px;
   width: 100%;
   padding: 32px;
@@ -384,11 +395,12 @@
 }
 
 .modalTitle {
-  font-family: 'Rajdhani', sans-serif;
-  font-size: 28px;
+  font-family: var(--font-heading);
+  font-size: 24px;
   font-weight: 700;
   margin-bottom: 24px;
   color: var(--text-primary);
+  letter-spacing: -0.01em;
 }
 
 .formGrid {
@@ -415,29 +427,31 @@
   border: 1px solid var(--border-color);
   color: var(--text-secondary);
   cursor: pointer;
-  font-family: 'Rajdhani', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 600;
+  font-size: 13px;
   transition: background 0.2s;
 }
 
 .cancelBtn:hover {
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--border-subtle);
 }
 
 .saveBtn {
   padding: 10px 24px;
   border-radius: 6px;
-  background: var(--accent-cyan);
-  color: #050810;
-  border: none;
-  font-family: 'Rajdhani', sans-serif;
-  font-weight: 700;
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+  border: 1px solid var(--border-strong);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 13px;
   cursor: pointer;
-  transition: transform 0.2s;
+  transition: opacity 0.2s;
 }
 
 .saveBtn:hover {
-  transform: scale(1.02);
+  opacity: 0.9;
 }
 
 .emptyState {

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Navbar from "@/components/Navbar/Navbar";
 import SmoothScroll from "@/components/SmoothScroll";
+import CosmicBackground from "@/components/CosmicBackground/CosmicBackground";
 
 export const metadata: Metadata = {
   title: "Asiri Indrajith Jayakodi | Portfolio",
@@ -41,6 +42,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body>
+        <CosmicBackground />
         <SmoothScroll>
           <Navbar />
           {children}

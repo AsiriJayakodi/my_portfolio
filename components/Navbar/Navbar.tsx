@@ -76,7 +76,7 @@ export default function Navbar() {
               {name.split(' ')[1] ? name.split(' ')[1][0] : 'I'}
             </div>
             <span className={styles.logoText}>
-              {name.split(' ')[0]}<span style={{ color: '#00f5d4' }}>{name.split(' ').slice(1).join(' ')}</span>
+              {name.split(' ')[0]} <span>{name.split(' ').slice(1).join(' ')}</span>
             </span>
           </Link>
  

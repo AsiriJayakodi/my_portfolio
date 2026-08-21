@@ -180,11 +180,26 @@ export default function Hero({ isAdmin = false }: { isAdmin?: boolean }) {
   const rolesToUse = profile?.titles && profile.titles.length > 0 ? profile.titles : ROLES;
   const role = useTypewriter(rolesToUse);
   const [cursor, setCursor] = useState({ x: 0, y: 0 });
+  const [tilt, setTilt] = useState({ rx: 0, ry: 0, tx: 0, ty: 0 });
   const ref = useRef<HTMLDivElement>(null);
 
   const handleMouse = useCallback((e: React.MouseEvent) => {
     const rect = ref.current?.getBoundingClientRect();
-    if (rect) setCursor({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+    if (rect) {
+      const cx = e.clientX - rect.left;
+      const cy = e.clientY - rect.top;
+      setCursor({ x: cx, y: cy });
+
+      const normX = (cx - rect.width / 2) / (rect.width / 2);
+      const normY = (cy - rect.height / 2) / (rect.height / 2);
+
+      setTilt({
+        rx: -normY * 1.2,
+        ry: normX * 1.2,
+        tx: normX * 3,
+        ty: normY * 3,
+      });
+    }
   }, []);
 
   // Split name for visual glitch styling in three rows
@@ -211,18 +226,13 @@ export default function Hero({ isAdmin = false }: { isAdmin?: boolean }) {
 
   return (
     <section id="hero" ref={ref} onMouseMove={handleMouse} className={styles.heroSection}>
-      {/* Animated grid */}
+      {/* Subtle grid */}
       <div className={styles.gridOverlay} />
 
-      {/* Radial cursor spotlight */}
+      {/* Radial spotlight */}
       <div className={styles.spotlight} style={{
-        background: `radial-gradient(600px circle at ${cursor.x}px ${cursor.y}px, rgba(0,245,212,0.06) 0%, transparent 70%)`
+        background: `radial-gradient(600px circle at ${cursor.x}px ${cursor.y}px, rgba(255,255,255,0.03) 0%, transparent 70%)`
       }} />
-
-      {/* Ambient orbs */}
-      <div className={`${styles.orb} ${styles.orb1}`} />
-      <div className={`${styles.orb} ${styles.orb2}`} />
-      <div className={`${styles.orb} ${styles.orb3}`} />
 
       {/* Main content */}
       <div className={styles.container}>
@@ -235,21 +245,25 @@ export default function Hero({ isAdmin = false }: { isAdmin?: boolean }) {
               <span className={styles.statusText}>Undergrad at Uni of Moratuwa • CGPA 3.56</span>
             </div>
 
-            {/* Name with glitch & Edit button stacked in three rows */}
+            {/* Name stacked in three rows */}
             <div className={styles.nameContainer} style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                {row1 && <h1 className={styles.nameBase} style={{ margin: 0 }}>{row1}</h1>}
-                {row2 && <h1 className={styles.nameBase} style={{ margin: 0 }}>{row2}</h1>}
-                <div className={styles.glitchContainer}>
-                  <h1 className={styles.glitchBase} style={{ margin: 0 }}>{row3}</h1>
-                  <h1 aria-hidden className={`${styles.glitchLayer} ${styles.glitch1}`} style={{ margin: 0 }}>{row3}</h1>
-                  <h1 aria-hidden className={`${styles.glitchLayer} ${styles.glitch2}`} style={{ margin: 0 }}>{row3}</h1>
-                </div>
+                {row1 && <h1 className={styles.nameRow}>{row1}</h1>}
+                {row2 && <h1 className={styles.nameRow}>{row2}</h1>}
+                <h1 className={styles.nameRow}>
+                  {row3.endsWith('.') ? (
+                    <>
+                      {row3.slice(0, -1)}<span className={styles.nameAccent}>.</span>
+                    </>
+                  ) : (
+                    row3
+                  )}
+                </h1>
               </div>
               {isAdmin && (
                 <button
                   onClick={openFormModal}
-                  style={{ background: 'rgba(0, 245, 212, 0.15)', border: '1px solid rgba(0, 245, 212, 0.3)', color: '#00f5d4', cursor: 'pointer', fontSize: '13px', padding: '5px 12px', borderRadius: '6px', fontFamily: 'Rajdhani, sans-serif', fontWeight: 'bold', alignSelf: 'flex-start', marginTop: '10px' }}
+                  style={{ background: 'var(--border-subtle)', border: '1px solid var(--border-strong)', color: 'var(--text-primary)', cursor: 'pointer', fontSize: '13px', padding: '6px 14px', borderRadius: '6px', fontFamily: 'var(--font-sans)', fontWeight: '600', alignSelf: 'flex-start', marginTop: '10px' }}
                 >
                   ✏️ Edit Profile
                 </button>
@@ -278,7 +292,6 @@ export default function Hero({ isAdmin = false }: { isAdmin?: boolean }) {
                 onClick={handleDownloadCV}
                 disabled={downloading}
                 className={styles.secondaryBtn}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', opacity: downloading ? 0.7 : 1, cursor: downloading ? 'not-allowed' : 'pointer', background: 'none', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)', padding: '12px 24px', fontWeight: 'bold', fontSize: '14px' }}
               >
                 {downloading ? 'Preparing CV...' : 'Download CV'}
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -288,9 +301,15 @@ export default function Hero({ isAdmin = false }: { isAdmin?: boolean }) {
             </div>
           </div>
 
-          {/* Right — avatar card */}
+          {/* Right — avatar card with animations */}
           <div className={styles.rightContent}>
-            <div className={styles.avatarWrapper}>
+            <div
+              className={styles.avatarWrapper}
+              style={{
+                transform: `perspective(1000px) rotateX(${tilt.rx}deg) rotateY(${tilt.ry}deg) translate3d(${tilt.tx}px, ${tilt.ty}px, 0)`,
+                transition: 'transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)',
+              }}
+            >
               {/* Spinning rings */}
               <div className={styles.ringOuter}>
                 {[0, 90, 180, 270].map(a => (
@@ -303,31 +322,23 @@ export default function Hero({ isAdmin = false }: { isAdmin?: boolean }) {
 
               {/* Card */}
               <div className={styles.avatarCard}>
-                <div className={styles.avatarGlow} />
-                <div className={styles.cardHeaderGlow} />
-                
-                {/* Photo frame */}
-                <div className={styles.photoFrame}>
+                <div className={styles.scanLine} />
+                <div className={styles.avatarPlaceholder}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src="https://avatars.githubusercontent.com/u/104332924?v=4"
                     alt="Asiri Indrajith"
                     className={styles.profileImg}
                   />
-                  <div className={styles.scanline} />
-                  <div className={styles.photoOverlay} />
                 </div>
+                <div className={styles.gradientOverlay} />
 
-                {/* Card Info */}
-                <div className={styles.cardInfo}>
-                  <div className={styles.cardInfoTitle}>ASIRI INDRAJITH</div>
-                  <div className={styles.cardInfoSubtitle}>UNDERGRADUATE • UOM</div>
-                  <div className={styles.cardMeta}>
-                    <span>LOC: COLOMBO, LK</span>
-                    <span className={styles.metaDivider} />
-                    <span>SYS: ONLINE</span>
-                  </div>
+                {/* Info badge */}
+                <div className={styles.infoBadge}>
+                  <div className={styles.badgeName}>Asiri Indrajith</div>
+                  <div className={styles.badgeDetails}>IT • Univ of Moratuwa</div>
                 </div>
+                <div className={styles.cornerAccent} />
               </div>
             </div>
           </div>
@@ -337,71 +348,71 @@ export default function Hero({ isAdmin = false }: { isAdmin?: boolean }) {
       {/* Profile Editor Modal */}
       {showModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0, 0, 0, 0.75)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyItems: 'center', justifyContent: 'center', zIndex: 10000, padding: '24px' }}>
-          <div style={{ background: '#0a0f1d', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', maxWidth: '520px', width: '100%', padding: '28px', color: '#f3f4f6', fontFamily: 'sans-serif' }}>
-            <h3 style={{ fontSize: '20px', margin: '0 0 20px', color: '#00f5d4', fontFamily: 'Rajdhani, sans-serif', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          <div style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '16px', maxWidth: '520px', width: '100%', padding: '28px', color: 'var(--text-primary)', fontFamily: 'var(--font-sans)' }}>
+            <h3 style={{ fontSize: '20px', margin: '0 0 20px', color: 'var(--text-primary)', fontFamily: 'var(--font-heading)', fontWeight: '700', letterSpacing: '-0.01em' }}>
               Edit Profile Information
             </h3>
             <form onSubmit={handleModalSubmit}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '70vh', overflowY: 'auto', paddingRight: '8px' }}>
                 <div style={{ display: 'flex', gap: '12px' }}>
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <label style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', fontFamily: 'monospace' }}>Full Name</label>
+                    <label style={{ fontSize: '11px', color: 'var(--text-secondary)', textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>Full Name</label>
                     <input
                       type="text"
                       required
-                      style={{ padding: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#fff', fontSize: '14px', outline: 'none' }}
+                      style={{ padding: '10px', background: 'var(--input-bg)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-primary)', fontSize: '14px', outline: 'none' }}
                       value={formName}
                       onChange={e => setFormName(e.target.value)}
                     />
                   </div>
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <label style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', fontFamily: 'monospace' }}>Job Titles (Comma-separated)</label>
+                    <label style={{ fontSize: '11px', color: 'var(--text-secondary)', textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>Job Titles (Comma-separated)</label>
                     <input
                       type="text"
                       required
-                      style={{ padding: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#fff', fontSize: '14px', outline: 'none' }}
+                      style={{ padding: '10px', background: 'var(--input-bg)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-primary)', fontSize: '14px', outline: 'none' }}
                       value={formTitles}
                       onChange={e => setFormTitles(e.target.value)}
                     />
                   </div>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <label style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', fontFamily: 'monospace' }}>Hero Introduction</label>
+                  <label style={{ fontSize: '11px', color: 'var(--text-secondary)', textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>Hero Introduction</label>
                   <input
                     type="text"
                     required
-                    style={{ padding: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#fff', fontSize: '14px', outline: 'none' }}
+                    style={{ padding: '10px', background: 'var(--input-bg)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-primary)', fontSize: '14px', outline: 'none' }}
                     value={formIntro}
                     onChange={e => setFormIntro(e.target.value)}
                   />
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <label style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', fontFamily: 'monospace' }}>Biography (About Section)</label>
+                  <label style={{ fontSize: '11px', color: 'var(--text-secondary)', textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>Biography (About Section)</label>
                   <textarea
                     required
                     rows={4}
-                    style={{ padding: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#fff', fontSize: '14px', outline: 'none', resize: 'none' }}
+                    style={{ padding: '10px', background: 'var(--input-bg)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-primary)', fontSize: '14px', outline: 'none', resize: 'none' }}
                     value={formBio}
                     onChange={e => setFormBio(e.target.value)}
                   />
                 </div>
                 <div style={{ display: 'flex', gap: '12px' }}>
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <label style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', fontFamily: 'monospace' }}>Email</label>
+                    <label style={{ fontSize: '11px', color: 'var(--text-secondary)', textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>Email</label>
                     <input
                       type="email"
                       required
-                      style={{ padding: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#fff', fontSize: '14px', outline: 'none' }}
+                      style={{ padding: '10px', background: 'var(--input-bg)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-primary)', fontSize: '14px', outline: 'none' }}
                       value={formEmail}
                       onChange={e => setFormEmail(e.target.value)}
                     />
                   </div>
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <label style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', fontFamily: 'monospace' }}>Phone</label>
+                    <label style={{ fontSize: '11px', color: 'var(--text-secondary)', textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>Phone</label>
                     <input
                       type="text"
                       required
-                      style={{ padding: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#fff', fontSize: '14px', outline: 'none' }}
+                      style={{ padding: '10px', background: 'var(--input-bg)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-primary)', fontSize: '14px', outline: 'none' }}
                       value={formPhone}
                       onChange={e => setFormPhone(e.target.value)}
                     />
@@ -409,21 +420,21 @@ export default function Hero({ isAdmin = false }: { isAdmin?: boolean }) {
                 </div>
                 <div style={{ display: 'flex', gap: '12px' }}>
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <label style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', fontFamily: 'monospace' }}>Location</label>
+                    <label style={{ fontSize: '11px', color: 'var(--text-secondary)', textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>Location</label>
                     <input
                       type="text"
                       required
-                      style={{ padding: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#fff', fontSize: '14px', outline: 'none' }}
+                      style={{ padding: '10px', background: 'var(--input-bg)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-primary)', fontSize: '14px', outline: 'none' }}
                       value={formLocation}
                       onChange={e => setFormLocation(e.target.value)}
                     />
                   </div>
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <label style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', fontFamily: 'monospace' }}>Resume PDF Link</label>
+                    <label style={{ fontSize: '11px', color: 'var(--text-secondary)', textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>Resume PDF Link</label>
                     <input
                       type="text"
                       required
-                      style={{ padding: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#fff', fontSize: '14px', outline: 'none' }}
+                      style={{ padding: '10px', background: 'var(--input-bg)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-primary)', fontSize: '14px', outline: 'none' }}
                       value={formResumeUrl}
                       onChange={e => setFormResumeUrl(e.target.value)}
                     />
@@ -431,21 +442,21 @@ export default function Hero({ isAdmin = false }: { isAdmin?: boolean }) {
                 </div>
                 <div style={{ display: 'flex', gap: '12px' }}>
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <label style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', fontFamily: 'monospace' }}>GitHub Link</label>
+                    <label style={{ fontSize: '11px', color: 'var(--text-secondary)', textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>GitHub Link</label>
                     <input
                       type="text"
                       required
-                      style={{ padding: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#fff', fontSize: '14px', outline: 'none' }}
+                      style={{ padding: '10px', background: 'var(--input-bg)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-primary)', fontSize: '14px', outline: 'none' }}
                       value={formGithub}
                       onChange={e => setFormGithub(e.target.value)}
                     />
                   </div>
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <label style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', fontFamily: 'monospace' }}>LinkedIn Link</label>
+                    <label style={{ fontSize: '11px', color: 'var(--text-secondary)', textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>LinkedIn Link</label>
                     <input
                       type="text"
                       required
-                      style={{ padding: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#fff', fontSize: '14px', outline: 'none' }}
+                      style={{ padding: '10px', background: 'var(--input-bg)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-primary)', fontSize: '14px', outline: 'none' }}
                       value={formLinkedin}
                       onChange={e => setFormLinkedin(e.target.value)}
                     />
@@ -456,13 +467,13 @@ export default function Hero({ isAdmin = false }: { isAdmin?: boolean }) {
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  style={{ padding: '8px 16px', background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: '#9ca3af', borderRadius: '6px', cursor: 'pointer', fontSize: '13px' }}
+                  style={{ padding: '8px 16px', background: 'none', border: '1px solid var(--border-color)', color: 'var(--text-secondary)', borderRadius: '6px', cursor: 'pointer', fontSize: '13px' }}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  style={{ padding: '8px 20px', background: '#00f5d4', border: 'none', color: '#050810', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}
+                  style={{ padding: '8px 20px', background: 'var(--btn-primary-bg)', border: '1px solid var(--border-strong)', color: 'var(--btn-primary-text)', borderRadius: '6px', cursor: 'pointer', fontWeight: '600', fontSize: '13px' }}
                 >
                   Save Profile
                 </button>
