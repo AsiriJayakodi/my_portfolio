@@ -317,7 +317,7 @@ export default function Projects({ isAdmin = false }: { isAdmin?: boolean }) {
         <div ref={ref} className={`${styles.header} ${visible ? styles.visible : ''}`}>
           <div className={styles.sectionLabel}>{"// featured.work"}</div>
           <div className={styles.headerFlex} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-            <h2 className={styles.heading}>Selected Projects</h2>
+            <h2 className={styles.heading}>Projects</h2>
             <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
               {isAdmin && (
                 <button
@@ -330,7 +330,11 @@ export default function Projects({ isAdmin = false }: { isAdmin?: boolean }) {
               <a href="https://github.com/AsiriJayakodi" target="_blank" rel="noopener noreferrer" className={styles.githubLink}>All on GitHub →</a>
             </div>
           </div>
+          <p className={styles.subtitle}>
+            A showcase of my featured engineering work, web applications, and side projects.
+          </p>
         </div>
+
 
         {/* Filter Tabs */}
         <div className={`${styles.filterContainer} ${visible ? styles.visible : ''}`}>

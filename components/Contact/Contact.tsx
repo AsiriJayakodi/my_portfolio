@@ -134,18 +134,7 @@ export default function Contact() {
               <span className={styles.badgeText}>Available for Opportunities</span>
             </div>
 
-            {/* Professional Experience */}
-            <h3 className={styles.experienceTitle}>Professional Experience</h3>
-            
-            <div className={styles.expCard}>
-              <h4>Instructor of Web Design and Development</h4>
-              <p className={styles.expCompany}>Southern IRAA (Pvt) Ltd. • 2024 - 2025</p>
-            </div>
-            
-            <div className={styles.expCard}>
-              <h4>Course Consultant Officer</h4>
-              <p className={styles.expCompany}>eclub Business College • 2023 - 2024</p>
-            </div>
+
           </div>
 
           {/* Right Column — Contact Form */}

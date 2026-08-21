@@ -56,7 +56,14 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', fn);
   }, []);
 
-  const links = ['About', 'Skills', 'Projects', 'Contact'];
+  const links = [
+    { label: 'About', id: 'about' },
+    { label: 'Skills', id: 'skills' },
+    { label: 'Projects', id: 'projects' },
+    { label: 'Experience', id: 'experience' },
+    { label: 'Blogs & Articles', id: 'blogs-articles' },
+    { label: 'Contact', id: 'contact' }
+  ];
 
   return (
     <nav className={`${styles.navWrapper} ${scrolled ? styles.scrolled : ''}`}>
@@ -72,12 +79,12 @@ export default function Navbar() {
               {name.split(' ')[0]}<span style={{ color: '#00f5d4' }}>{name.split(' ').slice(1).join(' ')}</span>
             </span>
           </Link>
-
+ 
           {/* Desktop links */}
           <div className={styles.desktopLinks}>
             {links.map(l => (
-              <Link key={l} href={`#${l.toLowerCase()}`} className={styles.navLink}>
-                {l}
+              <Link key={l.id} href={`#${l.id}`} className={styles.navLink}>
+                {l.label}
               </Link>
             ))}
             
@@ -119,12 +126,12 @@ export default function Navbar() {
                 </svg>
               )}
             </button>
-
+ 
             <Link href="#contact" className={styles.hireBtn}>
               Hire Me
             </Link>
           </div>
-
+ 
           {/* Mobile Right Controls */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             {/* Theme Toggle Button (Mobile) */}
@@ -160,7 +167,7 @@ export default function Navbar() {
                 </svg>
               )}
             </button>
-
+ 
             {/* Mobile Hamburger toggle */}
             <button onClick={() => setOpen(o => !o)} className={styles.mobileBtn}>
               <div className={styles.hamburger}>
@@ -172,13 +179,13 @@ export default function Navbar() {
           </div>
         </div>
       </div>
-
+ 
       {/* Mobile drawer */}
       {open && (
         <div className={styles.mobileMenu}>
           {links.map(l => (
-            <Link key={l} href={`#${l.toLowerCase()}`} onClick={() => setOpen(false)} className={styles.mobileLink}>
-              {l}
+            <Link key={l.id} href={`#${l.id}`} onClick={() => setOpen(false)} className={styles.mobileLink}>
+              {l.label}
             </Link>
           ))}
         </div>
