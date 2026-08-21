@@ -21,10 +21,116 @@ export default function AdminPage() {
   const [password, setPassword] = useState('');
   const [authenticated, setAuthenticated] = useState<boolean | null>(null);
   const [error, setError] = useState('');
-  const [activeTab, setActiveTab] = useState<'visual' | 'messages' | 'settings'>('visual');
+  const [activeTab, setActiveTab] = useState<'visual' | 'messages' | 'settings' | 'cv'>('visual');
   const [messages, setMessages] = useState<MessageItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+
+  // CV / Resume state
+  interface CVItem {
+    _id: string;
+    originalFileName: string;
+    storedFileName: string;
+    mimeType: string;
+    fileSize: number;
+    isActive: boolean;
+    version: number;
+    createdAt: string;
+  }
+  const [cvList, setCvList] = useState<CVItem[]>([]);
+  const [uploadingCV, setUploadingCV] = useState(false);
+  const [uploadError, setUploadError] = useState('');
+
+  const fetchCVList = async () => {
+    try {
+      const res = await fetch('/api/admin/cv');
+      if (res.ok) {
+        const data = await res.json();
+        setCvList(data);
+      }
+    } catch {
+      console.error('Failed to fetch CV list');
+    }
+  };
+
+  const handleUploadCV = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    // Front-end validation
+    if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+      setUploadError('Only PDF files are allowed');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadError('CV file is too large. Maximum allowed size is 5 MB.');
+      return;
+    }
+
+    setUploadError('');
+    setUploadingCV(true);
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const res = await fetch('/api/admin/cv', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (res.ok) {
+        fetchCVList();
+      } else {
+        const data = await res.json();
+        setUploadError(data.error || 'Failed to upload CV');
+      }
+    } catch {
+      setUploadError('An error occurred during CV upload');
+    } finally {
+      setUploadingCV(false);
+    }
+  };
+
+  const handleActivateCV = async (id: string) => {
+    try {
+      const res = await fetch(`/api/admin/cv/${id}`, {
+        method: 'PUT',
+      });
+      if (res.ok) {
+        fetchCVList();
+      } else {
+        alert('Failed to activate CV');
+      }
+    } catch {
+      alert('An error occurred during activation');
+    }
+  };
+
+  const handleDeleteCV = async (id: string, name: string) => {
+    if (!confirm(`Are you sure you want to delete CV version "${name}"?`)) return;
+    try {
+      const res = await fetch(`/api/admin/cv/${id}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) {
+        fetchCVList();
+      } else {
+        alert('Failed to delete CV');
+      }
+    } catch {
+      alert('An error occurred during deletion');
+    }
+  };
+
+  function formatBytes(bytes: number, decimals = 2) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+  }
 
   // Change Password state
   const [newPassword, setNewPassword] = useState('');
@@ -88,6 +194,7 @@ export default function AdminPage() {
   useEffect(() => {
     if (authenticated === true) {
       fetchMessages();
+      fetchCVList();
     }
   }, [authenticated]);
   /* eslint-enable react-hooks/set-state-in-effect */
@@ -243,13 +350,19 @@ export default function AdminPage() {
             onClick={() => setActiveTab('messages')}
             style={{ padding: '8px 16px', background: activeTab === 'messages' ? 'var(--accent-cyan)' : 'none', border: 'none', color: activeTab === 'messages' ? 'var(--bg-primary)' : 'var(--text-secondary)', fontWeight: 'bold', fontSize: '13px', borderRadius: '6px', cursor: 'pointer', fontFamily: 'Rajdhani, sans-serif', textTransform: 'uppercase' }}
           >
-            ✉️ Inquiries Inbox ({messages.length})
+            ✉️ Inbox ({messages.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('cv')}
+            style={{ padding: '8px 16px', background: activeTab === 'cv' ? 'var(--accent-cyan)' : 'none', border: 'none', color: activeTab === 'cv' ? 'var(--bg-primary)' : 'var(--text-secondary)', fontWeight: 'bold', fontSize: '13px', borderRadius: '6px', cursor: 'pointer', fontFamily: 'Rajdhani, sans-serif', textTransform: 'uppercase' }}
+          >
+            📄 CV / Resume
           </button>
           <button
             onClick={() => setActiveTab('settings')}
             style={{ padding: '8px 16px', background: activeTab === 'settings' ? 'var(--accent-cyan)' : 'none', border: 'none', color: activeTab === 'settings' ? 'var(--bg-primary)' : 'var(--text-secondary)', fontWeight: 'bold', fontSize: '13px', borderRadius: '6px', cursor: 'pointer', fontFamily: 'Rajdhani, sans-serif', textTransform: 'uppercase' }}
           >
-            ⚙️ Security Settings
+            ⚙️ Settings
           </button>
         </div>
 
@@ -387,6 +500,160 @@ export default function AdminPage() {
                 Change Admin Password
               </button>
             </form>
+          </div>
+        )}
+
+        {/* Tab 4: CV / Resume Management */}
+        {activeTab === 'cv' && (
+          <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '32px' }}>
+            <div>
+              <h2 style={{ fontSize: '24px', fontFamily: 'Rajdhani, sans-serif', color: 'var(--accent-cyan)', marginBottom: '8px', textTransform: 'uppercase' }}>CV / Resume</h2>
+              <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '14px' }}>Upload and manage the CV file available for visitors to download on your homepage.</p>
+            </div>
+
+            {/* Current Active CV Box */}
+            <div style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '16px', padding: '28px' }}>
+              <h3 style={{ fontSize: '16px', color: 'var(--accent-cyan)', fontFamily: 'Rajdhani, sans-serif', textTransform: 'uppercase', letterSpacing: '1px', margin: '0 0 16px' }}>Current Active CV</h3>
+              
+              {cvList.some(c => c.isActive) ? (
+                (() => {
+                  const activeCV = cvList.find(c => c.isActive)!;
+                  return (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                        <div style={{ width: '48px', height: '48px', background: 'rgba(0, 245, 212, 0.08)', border: '1px solid rgba(0, 245, 212, 0.15)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent-cyan)', fontSize: '20px' }}>
+                          📄
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <span style={{ fontSize: '16px', fontWeight: 'bold', color: 'var(--text-primary)' }}>{activeCV.originalFileName}</span>
+                          <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+                            Version {activeCV.version} • {formatBytes(activeCV.fileSize)} • Uploaded {new Date(activeCV.createdAt).toLocaleDateString()}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginTop: '8px' }}>
+                        <button
+                          onClick={() => window.open('/api/cv/download?preview=true', '_blank')}
+                          style={{ padding: '8px 16px', background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-primary)', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontFamily: 'Rajdhani, sans-serif', fontWeight: 'bold' }}
+                        >
+                          👁️ Preview CV
+                        </button>
+                        <button
+                          onClick={() => window.open('/api/cv/download', '_blank')}
+                          style={{ padding: '8px 16px', background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-primary)', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontFamily: 'Rajdhani, sans-serif', fontWeight: 'bold' }}
+                        >
+                          ⬇️ Download
+                        </button>
+                        <button
+                          onClick={() => document.getElementById('admin-cv-input')?.click()}
+                          style={{ padding: '8px 16px', background: 'var(--accent-cyan)', border: 'none', color: 'var(--bg-primary)', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontFamily: 'Rajdhani, sans-serif', fontWeight: 'bold' }}
+                        >
+                          🔄 Replace CV
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })()
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '24px 0', border: '1px dashed var(--border-color)', borderRadius: '12px' }}>
+                  <span style={{ fontSize: '32px', marginBottom: '8px' }}>📄</span>
+                  <span style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '16px' }}>No active CV uploaded yet. Upload a PDF to get started.</span>
+                  <button
+                    onClick={() => document.getElementById('admin-cv-input')?.click()}
+                    style={{ padding: '8px 20px', background: 'var(--accent-cyan)', border: 'none', color: 'var(--bg-primary)', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontFamily: 'Rajdhani, sans-serif', fontWeight: 'bold' }}
+                  >
+                    Upload CV
+                  </button>
+                </div>
+              )}
+
+              {/* Hidden file input */}
+              <input
+                type="file"
+                id="admin-cv-input"
+                accept=".pdf"
+                style={{ display: 'none' }}
+                onChange={handleUploadCV}
+                disabled={uploadingCV}
+              />
+
+              {uploadingCV && (
+                <div style={{ marginTop: '16px', color: 'var(--accent-cyan)', fontSize: '13px', fontFamily: 'monospace' }}>
+                  ⏳ Uploading and processing CV file...
+                </div>
+              )}
+              {uploadError && (
+                <div style={{ marginTop: '16px', color: '#ef4444', fontSize: '13px', fontFamily: 'monospace' }}>
+                  ❌ {uploadError}
+                </div>
+              )}
+            </div>
+
+            {/* Version History Table */}
+            <div style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '16px', padding: '28px' }}>
+              <h3 style={{ fontSize: '16px', color: 'var(--accent-cyan)', fontFamily: 'Rajdhani, sans-serif', textTransform: 'uppercase', letterSpacing: '1px', margin: '0 0 16px' }}>CV Version History</h3>
+              
+              {cvList.length === 0 ? (
+                <div style={{ padding: '20px 0', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '14px' }}>
+                  No version history records found.
+                </div>
+              ) : (
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px', textAlign: 'left' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                        <th style={{ padding: '12px 8px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>Ver</th>
+                        <th style={{ padding: '12px 8px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>Filename</th>
+                        <th style={{ padding: '12px 8px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>Size</th>
+                        <th style={{ padding: '12px 8px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>Uploaded</th>
+                        <th style={{ padding: '12px 8px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>Status</th>
+                        <th style={{ padding: '12px 8px', color: 'var(--text-secondary)', fontWeight: 'bold', textAlign: 'right' }}>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {cvList.map((cv) => (
+                        <tr key={cv._id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)', background: cv.isActive ? 'rgba(0, 245, 212, 0.02)' : 'none' }}>
+                          <td style={{ padding: '12px 8px', fontFamily: 'monospace' }}>v{cv.version}</td>
+                          <td style={{ padding: '12px 8px', fontWeight: cv.isActive ? 'bold' : 'normal' }}>{cv.originalFileName}</td>
+                          <td style={{ padding: '12px 8px', color: 'var(--text-secondary)' }}>{formatBytes(cv.fileSize)}</td>
+                          <td style={{ padding: '12px 8px', color: 'var(--text-secondary)' }}>{new Date(cv.createdAt).toLocaleDateString()}</td>
+                          <td style={{ padding: '12px 8px' }}>
+                            {cv.isActive ? (
+                              <span style={{ fontSize: '11px', background: 'rgba(0, 245, 212, 0.12)', color: 'var(--accent-cyan)', border: '1px solid rgba(0, 245, 212, 0.25)', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>
+                                Active
+                              </span>
+                            ) : (
+                              <span style={{ fontSize: '11px', background: 'rgba(255,255,255,0.05)', color: 'var(--text-secondary)', border: '1px solid rgba(255,255,255,0.08)', padding: '2px 6px', borderRadius: '4px' }}>
+                                Archived
+                              </span>
+                            )}
+                          </td>
+                          <td style={{ padding: '12px 8px', textAlign: 'right' }}>
+                            <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
+                              {!cv.isActive && (
+                                <button
+                                  onClick={() => handleActivateCV(cv._id)}
+                                  style={{ background: 'none', border: '1px solid rgba(0, 245, 212, 0.3)', color: 'var(--accent-cyan)', padding: '3px 8px', borderRadius: '4px', fontSize: '11px', cursor: 'pointer', fontFamily: 'Rajdhani, sans-serif', fontWeight: 'bold' }}
+                                >
+                                  Activate
+                                </button>
+                              )}
+                              <button
+                                onClick={() => handleDeleteCV(cv._id, cv.originalFileName)}
+                                style={{ background: 'none', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#ef4444', padding: '3px 8px', borderRadius: '4px', fontSize: '11px', cursor: 'pointer', fontFamily: 'Rajdhani, sans-serif', fontWeight: 'bold' }}
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
           </div>
         )}
 

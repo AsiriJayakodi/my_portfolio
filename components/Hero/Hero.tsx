@@ -56,6 +56,43 @@ interface ProfileData {
 
 export default function Hero({ isAdmin = false }: { isAdmin?: boolean }) {
   const [profile, setProfile] = useState<ProfileData | null>(null);
+  const [downloading, setDownloading] = useState(false);
+
+  const handleDownloadCV = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (downloading) return;
+    setDownloading(true);
+    try {
+      const res = await fetch('/api/cv/download');
+      if (!res.ok) {
+        throw new Error('CV not available');
+      }
+      
+      const disposition = res.headers.get('content-disposition');
+      let filename = 'Asiri-Indrajith-Jayakodi-CV.pdf';
+      if (disposition && disposition.indexOf('attachment') !== -1) {
+        const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+        const matches = filenameRegex.exec(disposition);
+        if (matches != null && matches[1]) { 
+          filename = matches[1].replace(/['"]/g, '');
+        }
+      }
+
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch {
+      alert('CV is currently unavailable.');
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   // Modal States
   const [showModal, setShowModal] = useState(false);
@@ -237,18 +274,17 @@ export default function Hero({ isAdmin = false }: { isAdmin?: boolean }) {
               <Link href="#projects" className={styles.primaryBtn}>
                 View Projects
               </Link>
-              <a
-                href={profile?.resumeUrl || "/cv.pdf"}
-                target="_blank"
-                rel="noopener noreferrer"
+              <button
+                onClick={handleDownloadCV}
+                disabled={downloading}
                 className={styles.secondaryBtn}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', opacity: downloading ? 0.7 : 1, cursor: downloading ? 'not-allowed' : 'pointer', background: 'none', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)', padding: '12px 24px', fontWeight: 'bold', fontSize: '14px' }}
               >
-                Download CV
+                {downloading ? 'Preparing CV...' : 'Download CV'}
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
                 </svg>
-              </a>
+              </button>
             </div>
           </div>
 
