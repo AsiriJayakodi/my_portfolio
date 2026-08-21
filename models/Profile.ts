@@ -16,6 +16,7 @@ export interface IProfile extends Document {
   github: string;
   linkedin: string;
   resumeUrl: string;
+  avatarUrl?: string;
   education: IEducation[];
   certifications: string[];
   cgpaVal: string;
@@ -39,6 +40,7 @@ const ProfileSchema: Schema = new Schema({
   github: { type: String, required: true },
   linkedin: { type: String, required: true },
   resumeUrl: { type: String, required: true },
+  avatarUrl: { type: String, default: "https://avatars.githubusercontent.com/u/104332924?v=4" },
   education: { type: [EducationSchema], default: [] },
   certifications: { type: [String], default: [] },
   cgpaVal: { type: String, default: "" },
@@ -46,6 +48,11 @@ const ProfileSchema: Schema = new Schema({
   softSkills: { type: [String], default: [] }
 }, {
   timestamps: true,
+  strict: false,
 });
 
-export default mongoose.models.Profile || mongoose.model<IProfile>('Profile', ProfileSchema);
+if (mongoose.models.Profile) {
+  delete mongoose.models.Profile;
+}
+
+export default mongoose.model<IProfile>('Profile', ProfileSchema);

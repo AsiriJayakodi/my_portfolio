@@ -9,6 +9,8 @@ import Experience from "@/components/Experience/Experience";
 import BlogArticle from "@/components/BlogArticle/BlogArticle";
 import Contact from "@/components/Contact/Contact";
 import CosmicBackground from "@/components/CosmicBackground/CosmicBackground";
+import ProfilePhotoCropper from "@/components/ProfilePhotoCropper/ProfilePhotoCropper";
+
 interface MessageItem {
   _id: string;
   name: string;
@@ -22,10 +24,122 @@ export default function AdminPage() {
   const [password, setPassword] = useState('');
   const [authenticated, setAuthenticated] = useState<boolean | null>(null);
   const [error, setError] = useState('');
-  const [activeTab, setActiveTab] = useState<'visual' | 'messages' | 'cosmic' | 'cv' | 'settings'>('visual');
+  const [activeTab, setActiveTab] = useState<'visual' | 'photo' | 'cosmic' | 'messages' | 'cv' | 'settings'>('visual');
   const [messages, setMessages] = useState<MessageItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+
+  // Profile Photo state
+  const [profileAvatarUrl, setProfileAvatarUrl] = useState<string>('https://avatars.githubusercontent.com/u/104332924?v=4');
+  const [selectedCropImage, setSelectedCropImage] = useState<string | null>(null);
+  const [photoUploading, setPhotoUploading] = useState(false);
+  const [photoSuccess, setPhotoSuccess] = useState('');
+  const [photoError, setPhotoError] = useState('');
+  const [dragOverPhoto, setDragOverPhoto] = useState(false);
+  const [showDeletePhotoConfirm, setShowDeletePhotoConfirm] = useState(false);
+
+  const fetchProfilePhoto = async () => {
+    try {
+      const res = await fetch('/api/profile');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.avatarUrl) {
+          setProfileAvatarUrl(data.avatarUrl);
+        }
+      }
+    } catch {
+      console.error('Failed to fetch profile photo');
+    }
+  };
+
+  const handlePhotoFileSelect = (file: File) => {
+    setPhotoError('');
+    setPhotoSuccess('');
+
+    // Validation: Type
+    const validMimes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!validMimes.includes(file.type.toLowerCase())) {
+      setPhotoError('Invalid file format. Please upload JPG, PNG, or WebP.');
+      return;
+    }
+
+    // Validation: Size (10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      setPhotoError('Image is too large. Please upload an image under 10 MB.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (reader.result) {
+        setSelectedCropImage(reader.result as string);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleCropComplete = async (blob: Blob) => {
+    setPhotoUploading(true);
+    setPhotoError('');
+    setPhotoSuccess('');
+
+    try {
+      const formData = new FormData();
+      formData.append('file', blob, 'profile-photo.webp');
+
+      const res = await fetch('/api/admin/profile-photo', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.avatarUrl) {
+        setProfileAvatarUrl(data.avatarUrl);
+        setSelectedCropImage(null);
+        setPhotoSuccess('Profile photo updated successfully!');
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('profileUpdated', { detail: data.avatarUrl }));
+        }
+        setTimeout(() => setPhotoSuccess(''), 4000);
+      } else {
+        setPhotoError(data.error || 'Unable to update profile photo. Please try again.');
+      }
+    } catch {
+      setPhotoError('Unable to update profile photo. Please try again.');
+    } finally {
+      setPhotoUploading(false);
+    }
+  };
+
+  const handleDeletePhoto = async () => {
+    setPhotoUploading(true);
+    setPhotoError('');
+    setPhotoSuccess('');
+
+    try {
+      const res = await fetch('/api/admin/profile-photo', {
+        method: 'DELETE',
+      });
+
+      const data = await res.json();
+      if (res.ok && data.avatarUrl) {
+        setProfileAvatarUrl(data.avatarUrl);
+        setShowDeletePhotoConfirm(false);
+        setPhotoSuccess('Profile photo reset to default avatar.');
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('profileUpdated', { detail: data.avatarUrl }));
+        }
+        setTimeout(() => setPhotoSuccess(''), 4000);
+      } else {
+        setPhotoError(data.error || 'Failed to remove profile photo.');
+      }
+    } catch {
+      setPhotoError('Failed to remove profile photo.');
+    } finally {
+      setPhotoUploading(false);
+    }
+  };
 
   // Cosmic Settings state
   interface CosmicConfig {
@@ -90,6 +204,7 @@ export default function AdminPage() {
 
   useEffect(() => {
     fetchCosmicConfig();
+    fetchProfilePhoto();
   }, []);
 
   // CV / Resume state
@@ -413,6 +528,12 @@ export default function AdminPage() {
             🖥️ Visual Editor
           </button>
           <button
+            onClick={() => setActiveTab('photo')}
+            style={{ padding: '8px 14px', background: activeTab === 'photo' ? 'var(--btn-primary-bg)' : 'var(--border-subtle)', border: '1px solid', borderColor: activeTab === 'photo' ? 'var(--border-strong)' : 'transparent', color: activeTab === 'photo' ? 'var(--btn-primary-text)' : 'var(--text-secondary)', fontWeight: '600', fontSize: '13px', borderRadius: '6px', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}
+          >
+            📸 Profile Photo
+          </button>
+          <button
             onClick={() => setActiveTab('cosmic')}
             style={{ padding: '8px 14px', background: activeTab === 'cosmic' ? 'var(--btn-primary-bg)' : 'var(--border-subtle)', border: '1px solid', borderColor: activeTab === 'cosmic' ? 'var(--border-strong)' : 'transparent', color: activeTab === 'cosmic' ? 'var(--btn-primary-text)' : 'var(--text-secondary)', fontWeight: '600', fontSize: '13px', borderRadius: '6px', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}
           >
@@ -495,6 +616,213 @@ export default function AdminPage() {
             <Experience isAdmin={true} />
             <BlogArticle isAdmin={true} />
             <Contact />
+          </div>
+        )}
+
+        {/* Tab: Profile Photo Management */}
+        {activeTab === 'photo' && (
+          <div style={{ maxWidth: '840px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '28px' }}>
+            <div>
+              <h2 style={{ fontSize: '24px', fontFamily: 'var(--font-heading)', color: 'var(--text-primary)', marginBottom: '8px', fontWeight: '700' }}>
+                Profile Photo Management
+              </h2>
+              <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '14px', fontFamily: 'var(--font-sans)' }}>
+                Upload, crop, zoom, and frame your portrait photo for the main hero card (4:5 aspect ratio).
+              </p>
+            </div>
+
+            {/* Notification Alerts */}
+            {photoSuccess && (
+              <div style={{ padding: '12px 16px', borderRadius: '8px', background: 'rgba(34, 197, 94, 0.1)', border: '1px solid rgba(34, 197, 94, 0.3)', color: '#22c55e', fontSize: '14px', fontFamily: 'var(--font-sans)', fontWeight: '600' }}>
+                ✓ {photoSuccess}
+              </div>
+            )}
+            {photoError && (
+              <div style={{ padding: '12px 16px', borderRadius: '8px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#ef4444', fontSize: '14px', fontFamily: 'var(--font-sans)', fontWeight: '600' }}>
+                ⚠️ {photoError}
+              </div>
+            )}
+
+            {/* If Cropper is Active */}
+            {selectedCropImage ? (
+              <ProfilePhotoCropper
+                imageSrc={selectedCropImage}
+                onCropComplete={handleCropComplete}
+                onCancel={() => {
+                  setSelectedCropImage(null);
+                  setPhotoError('');
+                }}
+                isUploading={photoUploading}
+              />
+            ) : (
+              /* If No Image is Selected: Show Current Photo & Upload Dropzone */
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '28px', alignItems: 'start' }}>
+                
+                {/* Left: Upload & Drag Drop Card */}
+                <div style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '16px', padding: '28px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  <div>
+                    <h3 style={{ fontSize: '16px', fontFamily: 'var(--font-heading)', color: 'var(--text-primary)', marginBottom: '6px', fontWeight: '700' }}>
+                      Upload New Photo
+                    </h3>
+                    <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: 0 }}>
+                      Supports JPG, PNG, and WebP up to 10 MB.
+                    </p>
+                  </div>
+
+                  {/* Dropzone */}
+                  <div
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      setDragOverPhoto(true);
+                    }}
+                    onDragLeave={() => setDragOverPhoto(false)}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      setDragOverPhoto(false);
+                      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                        handlePhotoFileSelect(e.dataTransfer.files[0]);
+                      }
+                    }}
+                    style={{
+                      border: `2px dashed ${dragOverPhoto ? 'var(--text-primary)' : 'var(--border-strong)'}`,
+                      borderRadius: '12px',
+                      padding: '36px 20px',
+                      textAlign: 'center',
+                      background: dragOverPhoto ? 'var(--border-subtle)' : 'var(--bg-primary)',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                    }}
+                    onClick={() => {
+                      const input = document.getElementById('profile-file-input');
+                      if (input) input.click();
+                    }}
+                  >
+                    <input
+                      id="profile-file-input"
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      style={{ display: 'none' }}
+                      onChange={(e) => {
+                        if (e.target.files && e.target.files[0]) {
+                          handlePhotoFileSelect(e.target.files[0]);
+                        }
+                      }}
+                    />
+                    <div style={{ fontSize: '28px', marginBottom: '10px' }}>📸</div>
+                    <div style={{ fontWeight: '600', fontSize: '14px', color: 'var(--text-primary)' }}>
+                      Drag photo here or <span style={{ textDecoration: 'underline' }}>Browse</span>
+                    </div>
+                    <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px', fontFamily: 'var(--font-mono)' }}>
+                      4:5 crop editor will open automatically
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const input = document.getElementById('profile-file-input');
+                        if (input) input.click();
+                      }}
+                      style={{
+                        padding: '10px 18px',
+                        borderRadius: '6px',
+                        background: 'var(--btn-primary-bg)',
+                        color: 'var(--btn-primary-text)',
+                        border: '1px solid var(--border-strong)',
+                        fontWeight: '600',
+                        fontSize: '13px',
+                        cursor: 'pointer',
+                        fontFamily: 'var(--font-sans)',
+                      }}
+                    >
+                      Choose Photo
+                    </button>
+                    {profileAvatarUrl && !profileAvatarUrl.includes('avatars.githubusercontent.com') && (
+                      <button
+                        type="button"
+                        onClick={() => setShowDeletePhotoConfirm(true)}
+                        style={{
+                          padding: '10px 18px',
+                          borderRadius: '6px',
+                          background: 'rgba(239, 68, 68, 0.1)',
+                          border: '1px solid rgba(239, 68, 68, 0.2)',
+                          color: '#ef4444',
+                          fontWeight: '600',
+                          fontSize: '13px',
+                          cursor: 'pointer',
+                          fontFamily: 'var(--font-sans)',
+                        }}
+                      >
+                        Delete Photo
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Right: Current Active Photo in Hero Frame Replica */}
+                <div style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '16px', padding: '28px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+                  <div style={{ alignSelf: 'flex-start', fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    Active Profile Card
+                  </div>
+
+                  <div style={{ position: 'relative', width: '100%', maxWidth: '280px', aspectRatio: '4 / 5', borderRadius: '20px', background: '#000', border: '1px solid var(--border-color)', overflow: 'hidden', boxShadow: 'var(--shadow-md)' }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={profileAvatarUrl}
+                      alt="Active Profile Photo"
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                    />
+                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.2) 50%, transparent 100%)', pointerEvents: 'none' }} />
+                    <div style={{ position: 'absolute', bottom: '16px', left: '16px', right: '16px', background: 'rgba(16, 16, 16, 0.85)', backdropFilter: 'blur(8px)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '10px 14px', zIndex: 10 }}>
+                      <div style={{ fontFamily: 'var(--font-heading)', fontWeight: '700', fontSize: '13px', color: '#fff', letterSpacing: '-0.01em' }}>
+                        ASIRI INDRAJITH
+                      </div>
+                      <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: '#a3a3a3', marginTop: '2px' }}>
+                        UNDERGRADUATE • UOM
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{ fontSize: '12px', color: 'var(--text-secondary)', textAlign: 'center' }}>
+                    Displayed live on your hero introduction section.
+                  </div>
+                </div>
+
+              </div>
+            )}
+
+            {/* Delete Confirmation Modal */}
+            {showDeletePhotoConfirm && (
+              <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10000, padding: '24px' }}>
+                <div style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '16px', maxWidth: '420px', width: '100%', padding: '24px', color: 'var(--text-primary)', fontFamily: 'var(--font-sans)' }}>
+                  <h3 style={{ fontSize: '18px', margin: '0 0 12px', fontWeight: '700', fontFamily: 'var(--font-heading)' }}>
+                    Delete Profile Photo?
+                  </h3>
+                  <p style={{ fontSize: '14px', color: 'var(--text-secondary)', margin: '0 0 20px', lineHeight: '1.5' }}>
+                    Are you sure you want to remove your custom profile photo? The website will revert to the default avatar.
+                  </p>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                    <button
+                      type="button"
+                      onClick={() => setShowDeletePhotoConfirm(false)}
+                      style={{ padding: '8px 16px', borderRadius: '6px', background: 'none', border: '1px solid var(--border-color)', color: 'var(--text-secondary)', cursor: 'pointer', fontWeight: '600', fontSize: '13px' }}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      disabled={photoUploading}
+                      onClick={handleDeletePhoto}
+                      style={{ padding: '8px 16px', borderRadius: '6px', background: '#ef4444', border: '1px solid #ef4444', color: '#fff', cursor: 'pointer', fontWeight: '600', fontSize: '13px' }}
+                    >
+                      {photoUploading ? 'Deleting...' : 'Delete Photo'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
           </div>
         )}
 

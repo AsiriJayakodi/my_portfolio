@@ -52,6 +52,7 @@ interface ProfileData {
   github: string;
   linkedin: string;
   resumeUrl: string;
+  avatarUrl?: string;
 }
 
 export default function Hero({ isAdmin = false }: { isAdmin?: boolean }) {
@@ -122,6 +123,15 @@ export default function Hero({ isAdmin = false }: { isAdmin?: boolean }) {
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     loadProfile();
+
+    const handleProfileUpdate = () => {
+      loadProfile();
+    };
+
+    window.addEventListener('profileUpdated', handleProfileUpdate);
+    return () => {
+      window.removeEventListener('profileUpdated', handleProfileUpdate);
+    };
   }, []);
   /* eslint-enable react-hooks/set-state-in-effect */
 
@@ -156,6 +166,7 @@ export default function Hero({ isAdmin = false }: { isAdmin?: boolean }) {
       resumeUrl: formResumeUrl,
       github: formGithub,
       linkedin: formLinkedin,
+      avatarUrl: profile?.avatarUrl,
     };
 
     try {
@@ -326,8 +337,8 @@ export default function Hero({ isAdmin = false }: { isAdmin?: boolean }) {
                 <div className={styles.avatarPlaceholder}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src="https://avatars.githubusercontent.com/u/104332924?v=4"
-                    alt="Asiri Indrajith"
+                    src={profile?.avatarUrl || "https://avatars.githubusercontent.com/u/104332924?v=4"}
+                    alt={profile?.name || "Asiri Indrajith"}
                     className={styles.profileImg}
                   />
                 </div>

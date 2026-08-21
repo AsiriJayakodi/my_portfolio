@@ -14,6 +14,7 @@ const DEFAULT_PROFILE = {
   github: "https://github.com/AsiriJayakodi",
   linkedin: "https://linkedin.com/in/asiri-jayakodi",
   resumeUrl: "/cv.pdf",
+  avatarUrl: "https://avatars.githubusercontent.com/u/104332924?v=4",
   education: [
     { title: "BSc (Hons) in Information Technology", subtitle: "University of Moratuwa • CGPA: 3.56/4.0" },
     { title: "G.C.E. A/L Examination (2022/23)", subtitle: "ICT (A), Combined Maths (B), Physics (B)" }
@@ -43,7 +44,12 @@ export async function GET() {
       profile = await Profile.create(DEFAULT_PROFILE);
     }
 
-    return NextResponse.json(profile);
+    const profileObj = profile.toObject ? profile.toObject() : { ...profile };
+    if (!profileObj.avatarUrl) {
+      profileObj.avatarUrl = DEFAULT_PROFILE.avatarUrl;
+    }
+
+    return NextResponse.json(profileObj);
   } catch (error) {
     console.error("Failed to fetch profile:", error);
     return NextResponse.json({ error: "Failed to fetch profile" }, { status: 500 });
@@ -62,7 +68,7 @@ export async function PUT(request: Request) {
 
     let profile = await Profile.findOne({});
     if (profile) {
-      profile = await Profile.findByIdAndUpdate(profile._id, body, { new: true, runValidators: true });
+      profile = await Profile.findByIdAndUpdate(profile._id, { $set: body }, { new: true, runValidators: true });
     } else {
       profile = await Profile.create(body);
     }
