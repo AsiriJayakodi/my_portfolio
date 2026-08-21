@@ -5,10 +5,23 @@
   overflow: hidden;
 }
 
+@media (max-width: 768px) {
+  .aboutSection {
+    padding: 70px 0;
+  }
+}
+
 .container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 24px;
+  width: 100%;
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0 16px;
+  }
 }
 
 .grid {
@@ -18,7 +31,7 @@
   align-items: center;
 }
 
-@media (max-width: 860px) {
+@media (max-width: 960px) {
   .grid {
     grid-template-columns: 1fr;
     gap: 48px;
@@ -31,6 +44,12 @@
   transition: opacity 0.7s ease, transform 0.7s ease;
   position: relative;
   min-height: 420px;
+}
+
+@media (max-width: 768px) {
+  .leftContent {
+    min-height: auto;
+  }
 }
 
 .leftContent.visible {
@@ -50,6 +69,15 @@
   pointer-events: none;
 }
 
+@media (max-width: 768px) {
+  .cardBg {
+    top: 8px;
+    left: 8px;
+    right: 0;
+    bottom: 0;
+  }
+}
+
 .mainCard {
   position: relative;
   border-radius: 20px;
@@ -62,6 +90,13 @@
   padding: 40px 32px;
 }
 
+@media (max-width: 480px) {
+  .mainCard {
+    padding: 28px 20px;
+    min-height: auto;
+  }
+}
+
 .educationList {
   position: relative;
   z-index: 10;
@@ -70,16 +105,16 @@
 .eduTitle {
   font-family: var(--font-heading);
   font-weight: 700;
-  font-size: 24px;
+  font-size: clamp(20px, 3vw, 24px);
   color: var(--text-primary);
-  margin-bottom: 28px;
+  margin-bottom: 24px;
   letter-spacing: -0.01em;
 }
 
 .eduItem {
   position: relative;
-  padding-left: 24px;
-  margin-bottom: 24px;
+  padding-left: 20px;
+  margin-bottom: 20px;
   border-left: 1px solid var(--border-color);
 }
 
@@ -96,7 +131,7 @@
 
 .eduItem h4 {
   font-family: var(--font-heading);
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 600;
   color: var(--text-primary);
   margin-bottom: 4px;
@@ -104,7 +139,7 @@
 
 .eduItem p {
   font-family: var(--font-sans);
-  font-size: 14px;
+  font-size: 13px;
   color: var(--text-secondary);
   margin-bottom: 4px;
   line-height: 1.5;
@@ -124,10 +159,19 @@
   animation: fade-up 0.8s ease;
 }
 
+@media (max-width: 768px) {
+  .floatingBadge {
+    position: static;
+    margin-top: 24px;
+    width: 100%;
+    right: auto;
+  }
+}
+
 .badgeVal {
   font-family: var(--font-heading);
   font-weight: 700;
-  font-size: 20px;
+  font-size: 18px;
   color: var(--text-primary);
 }
 
@@ -162,7 +206,7 @@
 .heading {
   font-family: var(--font-heading);
   font-weight: 700;
-  font-size: clamp(34px, 4vw, 48px);
+  font-size: clamp(30px, 4.5vw, 48px);
   line-height: 1.15;
   color: var(--text-primary);
   margin: 0 0 24px;
@@ -177,7 +221,7 @@
 .paragraph {
   color: var(--text-secondary);
   line-height: 1.8;
-  font-size: 15px;
+  font-size: clamp(14px, 1.8vw, 15px);
   margin-bottom: 16px;
   font-family: var(--font-sans);
 }
@@ -186,7 +230,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-top: 32px;
+  margin-top: 28px;
 }
 
 .tag {

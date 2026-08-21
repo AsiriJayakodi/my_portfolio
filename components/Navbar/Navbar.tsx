@@ -9,20 +9,42 @@ export default function Navbar() {
   const [mounted, setMounted] = useState(false);
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [name, setName] = useState('Asiri Indrajith');
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [avatarError, setAvatarError] = useState(false);
+
+  const loadProfile = async () => {
+    try {
+      const res = await fetch('/api/profile');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.name) setName(data.name);
+        if (data.avatarUrl) {
+          setAvatarUrl(data.avatarUrl);
+          setAvatarError(false);
+        }
+      }
+    } catch {
+      // Fallback
+    }
+  };
 
   useEffect(() => {
-    async function loadProfile() {
-      try {
-        const res = await fetch('/api/profile');
-        if (res.ok) {
-          const data = await res.json();
-          if (data.name) setName(data.name);
-        }
-      } catch {
-        // Fallback
-      }
-    }
     loadProfile();
+
+    const handleProfileUpdate = (e: Event) => {
+      const customEvent = e as CustomEvent<string>;
+      if (customEvent.detail) {
+        setAvatarUrl(customEvent.detail);
+        setAvatarError(false);
+      } else {
+        loadProfile();
+      }
+    };
+
+    window.addEventListener('profileUpdated', handleProfileUpdate);
+    return () => {
+      window.removeEventListener('profileUpdated', handleProfileUpdate);
+    };
   }, []);
 
   /* eslint-disable react-hooks/set-state-in-effect */
@@ -51,10 +73,22 @@ export default function Navbar() {
   };
 
   useEffect(() => {
-    const fn = () => setScrolled(window.scrollY > 40);
-    window.addEventListener('scroll', fn);
+    const fn = () => setScrolled(window.scrollY > 30);
+    window.addEventListener('scroll', fn, { passive: true });
     return () => window.removeEventListener('scroll', fn);
   }, []);
+
+  // Lock body scroll when mobile navigation is active
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [open]);
 
   const links = [
     { label: 'About', id: 'about' },
@@ -66,14 +100,26 @@ export default function Navbar() {
   ];
 
   return (
-    <nav className={`${styles.navWrapper} ${scrolled ? styles.scrolled : ''}`}>
+    <nav className={`${styles.navWrapper} ${scrolled ? styles.scrolled : ''}`} aria-label="Main Navigation">
       <div className={styles.container}>
         <div className={styles.inner}>
-          {/* Logo */}
-          <Link href="#hero" className={styles.logoLink}>
+          {/* Logo & Avatar */}
+          <Link href="#hero" className={styles.logoLink} onClick={() => setOpen(false)}>
             <div className={styles.logoBox}>
-              {name.split(' ')[0] ? name.split(' ')[0][0] : 'A'}
-              {name.split(' ')[1] ? name.split(' ')[1][0] : 'I'}
+              {avatarUrl && !avatarError ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={avatarUrl}
+                  alt={`${name} profile avatar`}
+                  className={styles.navAvatarImg}
+                  onError={() => setAvatarError(true)}
+                />
+              ) : (
+                <span className={styles.avatarInitials}>
+                  {name.split(' ')[0] ? name.split(' ')[0][0] : 'A'}
+                  {name.split(' ')[1] ? name.split(' ')[1][0] : 'I'}
+                </span>
+              )}
             </div>
             <span className={styles.logoText}>
               {name.split(' ')[0]} <span>{name.split(' ').slice(1).join(' ')}</span>
@@ -93,21 +139,8 @@ export default function Navbar() {
               onClick={toggleTheme} 
               className={styles.themeToggleBtn}
               aria-label="Toggle Theme"
-              style={{
-                background: 'none',
-                border: 'none',
-                color: 'var(--text-primary)',
-                cursor: 'pointer',
-                padding: '8px',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginRight: '8px',
-                transition: 'color 0.2s',
-              }}
             >
               {theme === 'dark' ? (
-                // Sun Icon for Dark Mode
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="12" cy="12" r="5"></circle>
                   <line x1="12" y1="1" x2="12" y2="3"></line>
@@ -120,7 +153,6 @@ export default function Navbar() {
                   <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
                 </svg>
               ) : (
-                // Moon Icon for Light Mode
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
                 </svg>
@@ -133,21 +165,12 @@ export default function Navbar() {
           </div>
  
           {/* Mobile Right Controls */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div className={styles.mobileRightControls}>
             {/* Theme Toggle Button (Mobile) */}
             <button 
               onClick={toggleTheme} 
               className={styles.mobileThemeToggleBtn}
               aria-label="Toggle Theme"
-              style={{
-                background: 'none',
-                border: 'none',
-                color: 'var(--text-primary)',
-                cursor: 'pointer',
-                padding: '8px',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
             >
               {theme === 'dark' ? (
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -169,7 +192,12 @@ export default function Navbar() {
             </button>
  
             {/* Mobile Hamburger toggle */}
-            <button onClick={() => setOpen(o => !o)} className={styles.mobileBtn}>
+            <button 
+              onClick={() => setOpen(o => !o)} 
+              className={styles.mobileBtn}
+              aria-label={open ? "Close Navigation Menu" : "Open Navigation Menu"}
+              aria-expanded={open}
+            >
               <div className={styles.hamburger}>
                 <span className={`${styles.line} ${open ? styles.lineOpen1 : ''}`} />
                 <span className={`${styles.line} ${open ? styles.lineOpen2 : ''}`} />
@@ -180,15 +208,32 @@ export default function Navbar() {
         </div>
       </div>
  
-      {/* Mobile drawer */}
+      {/* Mobile Menu Backdrop & Drawer */}
       {open && (
-        <div className={styles.mobileMenu}>
-          {links.map(l => (
-            <Link key={l.id} href={`#${l.id}`} onClick={() => setOpen(false)} className={styles.mobileLink}>
-              {l.label}
-            </Link>
-          ))}
-        </div>
+        <>
+          <div className={styles.mobileBackdrop} onClick={() => setOpen(false)} />
+          <div className={styles.mobileMenu}>
+            {links.map(l => (
+              <Link 
+                key={l.id} 
+                href={`#${l.id}`} 
+                onClick={() => setOpen(false)} 
+                className={styles.mobileLink}
+              >
+                {l.label}
+              </Link>
+            ))}
+            <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--border-color)' }}>
+              <Link 
+                href="#contact" 
+                onClick={() => setOpen(false)} 
+                className={styles.mobileHireBtn}
+              >
+                Hire Me
+              </Link>
+            </div>
+          </div>
+        </>
       )}
     </nav>
   );

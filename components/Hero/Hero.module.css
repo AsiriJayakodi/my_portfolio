@@ -8,6 +8,13 @@
   padding: 120px 0 80px;
 }
 
+@media (max-width: 768px) {
+  .heroSection {
+    padding: 100px 0 60px;
+    min-height: auto;
+  }
+}
+
 .gridOverlay {
   position: absolute;
   inset: 0;
@@ -35,6 +42,12 @@
   width: 100%;
 }
 
+@media (max-width: 480px) {
+  .container {
+    padding: 0 16px;
+  }
+}
+
 .grid {
   display: grid;
   grid-template-columns: 1.15fr 0.85fr;
@@ -42,7 +55,7 @@
   align-items: center;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 960px) {
   .grid {
     grid-template-columns: 1fr;
     gap: 48px;
@@ -53,11 +66,18 @@
   animation: fade-up 0.7s ease both;
 }
 
+@media (max-width: 960px) {
+  .leftContent {
+    order: 2;
+    text-align: center;
+  }
+}
+
 .statusPill {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 28px;
+  margin-bottom: 24px;
   padding: 6px 16px;
   border-radius: 100px;
   border: 1px solid var(--border-color);
@@ -86,11 +106,12 @@
 .nameRow {
   font-family: var(--font-heading);
   font-weight: 700;
-  font-size: clamp(48px, 6.5vw, 84px);
-  line-height: 0.95;
+  font-size: clamp(38px, 6vw, 76px);
+  line-height: 1.02;
   color: var(--text-primary);
   margin: 0;
   letter-spacing: -0.03em;
+  word-break: break-word;
 }
 
 .nameAccent {
@@ -102,6 +123,13 @@
   align-items: center;
   gap: 12px;
   margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 960px) {
+  .roleContainer {
+    justify-content: center;
+  }
 }
 
 .roleLine {
@@ -110,9 +138,15 @@
   background: var(--border-strong);
 }
 
+@media (max-width: 480px) {
+  .roleLine {
+    display: none;
+  }
+}
+
 .roleText {
   font-family: var(--font-mono);
-  font-size: 15px;
+  font-size: clamp(13px, 2vw, 15px);
   color: var(--text-secondary);
   letter-spacing: 0.02em;
 }
@@ -126,16 +160,36 @@
 .description {
   color: var(--text-secondary);
   line-height: 1.75;
-  font-size: 16px;
+  font-size: clamp(14px, 1.8vw, 16px);
   max-width: 520px;
   margin-bottom: 36px;
   font-family: var(--font-sans);
+}
+
+@media (max-width: 960px) {
+  .description {
+    margin-left: auto;
+    margin-right: auto;
+  }
 }
 
 .ctaGroup {
   display: flex;
   gap: 14px;
   flex-wrap: wrap;
+}
+
+@media (max-width: 960px) {
+  .ctaGroup {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .ctaGroup {
+    flex-direction: column;
+    width: 100%;
+  }
 }
 
 .primaryBtn {
@@ -151,6 +205,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  min-height: 48px;
   transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
@@ -172,6 +227,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  min-height: 48px;
   gap: 8px;
   transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
   cursor: pointer;
@@ -189,21 +245,36 @@
   align-items: center;
   animation: fade-up 0.7s ease both;
   animation-delay: 0.2s;
+  width: 100%;
+}
+
+@media (max-width: 960px) {
+  .rightContent {
+    order: 1;
+    margin-bottom: 8px;
+  }
 }
 
 .avatarWrapper {
   position: relative;
-  width: 340px;
-  height: 400px;
+  width: min(320px, 80vw);
+  aspect-ratio: 4 / 5;
+  margin: 0 auto;
 }
 
 .ringOuter {
   position: absolute;
-  inset: -16px;
+  inset: -12px;
   border-radius: 50%;
   border: 1px solid var(--border-color);
   animation: spin-slow 20s linear infinite;
   pointer-events: none;
+}
+
+@media (max-width: 480px) {
+  .ringOuter {
+    inset: -8px;
+  }
 }
 
 .ringDot {
@@ -223,7 +294,7 @@
 
 .ringInner {
   position: absolute;
-  inset: 12px;
+  inset: 8px;
   border-radius: 50%;
   border: 1px dashed var(--border-strong);
   animation: spin-reverse 14s linear infinite;
@@ -238,6 +309,12 @@
   border: 1px solid var(--border-color);
   overflow: hidden;
   box-shadow: var(--shadow-md);
+}
+
+@media (max-width: 480px) {
+  .avatarCard {
+    border-radius: 20px;
+  }
 }
 
 .scanLine {
@@ -268,20 +345,20 @@
 .gradientOverlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, var(--bg-secondary) 0%, transparent 60%);
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.2) 50%, transparent 100%);
   pointer-events: none;
 }
 
 .infoBadge {
   position: absolute;
-  bottom: 20px;
-  left: 20px;
-  right: 20px;
+  bottom: 16px;
+  left: 16px;
+  right: 16px;
   background: var(--bg-secondary);
   opacity: 0.95;
   backdrop-filter: blur(12px);
   border-radius: 12px;
-  padding: 12px 16px;
+  padding: 10px 14px;
   border: 1px solid var(--border-color);
   z-index: 20;
 }
@@ -289,24 +366,24 @@
 .badgeName {
   font-family: var(--font-heading);
   font-weight: 700;
-  font-size: 16px;
+  font-size: clamp(13px, 2vw, 15px);
   color: var(--text-primary);
   letter-spacing: -0.01em;
 }
 
 .badgeDetails {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 10px;
   color: var(--text-secondary);
   margin-top: 2px;
 }
 
 .cornerAccent {
   position: absolute;
-  top: 16px;
-  right: 16px;
-  width: 8px;
-  height: 8px;
+  top: 14px;
+  right: 14px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   background: var(--text-primary);
   box-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
@@ -314,31 +391,17 @@
 }
 
 @keyframes spin-slow {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 @keyframes spin-reverse {
-  0% {
-    transform: rotate(360deg);
-  }
-  100% {
-    transform: rotate(0deg);
-  }
+  0% { transform: rotate(360deg); }
+  100% { transform: rotate(0deg); }
 }
 
 @keyframes scan-line {
-  0% {
-    top: 0%;
-  }
-  50% {
-    top: 100%;
-  }
-  100% {
-    top: 0%;
-  }
+  0% { top: 0%; }
+  50% { top: 100%; }
+  100% { top: 0%; }
 }

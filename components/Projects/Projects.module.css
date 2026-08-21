@@ -3,10 +3,23 @@
   background: transparent;
 }
 
+@media (max-width: 768px) {
+  .projectsSection {
+    padding: 70px 0;
+  }
+}
+
 .container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 24px;
+  width: 100%;
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0 16px;
+  }
 }
 
 .header {
@@ -14,6 +27,12 @@
   opacity: 0;
   transform: translateY(24px);
   transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+@media (max-width: 768px) {
+  .header {
+    margin-bottom: 36px;
+  }
 }
 
 .header.visible {
@@ -41,7 +60,7 @@
 .heading {
   font-family: var(--font-heading);
   font-weight: 700;
-  font-size: clamp(34px, 4vw, 48px);
+  font-size: clamp(30px, 4.5vw, 48px);
   color: var(--text-primary);
   margin: 0;
   letter-spacing: -0.02em;
@@ -50,8 +69,8 @@
 .subtitle {
   font-family: var(--font-sans);
   color: var(--text-secondary);
-  margin-top: 16px;
-  font-size: 15px;
+  margin-top: 14px;
+  font-size: clamp(14px, 1.8vw, 15px);
   max-width: 600px;
   text-align: left;
 }
@@ -74,8 +93,8 @@
 
 .filterContainer {
   display: flex;
-  gap: 10px;
-  margin-bottom: 40px;
+  gap: 8px;
+  margin-bottom: 36px;
   flex-wrap: wrap;
   opacity: 0;
   transform: translateY(20px);
@@ -92,7 +111,7 @@
   background: var(--border-subtle);
   border: 1px solid var(--border-color);
   color: var(--text-secondary);
-  padding: 8px 18px;
+  padding: 8px 16px;
   border-radius: 6px;
   font-family: var(--font-sans);
   font-weight: 500;
@@ -122,6 +141,7 @@
 @media (max-width: 768px) {
   .grid {
     grid-template-columns: 1fr;
+    gap: 24px;
   }
 }
 
@@ -156,7 +176,8 @@
 
 .imagePlaceholder {
   position: relative;
-  height: 220px;
+  width: 100%;
+  aspect-ratio: 16 / 9;
   overflow: hidden;
   background: var(--bg-tertiary);
 }
@@ -169,7 +190,7 @@
 }
 
 .content {
-  padding: 28px 24px;
+  padding: 24px 20px;
   display: flex;
   flex-direction: column;
   flex-grow: 1;
@@ -178,7 +199,7 @@
 .title {
   font-family: var(--font-heading);
   font-weight: 700;
-  font-size: 20px;
+  font-size: clamp(17px, 2.2vw, 20px);
   color: var(--text-primary);
   margin: 0 0 10px;
   letter-spacing: -0.01em;
@@ -221,6 +242,7 @@
   text-decoration: none;
   transition: gap 0.2s ease, opacity 0.2s ease;
   margin-top: auto;
+  min-height: 36px;
 }
 
 .link:hover {

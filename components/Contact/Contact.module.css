@@ -3,10 +3,23 @@
   background: transparent;
 }
 
+@media (max-width: 768px) {
+  .contactSection {
+    padding: 70px 0 0 0;
+  }
+}
+
 .container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 24px 100px 24px;
+  width: 100%;
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0 16px 60px 16px;
+  }
 }
 
 .header {
@@ -15,6 +28,12 @@
   opacity: 0;
   transform: translateY(24px);
   transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+@media (max-width: 768px) {
+  .header {
+    margin-bottom: 40px;
+  }
 }
 
 .header.visible {
@@ -34,7 +53,7 @@
 .heading {
   font-family: var(--font-heading);
   font-weight: 700;
-  font-size: clamp(34px, 4vw, 48px);
+  font-size: clamp(30px, 4.5vw, 48px);
   color: var(--text-primary);
   margin: 0 0 16px;
   letter-spacing: -0.02em;
@@ -45,7 +64,7 @@
   color: var(--text-secondary);
   max-width: 480px;
   margin: 0 auto;
-  font-size: 15px;
+  font-size: clamp(14px, 1.8vw, 15px);
 }
 
 .grid {
@@ -56,9 +75,10 @@
   margin: 0 auto;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 860px) {
   .grid {
     grid-template-columns: 1fr;
+    gap: 36px;
   }
 }
 
@@ -75,7 +95,7 @@
 }
 
 .infoList {
-  margin-bottom: 40px;
+  margin-bottom: 32px;
 }
 
 .infoItem {
@@ -112,6 +132,7 @@
   color: var(--text-primary);
   font-size: 14px;
   font-family: var(--font-sans);
+  word-break: break-all;
 }
 
 .badge {
@@ -153,9 +174,9 @@
 .formTitle {
   font-family: var(--font-heading);
   font-weight: 700;
-  font-size: 24px;
+  font-size: clamp(20px, 3vw, 24px);
   color: var(--text-primary);
-  margin-bottom: 24px;
+  margin-bottom: 20px;
   letter-spacing: -0.01em;
 }
 
@@ -163,12 +184,14 @@
   display: flex;
   flex-direction: column;
   gap: 18px;
+  width: 100%;
 }
 
 .formGroup {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  width: 100%;
 }
 
 .formLabel {
@@ -188,6 +211,8 @@
   font-family: var(--font-sans);
   font-size: 14px;
   outline: none;
+  width: 100%;
+  box-sizing: border-box;
   transition: border-color 0.2s ease;
 }
 
@@ -216,6 +241,8 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
+  min-height: 48px;
+  width: 100%;
 }
 
 .submitBtn:hover:not(:disabled) {
@@ -253,7 +280,13 @@
 .footer {
   background: var(--bg-primary);
   border-top: 1px solid var(--border-color);
-  padding: 32px 24px;
+  padding: 28px 24px;
+}
+
+@media (max-width: 480px) {
+  .footer {
+    padding: 24px 16px;
+  }
 }
 
 .footerInner {
@@ -264,6 +297,14 @@
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 16px;
+}
+
+@media (max-width: 600px) {
+  .footerInner {
+    flex-direction: column;
+    text-align: center;
+    justify-content: center;
+  }
 }
 
 .footerText {
