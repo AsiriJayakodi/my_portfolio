@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
-export interface IVlogArticle extends Document {
+export interface IBlogArticle extends Document {
   title: string;
   description: string;
   url: string;
@@ -10,7 +10,7 @@ export interface IVlogArticle extends Document {
   updatedAt: Date;
 }
 
-const VlogArticleSchema: Schema = new Schema({
+const BlogArticleSchema: Schema = new Schema({
   title: { type: String, required: true },
   description: { type: String, required: true },
   url: { type: String, required: true },
@@ -20,4 +20,4 @@ const VlogArticleSchema: Schema = new Schema({
   timestamps: true,
 });
 
-export default mongoose.models.VlogArticle || mongoose.model<IVlogArticle>('VlogArticle', VlogArticleSchema);
+export default mongoose.models.BlogArticle || mongoose.model<IBlogArticle>('BlogArticle', BlogArticleSchema);

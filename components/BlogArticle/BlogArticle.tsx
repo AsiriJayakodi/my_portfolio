@@ -1,5 +1,5 @@
 "use client";
-import styles from './VlogArticle.module.css';
+import styles from './BlogArticle.module.css';
 import { useRef, useEffect, useState } from 'react';
 
 function useInView(threshold = 0.1) {
@@ -25,7 +25,7 @@ function useInView(threshold = 0.1) {
   return { ref, visible };
 }
 
-interface VlogArticleData {
+interface BlogArticleData {
   _id?: string;
   title: string;
   description: string;
@@ -34,9 +34,9 @@ interface VlogArticleData {
   image: string;
 }
 
-export default function VlogArticle({ isAdmin = false }: { isAdmin?: boolean }) {
+export default function BlogArticle({ isAdmin = false }: { isAdmin?: boolean }) {
   const { ref: headerRef, visible: headerVisible } = useInView();
-  const [items, setItems] = useState<VlogArticleData[]>([]);
+  const [items, setItems] = useState<BlogArticleData[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [startIndex, setStartIndex] = useState(0);
@@ -47,7 +47,7 @@ export default function VlogArticle({ isAdmin = false }: { isAdmin?: boolean }) 
 
   // Modal States
   const [showModal, setShowModal] = useState(false);
-  const [editingItem, setEditingItem] = useState<VlogArticleData | null>(null);
+  const [editingItem, setEditingItem] = useState<BlogArticleData | null>(null);
   const [formTitle, setFormTitle] = useState('');
   const [formDescription, setFormDescription] = useState('');
   const [formUrl, setFormUrl] = useState('');
@@ -56,13 +56,13 @@ export default function VlogArticle({ isAdmin = false }: { isAdmin?: boolean }) 
 
   const loadItems = async () => {
     try {
-      const res = await fetch('/api/vlogs-articles');
+      const res = await fetch('/api/blogs-articles');
       if (res.ok) {
         const data = await res.json();
         setItems(data);
       }
     } catch (error) {
-      console.error("Failed to load vlogs and articles", error);
+      console.error("Failed to load blogs and articles", error);
     } finally {
       setLoading(false);
     }
@@ -132,7 +132,7 @@ export default function VlogArticle({ isAdmin = false }: { isAdmin?: boolean }) 
   };
 
 
-  const openFormModal = (item: VlogArticleData | null = null) => {
+  const openFormModal = (item: BlogArticleData | null = null) => {
     if (item) {
       setEditingItem(item);
       setFormTitle(item.title);
@@ -162,7 +162,7 @@ export default function VlogArticle({ isAdmin = false }: { isAdmin?: boolean }) 
     };
 
     try {
-      const url = editingItem?._id ? `/api/vlogs-articles/${editingItem._id}` : '/api/vlogs-articles';
+      const url = editingItem?._id ? `/api/blogs-articles/${editingItem._id}` : '/api/blogs-articles';
       const method = editingItem?._id ? 'PUT' : 'POST';
 
       const res = await fetch(url, {
@@ -185,7 +185,7 @@ export default function VlogArticle({ isAdmin = false }: { isAdmin?: boolean }) 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this blog/article?')) return;
     try {
-      const res = await fetch(`/api/vlogs-articles/${id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/blogs-articles/${id}`, { method: 'DELETE' });
       if (res.ok) {
         loadItems();
       } else {
@@ -201,7 +201,7 @@ export default function VlogArticle({ isAdmin = false }: { isAdmin?: boolean }) 
   }
 
   return (
-    <section id="blogs-articles" className={styles.vlogArticleSection}>
+    <section id="blogs-articles" className={styles.blogArticleSection}>
       <div className={styles.container}>
         <div ref={headerRef} className={`${styles.header} ${headerVisible ? styles.visible : ''}`}>
           <div className={styles.sectionLabel}>{"// blogs.and.articles"}</div>

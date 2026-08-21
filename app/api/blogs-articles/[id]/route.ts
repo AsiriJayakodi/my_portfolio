@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/db';
-import VlogArticle from '@/models/VlogArticle';
+import BlogArticle from '@/models/BlogArticle';
 import { checkAdminSession } from '@/lib/auth';
 
 export async function PUT(
@@ -17,7 +17,7 @@ export async function PUT(
     const body = await request.json();
 
     await connectToDatabase();
-    const updatedItem = await VlogArticle.findByIdAndUpdate(id, body, {
+    const updatedItem = await BlogArticle.findByIdAndUpdate(id, body, {
       new: true,
       runValidators: true,
     });
@@ -28,7 +28,7 @@ export async function PUT(
 
     return NextResponse.json(updatedItem);
   } catch (error) {
-    console.error('Failed to update vlog/article:', error);
+    console.error('Failed to update blog/article:', error);
     return NextResponse.json({ error: 'Failed to update item' }, { status: 500 });
   }
 }
@@ -45,7 +45,7 @@ export async function DELETE(
 
     const { id } = await params;
     await connectToDatabase();
-    const deletedItem = await VlogArticle.findByIdAndDelete(id);
+    const deletedItem = await BlogArticle.findByIdAndDelete(id);
 
     if (!deletedItem) {
       return NextResponse.json({ error: 'Item not found' }, { status: 404 });
@@ -53,7 +53,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true, message: 'Item deleted successfully' });
   } catch (error) {
-    console.error('Failed to delete vlog/article:', error);
+    console.error('Failed to delete blog/article:', error);
     return NextResponse.json({ error: 'Failed to delete item' }, { status: 500 });
   }
 }

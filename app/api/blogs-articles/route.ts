@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/db';
-import VlogArticle from '@/models/VlogArticle';
+import BlogArticle from '@/models/BlogArticle';
 import { checkAdminSession } from '@/lib/auth';
 
 const DEFAULT_ITEMS = [
@@ -25,20 +25,20 @@ export async function GET() {
     try {
       await connectToDatabase();
     } catch (dbError) {
-      console.warn("MongoDB connection failed in vlogs/articles fetch. Returning default fallbacks. Error:", dbError instanceof Error ? dbError.message : dbError);
+      console.warn("MongoDB connection failed in blogs/articles fetch. Returning default fallbacks. Error:", dbError instanceof Error ? dbError.message : dbError);
       return NextResponse.json(DEFAULT_ITEMS);
     }
 
-    let items = await VlogArticle.find({}).sort({ createdAt: -1 });
+    let items = await BlogArticle.find({}).sort({ createdAt: -1 });
     if (items.length === 0) {
-      console.log("VlogArticle collection is empty. Seeding defaults...");
-      await VlogArticle.insertMany(DEFAULT_ITEMS);
-      items = await VlogArticle.find({}).sort({ createdAt: -1 });
+      console.log("BlogArticle collection is empty. Seeding defaults...");
+      await BlogArticle.insertMany(DEFAULT_ITEMS);
+      items = await BlogArticle.find({}).sort({ createdAt: -1 });
     }
 
     return NextResponse.json(items);
   } catch (error) {
-    console.error("Failed to fetch vlogs/articles:", error);
+    console.error("Failed to fetch blogs/articles:", error);
     return NextResponse.json({ error: "Failed to fetch items" }, { status: 500 });
   }
 }
@@ -52,11 +52,11 @@ export async function POST(request: Request) {
 
     await connectToDatabase();
     const body = await request.json();
-    const newItem = await VlogArticle.create(body);
+    const newItem = await BlogArticle.create(body);
 
     return NextResponse.json(newItem, { status: 201 });
   } catch (error) {
-    console.error("Failed to create vlog/article:", error);
+    console.error("Failed to create blog/article:", error);
     return NextResponse.json({ error: "Failed to create item" }, { status: 500 });
   }
 }

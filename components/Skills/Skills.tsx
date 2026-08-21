@@ -20,85 +20,63 @@ function useInView(threshold = 0.15) {
   return { ref, visible };
 }
 
-const SKILLS = [
-  { name: 'React JS', level: 85, color: '#00f5d4', cat: 'Frontend' },
-  { name: 'JavaScript', level: 80, color: '#00f5d4', cat: 'Frontend' },
-  { name: 'Node JS', level: 75, color: '#6366f1', cat: 'Backend' },
-  { name: 'Python', level: 70, color: '#6366f1', cat: 'Backend' },
-  { name: 'PHP', level: 65, color: '#6366f1', cat: 'Backend' },
-  { name: 'Java / C++', level: 60, color: '#6366f1', cat: 'Backend' },
-  { name: 'MySQL', level: 75, color: '#f97316', cat: 'Database & Tools' },
-  { name: 'MongoDB', level: 70, color: '#f97316', cat: 'Database & Tools' },
-  { name: 'Git & Version Control', level: 85, color: '#f97316', cat: 'Database & Tools' },
-  { name: 'Graphic Design', level: 70, color: '#f97316', cat: 'Database & Tools' },
-];
-
 interface SkillData {
   _id?: string;
   name: string;
-  level: number;
-  color: string;
-  cat: string;
+  category: string;
+  description: string;
+  displayOrder: number;
+  isActive: boolean;
+  color?: string;
+  cat?: string;
 }
 
-function SkillBar({
+interface CategoryData {
+  _id?: string;
+  name: string;
+  shortDescription: string;
+  accentColor: string;
+  displayOrder: number;
+  isActive: boolean;
+}
+
+function TechRow({
   name,
-  level,
+  description,
+  isActive,
   color,
-  delay,
   isAdmin,
   onEdit,
   onDelete
 }: {
   name: string;
-  level: number;
+  description: string;
+  isActive: boolean;
   color: string;
-  delay: number;
   isAdmin?: boolean;
   onEdit?: () => void;
   onDelete?: () => void;
 }) {
-  const { ref, visible } = useInView(0.1);
   const [showConfirm, setShowConfirm] = useState(false);
 
   if (showConfirm) {
     return (
-      <div ref={ref} className={styles.skillBarWrapper} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px dashed rgba(239, 68, 68, 0.2)' }}>
-        <span style={{ fontSize: '14px', color: '#ef4444', fontWeight: '500', fontFamily: 'Rajdhani, sans-serif' }}>
-          Delete <strong style={{ color: 'var(--text-primary)' }}>&quot;{name}&quot;</strong>?
+      <div className={styles.techRow} style={{ borderBottom: '1px dashed #ef4444', background: 'rgba(239, 68, 68, 0.03)' }}>
+        <span style={{ fontSize: '11px', color: '#ef4444', fontWeight: 'bold', fontFamily: 'monospace', paddingLeft: '8px' }}>
+          Delete &quot;{name}&quot;?
         </span>
-        <div style={{ display: 'flex', gap: '8px' }}>
+        <div style={{ display: 'flex', gap: '6px', marginRight: '8px' }}>
           <button
             onClick={(e) => { e.stopPropagation(); onDelete?.(); }}
-            style={{
-              background: '#ef4444',
-              color: '#fff',
-              border: 'none',
-              cursor: 'pointer',
-              fontSize: '11px',
-              padding: '4px 10px',
-              borderRadius: '4px',
-              fontWeight: 'bold',
-              fontFamily: 'Rajdhani, sans-serif'
-            }}
+            style={{ background: '#ef4444', color: '#fff', border: 'none', cursor: 'pointer', fontSize: '9px', padding: '2px 8px', borderRadius: '4px', fontWeight: 'bold', fontFamily: 'Rajdhani, sans-serif' }}
           >
             Yes
           </button>
           <button
             onClick={(e) => { e.stopPropagation(); setShowConfirm(false); }}
-            style={{
-              background: 'rgba(255,255,255,0.05)',
-              border: '1px solid var(--border-color)',
-              color: 'var(--text-primary)',
-              cursor: 'pointer',
-              fontSize: '11px',
-              padding: '4px 10px',
-              borderRadius: '4px',
-              fontWeight: 'bold',
-              fontFamily: 'Rajdhani, sans-serif'
-            }}
+            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-primary)', cursor: 'pointer', fontSize: '9px', padding: '2px 8px', borderRadius: '4px', fontFamily: 'Rajdhani, sans-serif' }}
           >
-            Cancel
+            No
           </button>
         </div>
       </div>
@@ -106,41 +84,22 @@ function SkillBar({
   }
 
   return (
-    <div ref={ref} className={styles.skillBarWrapper}>
-      <div className={styles.skillHeader}>
-        <span className={styles.skillName} style={{ display: 'inline-flex', alignItems: 'center' }}>
-          {name}
-          {isAdmin && (
-            <span style={{ marginLeft: '12px', display: 'inline-flex', gap: '6px' }}>
-              <button
-                onClick={(e) => { e.stopPropagation(); onEdit?.(); }}
-                style={{ background: 'rgba(0, 245, 212, 0.15)', border: '1px solid rgba(0, 245, 212, 0.3)', color: '#00f5d4', cursor: 'pointer', fontSize: '10px', padding: '2px 6px', borderRadius: '4px' }}
-                title="Edit Skill"
-              >
-                ✏️ Edit
-              </button>
-              <button
-                onClick={(e) => { e.stopPropagation(); setShowConfirm(true); }}
-                style={{ background: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#ef4444', cursor: 'pointer', fontSize: '10px', padding: '2px 6px', borderRadius: '4px' }}
-                title="Delete Skill"
-              >
-                🗑️ Delete
-              </button>
-            </span>
-          )}
-        </span>
-        <span className={styles.skillLevel} style={{
-          color, opacity: visible ? 1 : 0, transition: `opacity 0.4s ease ${delay + 0.6}s`
-        }}>{level}%</span>
+    <div 
+      className={`${styles.techRow} ${!isActive ? styles.inactive : ''}`}
+      style={{ '--accent-color': color } as React.CSSProperties}
+    >
+      <div className={styles.techArrow}>→</div>
+      <div className={styles.techRowInfo}>
+        <span className={styles.techRowName}>{name}</span>
+        {description && <span className={styles.techRowDesc}>{description}</span>}
       </div>
-      <div className={styles.barTrack}>
-        <div className={styles.barFill} style={{
-          background: `linear-gradient(90deg, ${color}, ${color}88)`,
-          boxShadow: `0 0 10px ${color}44`,
-          width: visible ? `${level}%` : '0%',
-          transition: `width 1.2s cubic-bezier(0.4,0,0.2,1) ${delay}s`
-        }} />
-      </div>
+
+      {isAdmin && (
+        <div className={styles.adminControls}>
+          <button onClick={onEdit} className={styles.adminBtn} title="Edit Technology">✏️</button>
+          <button onClick={() => setShowConfirm(true)} className={`${styles.adminBtn} ${styles.adminBtnDelete}`} title="Delete Technology">🗑️</button>
+        </div>
+      )}
     </div>
   );
 }
@@ -148,72 +107,141 @@ function SkillBar({
 export default function Skills({ isAdmin = false }: { isAdmin?: boolean }) {
   const { ref, visible } = useInView();
   const [skills, setSkills] = useState<SkillData[]>([]);
-  const [cats, setCats] = useState<string[]>(['Frontend', 'Backend', 'Database & Tools']);
+  const [categories, setCategories] = useState<CategoryData[]>([]);
 
-  // Category Addition Modal States
+  // Category Modal States
   const [showCatModal, setShowCatModal] = useState(false);
+  const [editingCat, setEditingCat] = useState<CategoryData | null>(null);
   const [formCatName, setFormCatName] = useState('');
-
-  // Delete Category Confirm state
+  const [formCatDesc, setFormCatDesc] = useState('');
+  const [formCatColor, setFormCatColor] = useState('#00f5d4');
+  const [formCatOrder, setFormCatOrder] = useState(0);
+  const [formCatActive, setFormCatActive] = useState(true);
   const [deletingCatName, setDeletingCatName] = useState<string | null>(null);
 
-  // Modal States for Skill Form
+  // Technology Modal States
   const [showModal, setShowModal] = useState(false);
   const [editingSkill, setEditingSkill] = useState<SkillData | null>(null);
   const [formName, setFormName] = useState('');
-  const [formLevel, setFormLevel] = useState(80);
-  const [formColor, setFormColor] = useState('#00f5d4');
-  const [formCat, setFormCat] = useState('Frontend');
+  const [formDesc, setFormDesc] = useState('');
+  const [formOrder, setFormOrder] = useState(0);
+  const [formActive, setFormActive] = useState(true);
+  const [formCat, setFormCat] = useState('');
 
-  const loadSkills = async () => {
+  const loadData = async () => {
     try {
-      const res = await fetch('/api/skills');
+      // Load categories
+      const catRes = await fetch('/api/categories');
+      let loadedCats: CategoryData[] = [];
+      if (catRes.ok) {
+        loadedCats = await catRes.json();
+        setCategories(loadedCats);
+      }
+
+      // Load skills
+      const skillRes = await fetch('/api/skills');
+      if (skillRes.ok) {
+        const skillData = await skillRes.json();
+        setSkills(skillData);
+      }
+    } catch (error) {
+      console.error("Failed to load skills and categories data", error);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  // Category Actions
+  const openCatModal = (cat: CategoryData | null = null) => {
+    if (cat) {
+      setEditingCat(cat);
+      setFormCatName(cat.name);
+      setFormCatDesc(cat.shortDescription || '');
+      setFormCatColor(cat.accentColor || '#00f5d4');
+      setFormCatOrder(cat.displayOrder ?? 0);
+      setFormCatActive(cat.isActive ?? true);
+    } else {
+      setEditingCat(null);
+      setFormCatName('');
+      setFormCatDesc('');
+      setFormCatColor('#00f5d4');
+      setFormCatOrder(categories.length + 1);
+      setFormCatActive(true);
+    }
+    setShowCatModal(true);
+  };
+
+  const handleCatModalSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const payload = {
+      name: formCatName,
+      shortDescription: formCatDesc,
+      accentColor: formCatColor,
+      displayOrder: Number(formCatOrder),
+      isActive: formCatActive
+    };
+
+    try {
+      const url = editingCat?._id ? `/api/categories/${editingCat._id}` : '/api/categories';
+      const method = editingCat?._id ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
       if (res.ok) {
-        const data = await res.json();
-        setSkills(data);
-        const dbCats = Array.from(new Set(data.map((s: SkillData) => s.cat))) as string[];
-        setCats(prev => {
-          return Array.from(new Set([...prev, ...dbCats]));
-        });
+        setShowCatModal(false);
+        loadData();
+      } else {
+        alert('Failed to save category details');
       }
     } catch {
-      setSkills(SKILLS);
+      alert('An error occurred while saving category');
     }
   };
 
-  /* eslint-disable react-hooks/set-state-in-effect */
-  useEffect(() => {
-    loadSkills();
-  }, []);
-  /* eslint-enable react-hooks/set-state-in-effect */
-
-  const confirmDeleteCategory = async (catName: string) => {
-    // Delete all skills in this category database-side
-    const skillsToDelete = skills.filter(s => s.cat === catName);
-    for (const skill of skillsToDelete) {
-      if (skill._id) {
-        await fetch(`/api/skills/${skill._id}`, { method: 'DELETE' });
+  const handleDeleteCategory = async (id: string, name: string) => {
+    try {
+      // Delete category
+      const res = await fetch(`/api/categories/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        // Also delete/hide skills in that category
+        const skillsToDelete = skills.filter(s => (s.category || s.cat) === name);
+        for (const skill of skillsToDelete) {
+          if (skill._id) {
+            await fetch(`/api/skills/${skill._id}`, { method: 'DELETE' });
+          }
+        }
+        setDeletingCatName(null);
+        loadData();
+      } else {
+        alert('Failed to delete category');
       }
+    } catch {
+      alert('An error occurred during deletion');
     }
-
-    setCats(prev => prev.filter(c => c !== catName));
-    setDeletingCatName(null);
-    loadSkills();
   };
 
-  const openFormModal = (skill: SkillData | null = null, defaultCat = 'Frontend') => {
+  // Technology Actions
+  const openFormModal = (skill: SkillData | null = null, defaultCat = '') => {
     if (skill) {
       setEditingSkill(skill);
       setFormName(skill.name);
-      setFormLevel(skill.level);
-      setFormColor(skill.color);
-      setFormCat(skill.cat);
+      setFormDesc(skill.description || '');
+      setFormOrder(skill.displayOrder ?? 0);
+      setFormActive(skill.isActive ?? true);
+      setFormCat(skill.category || skill.cat || defaultCat);
     } else {
       setEditingSkill(null);
       setFormName('');
-      setFormLevel(80);
-      setFormColor(defaultCat === 'Frontend' ? '#00f5d4' : defaultCat === 'Backend' ? '#6366f1' : '#f97316');
-      setFormCat(defaultCat);
+      setFormDesc('');
+      setFormOrder(skills.filter(s => (s.category || s.cat) === defaultCat).length + 1);
+      setFormActive(true);
+      setFormCat(defaultCat || (categories[0]?.name || ''));
     }
     setShowModal(true);
   };
@@ -222,9 +250,14 @@ export default function Skills({ isAdmin = false }: { isAdmin?: boolean }) {
     e.preventDefault();
     const payload = {
       name: formName,
-      level: Number(formLevel),
-      color: formColor,
-      cat: formCat
+      category: formCat,
+      description: formDesc,
+      displayOrder: Number(formOrder),
+      isActive: formActive,
+      // Legacy backwards-compatibility properties
+      cat: formCat,
+      level: 100,
+      color: '#fff'
     };
 
     try {
@@ -239,30 +272,27 @@ export default function Skills({ isAdmin = false }: { isAdmin?: boolean }) {
 
       if (res.ok) {
         setShowModal(false);
-        loadSkills();
+        loadData();
       } else {
-        alert('Failed to save skill details');
+        alert('Failed to save technology details');
       }
     } catch {
       alert('An error occurred while saving');
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDeleteSkill = async (id: string) => {
     try {
       const res = await fetch(`/api/skills/${id}`, { method: 'DELETE' });
       if (res.ok) {
-        loadSkills();
+        loadData();
       } else {
-        alert('Failed to delete skill');
+        alert('Failed to delete technology');
       }
     } catch {
       alert('An error occurred during deletion');
     }
   };
-
-  const catColors: Record<string, string> = { 'Frontend': '#00f5d4', 'Backend': '#6366f1', 'Database & Tools': '#f97316' };
-  const getCatColor = (cat: string) => catColors[cat] || '#a855f7';
 
   return (
     <section id="skills" className={styles.skillsSection}>
@@ -275,125 +305,191 @@ export default function Skills({ isAdmin = false }: { isAdmin?: boolean }) {
           </p>
           {isAdmin && (
             <button
-              onClick={() => setShowCatModal(true)}
+              onClick={() => openCatModal()}
               style={{ marginTop: '16px', background: 'rgba(0, 245, 212, 0.15)', border: '1px solid rgba(0, 245, 212, 0.3)', color: '#00f5d4', cursor: 'pointer', fontSize: '12px', padding: '6px 16px', borderRadius: '6px', fontFamily: 'Rajdhani, sans-serif', fontWeight: 'bold' }}
             >
-              ➕ Create New Card
+              ➕ Create New Category Column
             </button>
           )}
         </div>
 
         <div className={styles.grid}>
-          {cats.map((cat, ci) => {
-            const catColor = getCatColor(cat);
-            return (
-              <div key={cat} className={`${styles.card} ${visible ? styles.visible : ''}`}
-                style={{
-                  transitionDelay: `${ci * 0.12}s`,
-                  border: `1px solid ${catColor}18`,
-                  boxShadow: `0 0 40px ${catColor}06`,
-                  position: 'relative'
-                }}>
-                
-                {deletingCatName === cat ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', minHeight: '200px', padding: '10px' }}>
-                    <span style={{ fontSize: '24px', marginBottom: '12px' }}>⚠️</span>
-                    <h4 style={{ fontSize: '18px', fontWeight: 'bold', color: '#ef4444', margin: '0 0 8px', fontFamily: 'Rajdhani, sans-serif' }}>Delete Card?</h4>
-                    <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: '0 0 20px', lineHeight: '1.5' }}>
-                      Delete &quot;{cat}&quot; card and all its skills?
-                    </p>
-                    <div style={{ display: 'flex', gap: '10px' }}>
-                      <button
-                        onClick={() => confirmDeleteCategory(cat)}
-                        style={{ background: '#ef4444', color: '#fff', border: 'none', padding: '6px 14px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px', fontFamily: 'Rajdhani, sans-serif' }}
-                      >
-                        Yes
-                      </button>
-                      <button
-                        onClick={() => setDeletingCatName(null)}
-                        style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', padding: '6px 14px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px', fontFamily: 'Rajdhani, sans-serif' }}
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    <div className={styles.cardHeader} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <div className={styles.cardDot} style={{
-                          background: catColor, boxShadow: `0 0 10px ${catColor}`
-                        }} />
-                        <span className={styles.cardTitle} style={{ color: catColor }}>{cat}</span>
+          {categories
+            .filter(c => isAdmin || c.isActive)
+            .map((cat, ci) => {
+              const catColor = cat.accentColor || '#00f5d4';
+              const indexStr = String(ci + 1).padStart(2, '0');
+
+              return (
+                <div key={cat.name} className={`${styles.card} ${visible ? styles.visible : ''}`}
+                  style={{
+                    transitionDelay: `${ci * 0.12}s`,
+                    '--accent-color': catColor,
+                  } as React.CSSProperties}>
+                  
+                  {deletingCatName === cat.name ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', minHeight: '220px', padding: '10px' }}>
+                      <span style={{ fontSize: '24px', marginBottom: '12px' }}>⚠️</span>
+                      <h4 style={{ fontSize: '18px', fontWeight: 'bold', color: '#ef4444', margin: '0 0 8px', fontFamily: 'Rajdhani, sans-serif' }}>Delete Category?</h4>
+                      <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: '0 0 20px', lineHeight: '1.5' }}>
+                        Delete column &quot;{cat.name}&quot; and all its technologies?
+                      </p>
+                      <div style={{ display: 'flex', gap: '10px' }}>
+                        <button
+                          onClick={() => cat._id && handleDeleteCategory(cat._id, cat.name)}
+                          style={{ background: '#ef4444', color: '#fff', border: 'none', padding: '6px 14px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px', fontFamily: 'Rajdhani, sans-serif' }}
+                        >
+                          Yes, Delete
+                        </button>
+                        <button
+                          onClick={() => setDeletingCatName(null)}
+                          style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-primary)', padding: '6px 14px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px', fontFamily: 'Rajdhani, sans-serif' }}
+                        >
+                          Cancel
+                        </button>
                       </div>
-                      {isAdmin && (
-                        <div style={{ display: 'flex', gap: '6px' }}>
-                          <button
-                            onClick={() => openFormModal(null, cat)}
-                            style={{ background: 'rgba(0, 245, 212, 0.15)', border: '1px solid rgba(0, 245, 212, 0.3)', color: '#00f5d4', cursor: 'pointer', fontSize: '11px', padding: '3px 8px', borderRadius: '4px', fontFamily: 'Rajdhani, sans-serif', fontWeight: 'bold' }}
-                          >
-                            + Add
-                          </button>
-                          <button
-                            onClick={() => setDeletingCatName(cat)}
-                            style={{ background: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#ef4444', cursor: 'pointer', fontSize: '11px', padding: '3px 8px', borderRadius: '4px', fontFamily: 'Rajdhani, sans-serif', fontWeight: 'bold' }}
-                          >
-                            🗑️
-                          </button>
-                        </div>
-                      )}
                     </div>
+                  ) : (
+                    <>
+                      <div className={styles.categoryIndex}>{indexStr}</div>
+                      <div className={styles.cardHeader}>
+                        <span className={styles.cardTitle}>{cat.name}</span>
+                        {isAdmin && (
+                          <div style={{ display: 'flex', gap: '4px' }}>
+                            <button
+                              onClick={() => openFormModal(null, cat.name)}
+                              style={{ background: 'rgba(0, 245, 212, 0.12)', border: '1px solid rgba(0, 245, 212, 0.25)', color: '#00f5d4', cursor: 'pointer', fontSize: '9px', padding: '2px 6px', borderRadius: '4px', fontFamily: 'Rajdhani, sans-serif' }}
+                            >
+                              + Add Tech
+                            </button>
+                            <button
+                              onClick={() => openCatModal(cat)}
+                              style={{ background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)', color: '#fff', cursor: 'pointer', fontSize: '9px', padding: '2px 6px', borderRadius: '4px', fontFamily: 'Rajdhani, sans-serif' }}
+                            >
+                              Edit Column
+                            </button>
+                            <button
+                              onClick={() => setDeletingCatName(cat.name)}
+                              style={{ background: 'rgba(239, 68, 68, 0.12)', border: '1px solid rgba(239, 68, 68, 0.25)', color: '#ef4444', cursor: 'pointer', fontSize: '9px', padding: '2px 5px', borderRadius: '4px', fontFamily: 'Rajdhani, sans-serif' }}
+                            >
+                              🗑️
+                            </button>
+                          </div>
+                        )}
+                      </div>
 
-                    {skills.filter(s => s.cat === cat).map((s, i) => (
-                      <SkillBar
-                        key={s.name}
-                        {...s}
-                        delay={0.2 + ci * 0.1 + i * 0.08}
-                        isAdmin={isAdmin}
-                        onEdit={() => openFormModal(s)}
-                        onDelete={() => s._id && handleDelete(s._id)}
-                      />
-                    ))}
-                  </>
-                )}
+                      {cat.shortDescription && (
+                        <p className={styles.categoryDesc}>{cat.shortDescription}</p>
+                      )}
 
-              </div>
-            );
-          })}
+                      <div className={styles.separator} />
+
+                      <div className={styles.techList}>
+                        {skills
+                          .filter(s => (s.category || s.cat) === cat.name && (isAdmin || s.isActive))
+                          .map((s) => (
+                            <TechRow
+                              key={s._id || s.name}
+                              {...s}
+                              color={catColor}
+                              isAdmin={isAdmin}
+                              onEdit={() => openFormModal(s)}
+                              onDelete={() => s._id && handleDeleteSkill(s._id)}
+                            />
+                          ))
+                        }
+                        {skills.filter(s => (s.category || s.cat) === cat.name && (isAdmin || s.isActive)).length === 0 && (
+                          <span style={{ fontSize: '13px', color: 'var(--text-secondary)', fontStyle: 'italic', padding: '10px 0' }}>
+                            No active technologies listed.
+                          </span>
+                        )}
+                      </div>
+                    </>
+                  )}
+
+                </div>
+              );
+            })}
         </div>
       </div>
 
-      {/* Category Creation Modal */}
+      {/* Category Creation / Editing Modal */}
       {showCatModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0, 0, 0, 0.75)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10000, padding: '24px' }}>
-          <div style={{ background: '#0a0f1d', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', maxWidth: '400px', width: '100%', padding: '28px', color: '#f3f4f6' }}>
+          <div style={{ background: '#0a0f1d', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', maxWidth: '420px', width: '100%', padding: '28px', color: '#f3f4f6', maxHeight: 'calc(100vh - 48px)', overflowY: 'auto' }}>
             <h3 style={{ fontSize: '20px', margin: '0 0 20px', color: '#00f5d4', fontFamily: 'Rajdhani, sans-serif', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              Create New Category Card
+              {editingCat?._id ? 'Edit Category Column' : 'Create Category Column'}
             </h3>
-            <form onSubmit={(e) => {
-              e.preventDefault();
-              if (formCatName.trim()) {
-                const trimmed = formCatName.trim();
-                setCats(prev => {
-                  if (prev.includes(trimmed)) return prev;
-                  return [...prev, trimmed];
-                });
-                setShowCatModal(false);
-                setFormCatName('');
-              }
-            }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '24px' }}>
-                <label style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', fontFamily: 'monospace' }}>Category Name</label>
-                <input
-                  type="text"
-                  required
-                  style={{ padding: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#fff', fontSize: '14px', outline: 'none' }}
-                  value={formCatName}
-                  onChange={e => setFormCatName(e.target.value)}
-                  placeholder="e.g. DevOps & Cloud"
-                />
+            <form onSubmit={handleCatModalSubmit}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <label style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', fontFamily: 'monospace' }}>Category Name</label>
+                  <input
+                    type="text"
+                    required
+                    style={{ padding: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#fff', fontSize: '14px', outline: 'none' }}
+                    value={formCatName}
+                    onChange={e => setFormCatName(e.target.value)}
+                    placeholder="e.g. Frontend"
+                  />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <label style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', fontFamily: 'monospace' }}>Short Description</label>
+                  <textarea
+                    style={{ padding: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#fff', fontSize: '14px', outline: 'none', resize: 'vertical', minHeight: '80px' }}
+                    value={formCatDesc}
+                    onChange={e => setFormCatDesc(e.target.value)}
+                    placeholder="e.g. Interfaces, frameworks & client-side UI technologies."
+                  />
+                </div>
+
+                <div style={{ display: 'flex', gap: '16px' }}>
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <label style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', fontFamily: 'monospace' }}>Accent Color</label>
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                      <input
+                        type="color"
+                        style={{ border: 'none', background: 'none', width: '38px', height: '38px', padding: '0', cursor: 'pointer' }}
+                        value={formCatColor}
+                        onChange={e => setFormCatColor(e.target.value)}
+                      />
+                      <input
+                        type="text"
+                        required
+                        style={{ flex: 1, padding: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#fff', fontSize: '13px', outline: 'none' }}
+                        value={formCatColor}
+                        onChange={e => setFormCatColor(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '16px' }}>
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <label style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', fontFamily: 'monospace' }}>Display Order</label>
+                    <input
+                      type="number"
+                      required
+                      value={formCatOrder}
+                      onChange={e => setFormCatOrder(Number(e.target.value))}
+                      style={{ padding: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#fff', fontSize: '14px', outline: 'none' }}
+                    />
+                  </div>
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px', justifyContent: 'center' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', color: '#f3f4f6', marginTop: '16px' }}>
+                      <input
+                        type="checkbox"
+                        checked={formCatActive}
+                        onChange={e => setFormCatActive(e.target.checked)}
+                        style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                      />
+                      Active (Visible)
+                    </label>
+                  </div>
+                </div>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '28px' }}>
                 <button
                   type="button"
                   onClick={() => setShowCatModal(false)}
@@ -405,7 +501,7 @@ export default function Skills({ isAdmin = false }: { isAdmin?: boolean }) {
                   type="submit"
                   style={{ padding: '8px 20px', background: '#00f5d4', border: 'none', color: '#050810', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}
                 >
-                  Create Card
+                  Save Column
                 </button>
               </div>
             </form>
@@ -413,24 +509,24 @@ export default function Skills({ isAdmin = false }: { isAdmin?: boolean }) {
         </div>
       )}
 
-      {/* Inline Skills Editor Modal */}
+      {/* Technology Editor Modal */}
       {showModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0, 0, 0, 0.75)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyItems: 'center', justifyContent: 'center', zIndex: 10000, padding: '24px' }}>
-          <div style={{ background: '#0a0f1d', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', maxWidth: '420px', width: '100%', padding: '28px', color: '#f3f4f6', fontFamily: 'sans-serif' }}>
+          <div style={{ background: '#0a0f1d', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', maxWidth: '440px', width: '100%', padding: '28px', color: '#f3f4f6', fontFamily: 'sans-serif', maxHeight: 'calc(100vh - 48px)', overflowY: 'auto' }}>
             <h3 style={{ fontSize: '20px', margin: '0 0 20px', color: '#00f5d4', fontFamily: 'Rajdhani, sans-serif', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              {editingSkill?._id ? 'Edit Skill parameters' : 'Register New Skill'}
+              {editingSkill?._id ? 'Edit Technology' : 'Add New Technology'}
             </h3>
             <form onSubmit={handleModalSubmit}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  <label style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', fontFamily: 'monospace' }}>Skill Name</label>
+                  <label style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', fontFamily: 'monospace' }}>Technology Name</label>
                   <input
                     type="text"
                     required
                     style={{ padding: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#fff', fontSize: '14px', outline: 'none' }}
                     value={formName}
                     onChange={e => setFormName(e.target.value)}
-                    placeholder="e.g. Next.js"
+                    placeholder="e.g. React JS"
                   />
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -441,44 +537,47 @@ export default function Skills({ isAdmin = false }: { isAdmin?: boolean }) {
                     value={formCat}
                     onChange={e => setFormCat(e.target.value)}
                   >
-                    {cats.map(c => (
-                      <option key={c} value={c}>{c}</option>
+                    {categories.map(c => (
+                      <option key={c.name} value={c.name}>{c.name}</option>
                     ))}
                   </select>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  <label style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', fontFamily: 'monospace' }}>
-                    <span>Proficiency level</span>
-                    <span style={{ color: '#00f5d4' }}>{formLevel}%</span>
-                  </label>
+                  <label style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', fontFamily: 'monospace' }}>Short Description (Optional)</label>
                   <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    style={{ cursor: 'pointer', margin: '8px 0' }}
-                    value={formLevel}
-                    onChange={e => setFormLevel(Number(e.target.value))}
+                    type="text"
+                    style={{ padding: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#fff', fontSize: '14px', outline: 'none' }}
+                    value={formDesc}
+                    onChange={e => setFormDesc(e.target.value)}
+                    placeholder="e.g. UI development framework"
                   />
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  <label style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', fontFamily: 'monospace' }}>Accent Color</label>
-                  <div style={{ display: 'flex', gap: '10px' }}>
+
+                <div style={{ display: 'flex', gap: '16px' }}>
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <label style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', fontFamily: 'monospace' }}>Display Order</label>
                     <input
-                      type="color"
-                      style={{ border: 'none', background: 'none', width: '38px', height: '38px', padding: '0', cursor: 'pointer' }}
-                      value={formColor}
-                      onChange={e => setFormColor(e.target.value)}
-                    />
-                    <input
-                      type="text"
+                      type="number"
                       required
-                      style={{ flex: 1, padding: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#fff', fontSize: '14px', outline: 'none' }}
-                      value={formColor}
-                      onChange={e => setFormColor(e.target.value)}
+                      value={formOrder}
+                      onChange={e => setFormOrder(Number(e.target.value))}
+                      style={{ padding: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#fff', fontSize: '14px', outline: 'none' }}
                     />
+                  </div>
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px', justifyContent: 'center' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', color: '#f3f4f6', marginTop: '16px' }}>
+                      <input
+                        type="checkbox"
+                        checked={formActive}
+                        onChange={e => setFormActive(e.target.checked)}
+                        style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                      />
+                      Active (Visible)
+                    </label>
                   </div>
                 </div>
               </div>
+
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '28px' }}>
                 <button
                   type="button"
@@ -491,7 +590,7 @@ export default function Skills({ isAdmin = false }: { isAdmin?: boolean }) {
                   type="submit"
                   style={{ padding: '8px 20px', background: '#00f5d4', border: 'none', color: '#050810', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}
                 >
-                  Save Skill
+                  Save Technology
                 </button>
               </div>
             </form>
