@@ -250,10 +250,39 @@ export default function BlogArticle({ isAdmin = false }: { isAdmin?: boolean }) 
 
           {items.map((item, index) => {
             return (
-              <div 
+              <a 
                 key={item._id || index}
+                href={item.url}
+                target="_blank"
+                rel="noopener noreferrer"
                 className={styles.card}
               >
+                {isAdmin && (
+                  <div className={styles.adminOverlay}>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        openFormModal(item);
+                      }}
+                      className={styles.adminBtnEdit}
+                    >
+                      ✏️ Edit
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (item._id) handleDelete(item._id);
+                      }}
+                      className={styles.adminBtnDelete}
+                    >
+                      🗑️ Delete
+                    </button>
+                  </div>
+                )}
                 <div className={styles.imageContainer}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={item.image} alt={item.title} className={styles.image} />
@@ -265,35 +294,8 @@ export default function BlogArticle({ isAdmin = false }: { isAdmin?: boolean }) 
                 <div className={styles.content}>
                   <h3 className={styles.title}>{item.title}</h3>
                   <p className={styles.desc}>{item.description}</p>
-                  
-                  <div className={styles.footer}>
-                    <a href={item.url} target="_blank" rel="noopener noreferrer" className={styles.linkBtn}>
-                      {item.type === 'blog' ? 'Read Blog' : 'Read Article'}
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <line x1="7" y1="17" x2="17" y2="7"></line>
-                        <polyline points="7 7 17 7 17 17"></polyline>
-                      </svg>
-                    </a>
-
-                    {isAdmin && (
-                      <div className={styles.adminControls}>
-                        <button
-                          onClick={() => openFormModal(item)}
-                          style={{ background: 'var(--border-subtle)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', cursor: 'pointer', fontSize: '10px', padding: '3px 8px', borderRadius: '4px', fontWeight: '600' }}
-                        >
-                          ✏️ Edit
-                        </button>
-                        <button
-                          onClick={() => item._id && handleDelete(item._id)}
-                          style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', color: '#ef4444', cursor: 'pointer', fontSize: '10px', padding: '3px 8px', borderRadius: '4px', fontWeight: '600' }}
-                        >
-                          🗑️ Delete
-                        </button>
-                      </div>
-                    )}
-                  </div>
                 </div>
-              </div>
+              </a>
             );
           })}
               </div>
