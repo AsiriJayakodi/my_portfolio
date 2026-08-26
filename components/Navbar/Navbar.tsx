@@ -54,8 +54,7 @@ export default function Navbar() {
     if (savedTheme) {
       setTheme(savedTheme);
     } else {
-      const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
-      setTheme(prefersLight ? 'light' : 'dark');
+      setTheme('dark');
     }
   }, []);
   /* eslint-enable react-hooks/set-state-in-effect */
