@@ -186,10 +186,11 @@ export default function BlogArticle({ isAdmin = false }: { isAdmin?: boolean }) 
     if (!confirm('Are you sure you want to delete this blog/article?')) return;
     try {
       const res = await fetch(`/api/blogs-articles/${id}`, { method: 'DELETE' });
-      if (res.ok) {
+      if (res.ok || res.status === 404) {
         loadItems();
       } else {
-        alert('Failed to delete content');
+        const data = await res.json().catch(() => ({}));
+        alert(data.error || 'Failed to delete content');
       }
     } catch {
       alert('An error occurred during deletion');
@@ -224,6 +225,16 @@ export default function BlogArticle({ isAdmin = false }: { isAdmin?: boolean }) 
         {loading ? (
           <div style={{ padding: '60px 0', textAlign: 'center', fontFamily: 'monospace', color: 'var(--text-secondary)' }}>
             Loading items...
+          </div>
+        ) : items.length === 0 ? (
+          <div style={{ padding: '48px 24px', textAlign: 'center', background: 'var(--bg-secondary)', border: '1px dashed var(--border-color)', borderRadius: '16px', color: 'var(--text-secondary)' }}>
+            <p style={{ margin: '0 0 16px 0', fontSize: '14px', fontFamily: 'var(--font-sans)' }}>No blogs or articles published yet.</p>
+            <button
+              onClick={() => openFormModal(null)}
+              style={{ background: 'var(--btn-primary-bg)', border: '1px solid var(--border-strong)', color: 'var(--btn-primary-text)', cursor: 'pointer', fontSize: '13px', padding: '8px 20px', borderRadius: '6px', fontFamily: 'var(--font-sans)', fontWeight: '600' }}
+            >
+              ➕ Add Your First Blog or Article
+            </button>
           </div>
         ) : (
           <div className={!isAdmin ? styles.sliderWrapper : ''}>

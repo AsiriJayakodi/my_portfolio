@@ -25,17 +25,11 @@ export async function GET() {
     try {
       await connectToDatabase();
     } catch (dbError) {
-      console.warn("MongoDB connection failed in blogs/articles fetch. Returning default fallbacks. Error:", dbError instanceof Error ? dbError.message : dbError);
-      return NextResponse.json(DEFAULT_ITEMS);
+      console.warn("MongoDB connection failed in blogs/articles fetch. Error:", dbError instanceof Error ? dbError.message : dbError);
+      return NextResponse.json([]);
     }
 
-    let items = await BlogArticle.find({}).sort({ createdAt: -1 });
-    if (items.length === 0) {
-      console.log("BlogArticle collection is empty. Seeding defaults...");
-      await BlogArticle.insertMany(DEFAULT_ITEMS);
-      items = await BlogArticle.find({}).sort({ createdAt: -1 });
-    }
-
+    const items = await BlogArticle.find({}).sort({ createdAt: -1 });
     return NextResponse.json(items);
   } catch (error) {
     console.error("Failed to fetch blogs/articles:", error);

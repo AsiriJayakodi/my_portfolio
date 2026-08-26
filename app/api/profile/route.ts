@@ -5,28 +5,29 @@ import { checkAdminSession } from '@/lib/auth';
 
 const DEFAULT_PROFILE = {
   name: "Asiri Indrajith Jayakodi",
-  titles: ["BSc (Hons) in IT Undergraduate", "Full Stack Developer", "IoT Enthusiast"],
-  bio: "BSc (Hons) in IT Undergraduate at University of Moratuwa. Specializing in building high-performance scalable web systems and exploring embedded systems engineering.",
-  intro: "I design and build dynamic digital solutions, bridging code and physical hardware.",
+  titles: ["IT Undergraduate", "Full Stack Developer", "Cloud & Serverless Enthusiast", "IoT Developer"],
+  bio: "Third-year IT Undergraduate at the University of Moratuwa (CGPA 3.58/4.0) with a strong foundation in computer science and full-stack software development. Skilled in modern web frameworks like Next.js and React, alongside serverless cloud architectures using AWS (Cognito, Lambda, AppSync, DynamoDB). Hands-on experience delivering enterprise-grade software solutions, and passionate about building scalable, secure applications while continuously expanding technical capabilities within the industry.",
+  intro: "Third-year IT Undergraduate at University of Moratuwa specializing in full-stack software engineering and serverless cloud architectures.",
   email: "asiriindrajithjayakodi@gmail.com",
-  phone: "+94 77 123 4567",
-  location: "Colombo, Sri Lanka",
+  phone: "+94 78 438 3898",
+  location: "Kurunegala / Colombo, Sri Lanka",
   github: "https://github.com/AsiriJayakodi",
-  linkedin: "https://linkedin.com/in/asiri-jayakodi",
+  linkedin: "https://linkedin.com/in/asiri-indrajith",
   resumeUrl: "/cv.pdf",
   avatarUrl: "https://avatars.githubusercontent.com/u/104332924?v=4",
   education: [
-    { title: "BSc (Hons) in Information Technology", subtitle: "University of Moratuwa • CGPA: 3.56/4.0" },
-    { title: "G.C.E. A/L Examination (2022/23)", subtitle: "ICT (A), Combined Maths (B), Physics (B)" }
+    { title: "BSc (Hons) in Information Technology", subtitle: "University of Moratuwa • CGPA: 3.58/4.0 (2023 - Present)" },
+    { title: "G.C.E. Advanced Level (2022/23)", subtitle: "Maliyadeva College -- Kurunegala • ICT (A), Combined Maths (B), Physics (B)" },
+    { title: "G.C.E. Ordinary Level (2019)", subtitle: "9 A's" }
   ],
   certifications: [
-    "Web Dev (CODL, Univ. of Moratuwa)",
-    "Computer App Assistant (YES Institute)",
-    "Web Design (Sololearn)"
+    "Certificate Course in Web Development (CODL, Univ. of Moratuwa)",
+    "Certificate Course in Computer Application Assistant (YES Computer Institute)",
+    "Certificate Course in Web Design for Beginners (Sololearn)"
   ],
-  cgpaVal: "3.56 CGPA",
+  cgpaVal: "3.58 CGPA",
   cgpaLabel: "University of Moratuwa",
-  softSkills: ["Leadership", "Problem-Solving", "Time Management", "Presentation", "Critical Thinking"]
+  softSkills: ["Leadership", "Problem-Solving", "Time Management", "Presentation Skills", "Critical Thinking"]
 };
 
 export async function GET() {

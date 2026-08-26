@@ -5,9 +5,9 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 
 const ROLES = [
   'IT Undergraduate',
-  'Frontend Developer',
-  'Backend Developer',
-  'IoT Enthusiast',
+  'Full Stack Developer',
+  'Cloud & Serverless',
+  'IoT Developer',
 ];
 
 function useTypewriter(items: string[], speed = 80) {
@@ -53,6 +53,7 @@ interface ProfileData {
   linkedin: string;
   resumeUrl: string;
   avatarUrl?: string;
+  cgpaVal?: string;
 }
 
 export default function Hero({ isAdmin = false }: { isAdmin?: boolean }) {
@@ -253,7 +254,7 @@ export default function Hero({ isAdmin = false }: { isAdmin?: boolean }) {
             {/* Status pill */}
             <div className={styles.statusPill}>
               <span className={styles.statusDot} />
-              <span className={styles.statusText}>Undergrad at Uni of Moratuwa • CGPA 3.56</span>
+              <span className={styles.statusText}>{profile?.cgpaVal ? `Undergrad at Uni of Moratuwa • CGPA ${profile.cgpaVal.replace(' CGPA', '')}` : 'Undergrad at Uni of Moratuwa • CGPA 3.58'}</span>
             </div>
 
             {/* Name stacked in three rows */}
@@ -291,7 +292,7 @@ export default function Hero({ isAdmin = false }: { isAdmin?: boolean }) {
             </div>
 
             <p className={styles.description}>
-              {profile?.intro || "I have a strong academic foundation in IT. My studies have equipped me with comprehensive skills applicable to the IT industry, including expertise in web development and modern technologies."}
+              {profile?.intro || "Third-year IT Undergraduate at University of Moratuwa specializing in full-stack software engineering and serverless cloud architectures."}
             </p>
 
             {/* CTA Buttons */}

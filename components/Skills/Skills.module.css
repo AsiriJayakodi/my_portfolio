@@ -162,7 +162,7 @@
 .techRow {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   padding: 12px 0;
   border-bottom: 1px solid var(--border-subtle);
   transition: all 0.25s ease;
@@ -178,7 +178,11 @@
 .techRowInfo {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
   gap: 3px;
+  flex: 1;
+  min-width: 0;
   transition: transform 0.25s ease;
 }
 
@@ -187,6 +191,7 @@
   font-size: 14px;
   font-weight: 500;
   color: var(--text-primary);
+  text-align: left;
   transition: color 0.25s ease;
 }
 
@@ -194,27 +199,31 @@
   font-family: var(--font-sans);
   font-size: 12px;
   color: var(--text-muted);
+  text-align: left;
+  line-height: 1.4;
   transition: color 0.25s ease;
 }
 
 .techArrow {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%) translateX(-12px);
   font-family: var(--font-sans);
   font-size: 14px;
   color: var(--text-primary);
   opacity: 0;
-  transform: translateX(-8px);
   transition: opacity 0.25s ease, transform 0.25s ease;
-  display: inline-flex;
-  align-items: center;
+  pointer-events: none;
 }
 
 .techRow:hover .techRowInfo {
-  transform: translateX(8px);
+  transform: translateX(18px);
 }
 
 .techRow:hover .techArrow {
   opacity: 1;
-  transform: translateX(0);
+  transform: translateY(-50%) translateX(0);
 }
 
 .adminControls {

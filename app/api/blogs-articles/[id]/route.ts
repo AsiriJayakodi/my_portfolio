@@ -45,10 +45,11 @@ export async function DELETE(
 
     const { id } = await params;
     await connectToDatabase();
-    const deletedItem = await BlogArticle.findByIdAndDelete(id);
-
-    if (!deletedItem) {
-      return NextResponse.json({ error: 'Item not found' }, { status: 404 });
+    
+    try {
+      await BlogArticle.findByIdAndDelete(id);
+    } catch (err) {
+      console.warn('Error or invalid ID in BlogArticle delete:', err);
     }
 
     return NextResponse.json({ success: true, message: 'Item deleted successfully' });

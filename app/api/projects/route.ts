@@ -5,38 +5,38 @@ import { checkAdminSession } from '@/lib/auth';
 
 const DEFAULT_PROJECTS = [
   {
-    title: "IoT Smart Greenhouse System",
-    description: "An automated greenhouse monitoring system that tracks temperature, humidity, soil moisture, and light levels in real-time, utilizing ESP32, MQTT, and a custom React dashboard.",
-    image: "/projects/greenhouse.jpg",
-    tags: ["IoT", "React", "Node.js", "MQTT"],
-    githubUrl: "https://github.com/AsiriJayakodi/smart-greenhouse",
+    title: "Enterprise HR Management System (HRMS) -- Enlear",
+    description: "Cloud-native, full-stack HR Management System supporting Admin, Manager, and Employee workflows with automated onboarding and serverless authentication using AWS Cognito, Lambda, AppSync GraphQL, DynamoDB, SES/SQS, and Next.js (App Router).",
+    image: "/projects/hrms.jpg",
+    tags: ["Full Stack", "Next.js", "TypeScript", "AWS Cognito", "AWS Lambda", "AppSync", "DynamoDB"],
+    githubUrl: "https://github.com/AsiriJayakodi",
     liveUrl: "",
     color: "#00f5d4"
   },
   {
-    title: "Decentralized E-Commerce Platform",
-    description: "A modern decentralized shopping portal with automated escrow payments, product listing verification, and Web3/Solidity smart contracts.",
-    image: "/projects/ecommerce.jpg",
-    tags: ["Full Stack", "Solidity", "React.js", "Web3"],
-    githubUrl: "https://github.com/AsiriJayakodi/decentralized-shop",
-    liveUrl: "",
+    title: "Dynamic Developer Portfolio & CMS",
+    description: "Full-stack server-rendered portfolio with secure admin dashboard enabling dynamic content management, real-time CV uploads, MongoDB schemas, Nodemailer SMTP API, and kinetic Lenis animations.",
+    image: "/projects/portfolio.jpg",
+    tags: ["Full Stack", "Next.js", "React 19", "TypeScript", "MongoDB", "Mongoose", "Node.js"],
+    githubUrl: "https://github.com/AsiriJayakodi",
+    liveUrl: "https://asiriindrajith.vercel.app/",
     color: "#6366f1"
   },
   {
-    title: "AI-Powered Code Assistant Extension",
-    description: "A VS Code extension that uses local machine learning models to suggest inline code snippets and explain code blocks in natural language.",
-    image: "/projects/ai-assistant.jpg",
-    tags: ["AI/ML", "Python", "VS Code", "FastAPI"],
-    githubUrl: "https://github.com/AsiriJayakodi/code-ai-extension",
+    title: "Full-Stack E-Commerce Platform -- Slice of Heaven",
+    description: "Full-stack e-commerce platform for a cake shop, featuring a customer-facing storefront and a secure admin panel to manage products, orders, and offers with Cloudinary media delivery.",
+    image: "/projects/ecommerce.jpg",
+    tags: ["Full Stack", "MongoDB", "Express.js", "React.js", "Node.js", "Vite"],
+    githubUrl: "https://github.com/AsiriJayakodi",
     liveUrl: "",
     color: "#f97316"
   },
   {
-    title: "TaskFlow - Realtime Workspace",
-    description: "A collaborative project management workspace featuring live kanban boards, real-time cursor tracking, and detailed task dependency mapping using Socket.io.",
-    image: "/projects/taskflow.jpg",
-    tags: ["React", "Socket.io", "Node.js", "Redis"],
-    githubUrl: "https://github.com/AsiriJayakodi/taskflow",
+    title: "Microcontroller-Based Application Development -- Project LoRa 10",
+    description: "ESP32-based LoRa communication system with LoRa, GPS, and Compass modules and OLED display, using FreeRTOS architecture for efficient task management and reliable long-range IoT data transmission.",
+    image: "/projects/lora.jpg",
+    tags: ["IoT", "ESP32", "LoRa", "FreeRTOS", "C/C++", "Hardware"],
+    githubUrl: "https://github.com/AsiriJayakodi",
     liveUrl: "",
     color: "#a855f7"
   }

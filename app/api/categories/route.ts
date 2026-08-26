@@ -4,9 +4,12 @@ import Category from '@/models/Category';
 import { checkAdminSession } from '@/lib/auth';
 
 const DEFAULT_CATEGORIES = [
-  { name: 'Frontend', shortDescription: 'Interfaces, frameworks & client-side UI technologies.', accentColor: '#00f5d4', displayOrder: 1, isActive: true },
-  { name: 'Backend', shortDescription: 'Server-side programming, logic & API technologies.', accentColor: '#6366f1', displayOrder: 2, isActive: true },
-  { name: 'Database & Tools', shortDescription: 'Data storage, DevOps, design and development tools.', accentColor: '#f97316', displayOrder: 3, isActive: true },
+  { name: 'Frontend Development', shortDescription: 'Interfaces, frameworks & client-side UI technologies.', accentColor: '#00f5d4', displayOrder: 1, isActive: true },
+  { name: 'Backend Development', shortDescription: 'Server-side programming, logic & API architectures.', accentColor: '#6366f1', displayOrder: 2, isActive: true },
+  { name: 'Cloud & Serverless', shortDescription: 'Cloud architectures, serverless computing & AWS services.', accentColor: '#a855f7', displayOrder: 3, isActive: true },
+  { name: 'Databases', shortDescription: 'Relational and NoSQL database management systems.', accentColor: '#ec4899', displayOrder: 4, isActive: true },
+  { name: 'Programming', shortDescription: 'Core programming languages and computational problem solving.', accentColor: '#3b82f6', displayOrder: 5, isActive: true },
+  { name: 'Testing & Tools', shortDescription: 'Testing frameworks, version control and developer tooling.', accentColor: '#f97316', displayOrder: 6, isActive: true },
 ];
 
 export async function GET() {
