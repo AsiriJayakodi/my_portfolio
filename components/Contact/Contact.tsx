@@ -195,7 +195,7 @@ export default function Contact() {
                   id="name"
                   name="name"
                   className={styles.inputField}
-                  placeholder="John Doe"
+                  placeholder="Asiri Indrajith"
                   value={formData.name}
                   onChange={handleChange}
                   required
@@ -209,7 +209,7 @@ export default function Contact() {
                   id="email"
                   name="email"
                   className={styles.inputField}
-                  placeholder="john@example.com"
+                  placeholder="asirij@email.com"
                   value={formData.email}
                   onChange={handleChange}
                   required
