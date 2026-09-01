@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import fs from 'node:fs';
 import path from 'node:path';
+import mongoose from 'mongoose';
 import connectToDatabase from '@/lib/db';
 import CV from '@/models/CV';
 import { checkAdminSession } from '@/lib/auth';
@@ -12,11 +13,16 @@ export async function PUT(
   try {
     const isAuthorized = await checkAdminSession();
     if (!isAuthorized) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized. Please re-login.' }, { status: 401 });
     }
 
     const resolvedParams = await Promise.resolve(params);
-    const { id } = resolvedParams;
+    const id = resolvedParams?.id;
+
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json({ error: 'Invalid CV ID' }, { status: 400 });
+    }
+
     await connectToDatabase();
 
     // 1. Deactivate all CVs
@@ -42,24 +48,32 @@ export async function DELETE(
   try {
     const isAuthorized = await checkAdminSession();
     if (!isAuthorized) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized. Please log in again.' }, { status: 401 });
     }
 
     const resolvedParams = await Promise.resolve(params);
-    const { id } = resolvedParams;
+    const id = resolvedParams?.id;
+
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json({ error: 'Invalid CV ID' }, { status: 400 });
+    }
+
     await connectToDatabase();
 
     const cvRecord = await CV.findById(id);
     if (!cvRecord) {
-      return NextResponse.json({ error: 'CV record not found' }, { status: 404 });
+      // If already not found, treat deletion as success so UI doesn't get stuck
+      return NextResponse.json({ success: true, message: 'CV already removed' });
     }
 
     // 1. Try to delete actual PDF file from local storage disk (graceful on read-only serverless)
     try {
-      const storageDir = path.join(process.cwd(), 'storage', 'cv');
-      const filePath = path.join(storageDir, cvRecord.storedFileName);
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
+      if (cvRecord.storedFileName) {
+        const storageDir = path.join(process.cwd(), 'storage', 'cv');
+        const filePath = path.join(storageDir, cvRecord.storedFileName);
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+        }
       }
     } catch {
       // Ignore disk delete errors in serverless

@@ -281,7 +281,8 @@ export default function AdminPage() {
       if (res.ok) {
         fetchCVList();
       } else {
-        alert('Failed to activate CV');
+        const errorData = await res.json().catch(() => null);
+        alert(errorData?.error || `Failed to activate CV (Status ${res.status})`);
       }
     } catch {
       alert('An error occurred during activation');
@@ -297,7 +298,8 @@ export default function AdminPage() {
       if (res.ok) {
         fetchCVList();
       } else {
-        alert('Failed to delete CV');
+        const errorData = await res.json().catch(() => null);
+        alert(errorData?.error || `Failed to delete CV (Status ${res.status})`);
       }
     } catch {
       alert('An error occurred during deletion');
