@@ -13,8 +13,8 @@ export async function GET() {
     }
 
     await connectToDatabase();
-    // Retrieve all CV history items sorted by version descending
-    const cvList = await CV.find({}).sort({ version: -1 });
+    // Retrieve all CV history items sorted by version descending (excluding heavy file binary)
+    const cvList = await CV.find({}).select('-fileData').sort({ version: -1 });
     return NextResponse.json(cvList);
   } catch (error) {
     console.error('Failed to list CV versions:', error);
@@ -50,7 +50,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'CV file is too large. Maximum allowed size is 5 MB.' }, { status: 400 });
     }
 
-    // Read bytes
+    // Read bytes into Buffer
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
@@ -59,14 +59,17 @@ export async function POST(request: Request) {
     const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
     const storedFileName = `cv-${timestamp}-${safeName}`;
 
-    // 4. Save to secure disk folder (outside public)
-    const storageDir = path.join(process.cwd(), 'storage', 'cv');
-    if (!fs.existsSync(storageDir)) {
-      fs.mkdirSync(storageDir, { recursive: true });
+    // 4. Optionally write to local disk cache (fails gracefully in serverless/Vercel)
+    try {
+      const storageDir = path.join(process.cwd(), 'storage', 'cv');
+      if (!fs.existsSync(storageDir)) {
+        fs.mkdirSync(storageDir, { recursive: true });
+      }
+      const filePath = path.join(storageDir, storedFileName);
+      await fs.promises.writeFile(filePath, buffer);
+    } catch {
+      // Ephemeral / Read-only environments like Vercel Lambda
     }
-
-    const filePath = path.join(storageDir, storedFileName);
-    await fs.promises.writeFile(filePath, buffer);
 
     // 5. Version number increment
     const count = await CV.countDocuments({});
@@ -75,17 +78,22 @@ export async function POST(request: Request) {
     // 6. Deactivate existing active CVs
     await CV.updateMany({ isActive: true }, { isActive: false });
 
-    // 7. Save new CV document in Mongo
+    // 7. Save new CV document directly in Mongo with fileData buffer
     const newCV = await CV.create({
       originalFileName: file.name,
       storedFileName,
-      mimeType: file.type,
+      mimeType: file.type || 'application/pdf',
       fileSize: file.size,
       isActive: true,
-      version: nextVersion
+      version: nextVersion,
+      fileData: buffer
     });
 
-    return NextResponse.json(newCV, { status: 201 });
+    // Strip binary file data before returning JSON
+    const cvResponse = newCV.toObject ? newCV.toObject() : { ...newCV };
+    delete cvResponse.fileData;
+
+    return NextResponse.json(cvResponse, { status: 201 });
   } catch (error) {
     console.error('Failed to upload CV:', error);
     return NextResponse.json({ error: 'Failed to process file upload' }, { status: 500 });

@@ -14,27 +14,38 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'No active CV found' }, { status: 404 });
     }
 
-    const storageDir = path.join(process.cwd(), 'storage', 'cv');
-    const filePath = path.join(storageDir, activeCV.storedFileName);
-
-    if (!fs.existsSync(filePath)) {
-      return NextResponse.json({ error: 'CV file not found on disk' }, { status: 404 });
+    // Check if binary is stored in MongoDB document
+    let fileBuffer: Buffer | null = null;
+    if (activeCV.fileData && Buffer.isBuffer(activeCV.fileData)) {
+      fileBuffer = activeCV.fileData;
+    } else {
+      // Fallback to disk storage for legacy local records
+      try {
+        const storageDir = path.join(process.cwd(), 'storage', 'cv');
+        const filePath = path.join(storageDir, activeCV.storedFileName);
+        if (fs.existsSync(filePath)) {
+          fileBuffer = await fs.promises.readFile(filePath);
+        }
+      } catch {
+        // Disk read error in serverless
+      }
     }
 
-    // Read the PDF file
-    const fileBuffer = await fs.promises.readFile(filePath);
+    if (!fileBuffer) {
+      return NextResponse.json({ error: 'CV file not found' }, { status: 404 });
+    }
 
     // Support inline previews vs downloads
     const { searchParams } = new URL(request.url);
     const preview = searchParams.get('preview') === 'true';
     
     // Sanitize filename for headers
-    const safeName = activeCV.originalFileName.replace(/[^a-zA-Z0-9.-]/g, '_');
+    const safeName = (activeCV.originalFileName || 'CV.pdf').replace(/[^a-zA-Z0-9.-]/g, '_');
     const disposition = preview ? 'inline' : `attachment; filename="${safeName}"`;
 
-    return new Response(fileBuffer, {
+    return new Response(fileBuffer as unknown as BodyInit, {
       headers: {
-        'Content-Type': 'application/pdf',
+        'Content-Type': activeCV.mimeType || 'application/pdf',
         'Content-Disposition': disposition,
       },
     });

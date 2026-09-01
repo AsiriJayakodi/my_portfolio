@@ -8,6 +8,7 @@ export interface ICV extends Document {
   isActive: boolean;
   version: number;
   uploadedAt: Date;
+  fileData?: Buffer;
 }
 
 const CVSchema: Schema = new Schema({
@@ -17,9 +18,15 @@ const CVSchema: Schema = new Schema({
   fileSize: { type: Number, required: true },
   isActive: { type: Boolean, default: false },
   version: { type: Number, required: true },
-  uploadedAt: { type: Date, default: Date.now }
+  uploadedAt: { type: Date, default: Date.now },
+  fileData: { type: Buffer }
 }, {
   timestamps: true
 });
 
-export default mongoose.models.CV || mongoose.model<ICV>('CV', CVSchema);
+if (mongoose.models.CV) {
+  delete mongoose.models.CV;
+}
+
+export default mongoose.model<ICV>('CV', CVSchema);
+

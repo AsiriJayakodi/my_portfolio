@@ -45,31 +45,34 @@ export async function POST(request: Request) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // 4. Save to public/uploads/profile folder
-    const uploadsDir = path.join(process.cwd(), 'public', 'uploads', 'profile');
-    if (!fs.existsSync(uploadsDir)) {
-      fs.mkdirSync(uploadsDir, { recursive: true });
+    // 4. Create base64 Data URL for serverless storage
+    const base64Image = `data:${file.type};base64,${buffer.toString('base64')}`;
+
+    // Optionally attempt local disk cache (ignored on read-only serverless like Vercel)
+    try {
+      const uploadsDir = path.join(process.cwd(), 'public', 'uploads', 'profile');
+      if (!fs.existsSync(uploadsDir)) {
+        fs.mkdirSync(uploadsDir, { recursive: true });
+      }
+      const timestamp = Date.now();
+      const extension = file.type === 'image/png' ? 'png' : file.type === 'image/webp' ? 'webp' : 'jpg';
+      const storedFileName = `profile-photo-${timestamp}.${extension}`;
+      const filePath = path.join(uploadsDir, storedFileName);
+      await fs.promises.writeFile(filePath, buffer);
+    } catch {
+      // Ephemeral disk
     }
 
-    const timestamp = Date.now();
-    const extension = file.type === 'image/png' ? 'png' : file.type === 'image/webp' ? 'webp' : 'jpg';
-    const storedFileName = `profile-photo-${timestamp}.${extension}`;
-    const filePath = path.join(uploadsDir, storedFileName);
-
-    await fs.promises.writeFile(filePath, buffer);
-
-    const publicUrl = `/uploads/profile/${storedFileName}`;
-
-    // 5. Atomically update Profile document in MongoDB
+    // 5. Atomically update Profile document in MongoDB with base64 data URL
     const updatedProfile = await Profile.findOneAndUpdate(
       {},
-      { $set: { avatarUrl: publicUrl } },
+      { $set: { avatarUrl: base64Image } },
       { new: true, upsert: true }
     );
 
     return NextResponse.json({
       success: true,
-      avatarUrl: `${publicUrl}?v=${timestamp}`,
+      avatarUrl: base64Image,
       message: 'Profile photo updated successfully.',
       profile: updatedProfile,
     });

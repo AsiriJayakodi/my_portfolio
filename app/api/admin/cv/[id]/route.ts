@@ -7,7 +7,7 @@ import { checkAdminSession } from '@/lib/auth';
 
 export async function PUT(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
     const isAuthorized = await checkAdminSession();
@@ -15,14 +15,15 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id } = await params;
+    const resolvedParams = await Promise.resolve(params);
+    const { id } = resolvedParams;
     await connectToDatabase();
 
     // 1. Deactivate all CVs
     await CV.updateMany({ isActive: true }, { isActive: false });
 
     // 2. Activate this specific CV
-    const updatedCV = await CV.findByIdAndUpdate(id, { isActive: true }, { new: true });
+    const updatedCV = await CV.findByIdAndUpdate(id, { isActive: true }, { new: true }).select('-fileData');
     if (!updatedCV) {
       return NextResponse.json({ error: 'CV record not found' }, { status: 404 });
     }
@@ -36,7 +37,7 @@ export async function PUT(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
     const isAuthorized = await checkAdminSession();
@@ -44,7 +45,8 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id } = await params;
+    const resolvedParams = await Promise.resolve(params);
+    const { id } = resolvedParams;
     await connectToDatabase();
 
     const cvRecord = await CV.findById(id);
@@ -52,11 +54,15 @@ export async function DELETE(
       return NextResponse.json({ error: 'CV record not found' }, { status: 404 });
     }
 
-    // 1. Delete actual PDF file from local storage disk
-    const storageDir = path.join(process.cwd(), 'storage', 'cv');
-    const filePath = path.join(storageDir, cvRecord.storedFileName);
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
+    // 1. Try to delete actual PDF file from local storage disk (graceful on read-only serverless)
+    try {
+      const storageDir = path.join(process.cwd(), 'storage', 'cv');
+      const filePath = path.join(storageDir, cvRecord.storedFileName);
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+    } catch {
+      // Ignore disk delete errors in serverless
     }
 
     // 2. Delete CV database entry
