@@ -2,6 +2,9 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import styles from './Navbar.module.css';
+import { fetchProfileData, clearProfileCache } from '@/lib/profileClient';
+
+const DEFAULT_AVATAR = "/profile.webp";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -9,18 +12,21 @@ export default function Navbar() {
   const [mounted, setMounted] = useState(false);
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [name, setName] = useState('Asiri Indrajith');
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string>(DEFAULT_AVATAR);
   const [avatarError, setAvatarError] = useState(false);
 
-  const loadProfile = async () => {
+  const loadProfile = async (force = false) => {
     try {
-      const res = await fetch('/api/profile');
-      if (res.ok) {
-        const data = await res.json();
+      const data = await fetchProfileData(force);
+      if (data) {
         if (data.name) setName(data.name);
         if (data.avatarUrl) {
-          setAvatarUrl(data.avatarUrl);
+          const finalUrl = data.avatarUrl.includes('avatars.githubusercontent.com') ? DEFAULT_AVATAR : data.avatarUrl;
+          setAvatarUrl(finalUrl);
           setAvatarError(false);
+          try {
+            localStorage.setItem('portfolio_avatar_url', finalUrl);
+          } catch {}
         }
       }
     } catch {
@@ -29,15 +35,27 @@ export default function Navbar() {
   };
 
   useEffect(() => {
+    try {
+      const cached = localStorage.getItem('portfolio_avatar_url');
+      if (cached && !cached.includes('avatars.githubusercontent.com')) {
+        setAvatarUrl(cached);
+      }
+    } catch {}
+
     loadProfile();
 
     const handleProfileUpdate = (e: Event) => {
       const customEvent = e as CustomEvent<string>;
       if (customEvent.detail) {
-        setAvatarUrl(customEvent.detail);
+        const finalUrl = customEvent.detail.includes('avatars.githubusercontent.com') ? DEFAULT_AVATAR : customEvent.detail;
+        setAvatarUrl(finalUrl);
         setAvatarError(false);
+        try {
+          localStorage.setItem('portfolio_avatar_url', finalUrl);
+        } catch {}
       } else {
-        loadProfile();
+        clearProfileCache();
+        loadProfile(true);
       }
     };
 

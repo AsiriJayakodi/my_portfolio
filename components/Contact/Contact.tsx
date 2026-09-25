@@ -1,6 +1,7 @@
 "use client";
 import styles from './Contact.module.css';
 import { useRef, useEffect, useState } from 'react';
+import { fetchProfileData } from '@/lib/profileClient';
 
 function useInView(threshold = 0.15) {
   const ref = useRef<HTMLDivElement>(null);
@@ -36,9 +37,8 @@ export default function Contact() {
   useEffect(() => {
     async function loadProfile() {
       try {
-        const res = await fetch('/api/profile');
-        if (res.ok) {
-          const data = await res.json();
+        const data = await fetchProfileData();
+        if (data) {
           setProfile(data);
         }
       } catch {

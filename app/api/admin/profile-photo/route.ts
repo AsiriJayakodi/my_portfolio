@@ -5,7 +5,7 @@ import connectToDatabase from '@/lib/db';
 import Profile from '@/models/Profile';
 import { checkAdminSession } from '@/lib/auth';
 
-const DEFAULT_AVATAR = "https://avatars.githubusercontent.com/u/104332924?v=4";
+const DEFAULT_AVATAR = "/profile.webp";
 
 export async function POST(request: Request) {
   try {

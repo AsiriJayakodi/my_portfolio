@@ -1,6 +1,7 @@
 "use client";
 import styles from './About.module.css';
 import { useRef, useEffect, useState } from 'react';
+import { fetchProfileData } from '@/lib/profileClient';
 
 function useInView(threshold = 0.15) {
   const ref = useRef<HTMLDivElement>(null);
@@ -77,9 +78,8 @@ export default function About({ isAdmin = false }: { isAdmin?: boolean }) {
 
   const loadProfile = async () => {
     try {
-      const res = await fetch('/api/profile');
-      if (res.ok) {
-        const data = await res.json();
+      const data = await fetchProfileData();
+      if (data) {
         setProfile(data);
       }
     } catch {

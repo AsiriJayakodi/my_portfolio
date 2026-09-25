@@ -2,6 +2,9 @@
 import styles from "./Hero.module.css";
 import Link from "next/link";
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { fetchProfileData, clearProfileCache } from '@/lib/profileClient';
+
+const DEFAULT_AVATAR = "/profile.webp";
 
 const ROLES = [
   'IT Undergraduate',
@@ -58,6 +61,7 @@ interface ProfileData {
 
 export default function Hero({ isAdmin = false }: { isAdmin?: boolean }) {
   const [profile, setProfile] = useState<ProfileData | null>(null);
+  const [avatarSrc, setAvatarSrc] = useState<string>(DEFAULT_AVATAR);
   const [downloading, setDownloading] = useState(false);
 
   const handleDownloadCV = async (e: React.MouseEvent) => {
@@ -109,12 +113,18 @@ export default function Hero({ isAdmin = false }: { isAdmin?: boolean }) {
   const [formGithub, setFormGithub] = useState('');
   const [formLinkedin, setFormLinkedin] = useState('');
 
-  const loadProfile = async () => {
+  const loadProfile = async (force = false) => {
     try {
-      const res = await fetch('/api/profile');
-      if (res.ok) {
-        const data = await res.json();
+      const data = await fetchProfileData(force);
+      if (data) {
         setProfile(data);
+        if (data.avatarUrl) {
+          const finalUrl = data.avatarUrl.includes('avatars.githubusercontent.com') ? DEFAULT_AVATAR : data.avatarUrl;
+          setAvatarSrc(finalUrl);
+          try {
+            localStorage.setItem('portfolio_avatar_url', finalUrl);
+          } catch {}
+        }
       }
     } catch {
       // Fallback
@@ -123,10 +133,18 @@ export default function Hero({ isAdmin = false }: { isAdmin?: boolean }) {
 
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
+    try {
+      const cached = localStorage.getItem('portfolio_avatar_url');
+      if (cached && !cached.includes('avatars.githubusercontent.com')) {
+        setAvatarSrc(cached);
+      }
+    } catch {}
+
     loadProfile();
 
     const handleProfileUpdate = () => {
-      loadProfile();
+      clearProfileCache();
+      loadProfile(true);
     };
 
     window.addEventListener('profileUpdated', handleProfileUpdate);
@@ -338,9 +356,11 @@ export default function Hero({ isAdmin = false }: { isAdmin?: boolean }) {
                 <div className={styles.avatarPlaceholder}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={profile?.avatarUrl || "https://avatars.githubusercontent.com/u/104332924?v=4"}
+                    src={avatarSrc}
                     alt={profile?.name || "Asiri Indrajith"}
                     className={styles.profileImg}
+                    fetchPriority="high"
+                    decoding="async"
                   />
                 </div>
                 <div className={styles.gradientOverlay} />

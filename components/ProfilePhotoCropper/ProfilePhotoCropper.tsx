@@ -153,8 +153,8 @@ export default function ProfilePhotoCropper({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const exportWidth = 800;
-    const exportHeight = 1000; // 4:5 high quality
+    const exportWidth = 640;
+    const exportHeight = 800; // 4:5 optimized for retina display
 
     canvas.width = exportWidth;
     canvas.height = exportHeight;
@@ -194,12 +194,12 @@ export default function ProfilePhotoCropper({
     canvas.toBlob(
       (blob) => {
         if (blob) {
-          const dataUrl = canvas.toDataURL("image/webp", 0.92);
+          const dataUrl = canvas.toDataURL("image/webp", 0.85);
           onCropComplete(blob, dataUrl);
         }
       },
       "image/webp",
-      0.92
+      0.85
     );
   };
 

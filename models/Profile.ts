@@ -40,7 +40,7 @@ const ProfileSchema: Schema = new Schema({
   github: { type: String, required: true },
   linkedin: { type: String, required: true },
   resumeUrl: { type: String, required: true },
-  avatarUrl: { type: String, default: "https://avatars.githubusercontent.com/u/104332924?v=4" },
+  avatarUrl: { type: String, default: "/profile.webp" },
   education: { type: [EducationSchema], default: [] },
   certifications: { type: [String], default: [] },
   cgpaVal: { type: String, default: "" },

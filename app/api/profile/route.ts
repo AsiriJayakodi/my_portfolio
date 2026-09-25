@@ -14,7 +14,7 @@ const DEFAULT_PROFILE = {
   github: "https://github.com/AsiriJayakodi",
   linkedin: "https://linkedin.com/in/asiri-indrajith",
   resumeUrl: "/cv.pdf",
-  avatarUrl: "https://avatars.githubusercontent.com/u/104332924?v=4",
+  avatarUrl: "/profile.webp",
   education: [
     { title: "BSc (Hons) in Information Technology", subtitle: "University of Moratuwa • CGPA: 3.58/4.0 (2023 - Present)" },
     { title: "G.C.E. Advanced Level (2022/23)", subtitle: "Maliyadeva College -- Kurunegala • ICT (A), Combined Maths (B), Physics (B)" },
@@ -36,7 +36,11 @@ export async function GET() {
       await connectToDatabase();
     } catch (dbError) {
       console.warn("MongoDB connection failed in profile fetch. Returning default fallback profile. Error:", dbError instanceof Error ? dbError.message : dbError);
-      return NextResponse.json(DEFAULT_PROFILE);
+      return NextResponse.json(DEFAULT_PROFILE, {
+        headers: {
+          'Cache-Control': 'public, s-maxage=120, stale-while-revalidate=600',
+        },
+      });
     }
 
     let profile = await Profile.findOne({});
@@ -46,11 +50,15 @@ export async function GET() {
     }
 
     const profileObj = profile.toObject ? profile.toObject() : { ...profile };
-    if (!profileObj.avatarUrl) {
+    if (!profileObj.avatarUrl || profileObj.avatarUrl.includes('avatars.githubusercontent.com')) {
       profileObj.avatarUrl = DEFAULT_PROFILE.avatarUrl;
     }
 
-    return NextResponse.json(profileObj);
+    return NextResponse.json(profileObj, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+      },
+    });
   } catch (error) {
     console.error("Failed to fetch profile:", error);
     return NextResponse.json({ error: "Failed to fetch profile" }, { status: 500 });

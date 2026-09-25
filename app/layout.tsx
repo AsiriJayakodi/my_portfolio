@@ -42,6 +42,7 @@ export default function RootLayout({
   return (
     <html lang="en" data-theme="dark" suppressHydrationWarning>
       <head>
+        <link rel="preload" as="image" href="/profile.webp" type="image/webp" fetchPriority="high" />
         <script
           dangerouslySetInnerHTML={{
             __html: `
