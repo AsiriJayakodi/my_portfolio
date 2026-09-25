@@ -124,6 +124,13 @@ function ProjectCard({
   onDelete?: () => void;
 }) {
   const { ref, visible } = useInView(0.15);
+  const [imgError, setImgError] = useState(false);
+
+  useEffect(() => {
+    setImgError(false);
+  }, [p.image]);
+
+  const hasImage = Boolean(p.image && p.image.trim() && !imgError);
 
   return (
     <div ref={ref} className={`${styles.cardReveal} ${visible ? styles.visible : ''}`} style={{ transitionDelay: `${i * 0.08}s`, position: 'relative' }}>
@@ -145,7 +152,17 @@ function ProjectCard({
       )}
       <div className={styles.card}>
         <div className={styles.imagePlaceholder}>
-          <ProjectVisualFallback tags={p.tags} />
+          {hasImage ? (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img
+              src={p.image}
+              alt={p.title}
+              className={styles.projectImage}
+              onError={() => setImgError(true)}
+            />
+          ) : (
+            <ProjectVisualFallback tags={p.tags} />
+          )}
           <div className={styles.imageOverlay} />
         </div>
 
@@ -218,7 +235,7 @@ export default function Projects({ isAdmin = false }: { isAdmin?: boolean }) {
       setEditingProject(project);
       setFormTitle(project.title);
       setFormDesc(project.description);
-      setFormImage(project.image);
+      setFormImage(project.image || '');
       setFormTags(project.tags.join(', '));
       setFormGithub(project.githubUrl || '');
       setFormLive(project.liveUrl || '');
@@ -236,6 +253,31 @@ export default function Projects({ isAdmin = false }: { isAdmin?: boolean }) {
     setShowModal(true);
   };
 
+  const handleImageFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const validMimes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+    if (!validMimes.includes(file.type.toLowerCase())) {
+      alert('Please select an image file (JPG, PNG, WebP, GIF)');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Image file size should be less than 5 MB');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        setFormImage(reader.result);
+      }
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
   const handleModalSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const tagsArray = formTags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
@@ -243,7 +285,7 @@ export default function Projects({ isAdmin = false }: { isAdmin?: boolean }) {
     const projectData = {
       title: formTitle,
       description: formDesc,
-      image: formImage || '/projects/fallback.jpg',
+      image: formImage.trim() || '/projects/fallback.jpg',
       tags: tagsArray,
       githubUrl: formGithub || undefined,
       liveUrl: formLive || undefined,
@@ -392,6 +434,75 @@ export default function Projects({ isAdmin = false }: { isAdmin?: boolean }) {
                     onChange={e => setFormDesc(e.target.value)}
                     placeholder="Project details..."
                   />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <label style={{ fontSize: '11px', color: 'var(--text-secondary)', textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>
+                      Description Image URL
+                    </label>
+                    <label
+                      htmlFor="project-image-file"
+                      style={{
+                        fontSize: '11px',
+                        color: 'var(--text-secondary)',
+                        cursor: 'pointer',
+                        fontFamily: 'var(--font-mono)',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        textDecoration: 'underline',
+                      }}
+                    >
+                      📁 Upload Local Image
+                    </label>
+                    <input
+                      id="project-image-file"
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/gif"
+                      style={{ display: 'none' }}
+                      onChange={handleImageFileUpload}
+                    />
+                  </div>
+                  <input
+                    type="text"
+                    style={{ padding: '10px', background: 'var(--input-bg)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-primary)', fontSize: '14px', outline: 'none' }}
+                    value={formImage}
+                    onChange={e => setFormImage(e.target.value)}
+                    placeholder="https://... or upload local image"
+                  />
+                  {formImage && (
+                    <div style={{ position: 'relative', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border-color)', height: '130px', background: 'var(--bg-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={formImage}
+                        alt="Project Preview"
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                        onError={(e) => {
+                          (e.target as HTMLElement).style.display = 'none';
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setFormImage('')}
+                        style={{
+                          position: 'absolute',
+                          top: '6px',
+                          right: '6px',
+                          background: 'rgba(0, 0, 0, 0.75)',
+                          border: '1px solid rgba(255, 255, 255, 0.2)',
+                          color: '#ef4444',
+                          borderRadius: '4px',
+                          padding: '3px 8px',
+                          fontSize: '11px',
+                          cursor: 'pointer',
+                          fontWeight: '600',
+                          backdropFilter: 'blur(4px)',
+                        }}
+                      >
+                        ✕ Remove
+                      </button>
+                    </div>
+                  )}
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                   <label style={{ fontSize: '11px', color: 'var(--text-secondary)', textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>GitHub URL</label>

@@ -3,19 +3,21 @@ import mongoose, { Schema, Document } from 'mongoose';
 export interface IProject extends Document {
   title: string;
   description: string;
-  image: string;
+  image?: string;
   tags: string[];
   githubUrl?: string;
   liveUrl?: string;
+  color?: string;
 }
 
 const ProjectSchema: Schema = new Schema({
   title: { type: String, required: true },
   description: { type: String, required: true },
-  image: { type: String, required: true },
+  image: { type: String, required: false, default: '' },
   tags: { type: [String], required: true },
   githubUrl: { type: String, required: false },
   liveUrl: { type: String, required: false },
+  color: { type: String, required: false },
 }, {
   timestamps: true,
 });
