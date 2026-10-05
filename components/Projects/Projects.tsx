@@ -115,13 +115,15 @@ function ProjectCard({
   i,
   isAdmin,
   onEdit,
-  onDelete
+  onDelete,
+  sectionVisible,
 }: {
   p: ProjectType;
   i: number;
   isAdmin?: boolean;
   onEdit?: () => void;
   onDelete?: () => void;
+  sectionVisible?: boolean;
 }) {
   const { ref, visible } = useInView(0.15);
   const [imgError, setImgError] = useState(false);
@@ -131,9 +133,14 @@ function ProjectCard({
   }, [p.image]);
 
   const hasImage = Boolean(p.image && p.image.trim() && !imgError);
+  const isCardVisible = visible || sectionVisible;
 
   return (
-    <div ref={ref} className={`${styles.cardReveal} ${visible ? styles.visible : ''}`} style={{ transitionDelay: `${i * 0.08}s`, position: 'relative' }}>
+    <div
+      ref={ref}
+      className={`${styles.cardReveal} ${isCardVisible ? styles.visible : ''}`}
+      style={{ transitionDelay: `${(i % 4) * 0.08}s`, position: 'relative' }}
+    >
       {isAdmin && (
         <div style={{ position: 'absolute', top: '15px', right: '15px', zIndex: 100, display: 'flex', gap: '6px' }}>
           <button
@@ -198,6 +205,13 @@ export default function Projects({ isAdmin = false }: { isAdmin?: boolean }) {
   const [projects, setProjects] = useState<ProjectType[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedFilter, setSelectedFilter] = useState('All');
+
+  // Carousel States (shows 4 projects per page with arrow traversal)
+  const [currentPage, setCurrentPage] = useState(0);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const touchStartX = useRef<number | null>(null);
+  const touchEndX = useRef<number | null>(null);
 
   // Modal States
   const [showModal, setShowModal] = useState(false);
@@ -332,6 +346,76 @@ export default function Projects({ isAdmin = false }: { isAdmin?: boolean }) {
     return p.tags.some(tag => tag.toLowerCase() === selectedFilter.toLowerCase());
   });
 
+  const PROJECTS_PER_PAGE = 4;
+  const totalPages = Math.ceil(filteredProjects.length / PROJECTS_PER_PAGE) || 1;
+
+  // Keep currentPage within bounds when items change or filter is updated
+  useEffect(() => {
+    if (currentPage >= totalPages) {
+      setCurrentPage(Math.max(0, totalPages - 1));
+    }
+  }, [totalPages, currentPage]);
+
+  const handleFilterChange = (filter: string) => {
+    setSelectedFilter(filter);
+    setCurrentPage(0);
+  };
+
+  const handleNavigate = (direction: 'left' | 'right') => {
+    if (isAnimating) return;
+
+    let nextPage = currentPage;
+    if (direction === 'left' && currentPage > 0) {
+      nextPage = currentPage - 1;
+    } else if (direction === 'right' && currentPage < totalPages - 1) {
+      nextPage = currentPage + 1;
+    }
+
+    if (nextPage !== currentPage) {
+      setIsAnimating(true);
+      setCurrentPage(nextPage);
+      setTimeout(() => {
+        setIsAnimating(false);
+      }, 600);
+    }
+  };
+
+  const goToPage = (pageIndex: number) => {
+    if (isAnimating || pageIndex === currentPage) return;
+    setIsAnimating(true);
+    setCurrentPage(pageIndex);
+    setTimeout(() => {
+      setIsAnimating(false);
+    }, 600);
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.targetTouches[0].clientX;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    touchEndX.current = e.targetTouches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    if (touchStartX.current === null || touchEndX.current === null) return;
+    const distance = touchStartX.current - touchEndX.current;
+    const minSwipeDistance = 50;
+    if (distance > minSwipeDistance) {
+      handleNavigate('right');
+    } else if (distance < -minSwipeDistance) {
+      handleNavigate('left');
+    }
+    touchStartX.current = null;
+    touchEndX.current = null;
+  };
+
+  // Chunk filtered projects into groups of 4
+  const projectPages: ProjectType[][] = [];
+  for (let i = 0; i < filteredProjects.length; i += PROJECTS_PER_PAGE) {
+    projectPages.push(filteredProjects.slice(i, i + PROJECTS_PER_PAGE));
+  }
+
   return (
     <section id="projects" className={styles.projectsSection}>
       <div className={styles.container}>
@@ -361,7 +445,7 @@ export default function Projects({ isAdmin = false }: { isAdmin?: boolean }) {
           {FILTERS.map(f => (
             <button
               key={f}
-              onClick={() => setSelectedFilter(f)}
+              onClick={() => handleFilterChange(f)}
               className={`${styles.filterBtn} ${selectedFilter === f ? styles.filterBtnActive : ''}`}
             >
               {f}
@@ -378,18 +462,85 @@ export default function Projects({ isAdmin = false }: { isAdmin?: boolean }) {
             No projects found matching the filter.
           </div>
         ) : (
-          <div className={styles.grid}>
-            {filteredProjects.map((p, i) => (
-              <ProjectCard
-                key={p._id || p.title}
-                p={p}
-                i={i}
-                isAdmin={isAdmin}
-                onEdit={() => openFormModal(p)}
-                onDelete={() => p._id && handleDelete(p._id)}
-              />
-            ))}
-          </div>
+          <>
+            <div className={styles.sliderWrapper}>
+              {filteredProjects.length > PROJECTS_PER_PAGE && (
+                <button
+                  type="button"
+                  onClick={() => handleNavigate('left')}
+                  disabled={currentPage === 0 || isAnimating}
+                  className={`${styles.navArrow} ${styles.navArrowLeft} ${currentPage === 0 ? styles.disabled : ''}`}
+                  aria-label="Previous Projects"
+                >
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                  </svg>
+                </button>
+              )}
+
+              <div
+                className={styles.viewport}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+              >
+                <div
+                  ref={trackRef}
+                  className={styles.track}
+                  style={{ transform: `translateX(-${currentPage * 100}%)` }}
+                >
+                  {projectPages.map((page, pageIndex) => (
+                    <div key={pageIndex} className={styles.gridSlide}>
+                      {page.map((p, i) => (
+                        <ProjectCard
+                          key={p._id || `${p.title}-${pageIndex}-${i}`}
+                          p={p}
+                          i={i}
+                          isAdmin={isAdmin}
+                          onEdit={() => openFormModal(p)}
+                          onDelete={() => p._id && handleDelete(p._id)}
+                          sectionVisible={visible}
+                        />
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {filteredProjects.length > PROJECTS_PER_PAGE && (
+                <button
+                  type="button"
+                  onClick={() => handleNavigate('right')}
+                  disabled={currentPage >= totalPages - 1 || isAnimating}
+                  className={`${styles.navArrow} ${styles.navArrowRight} ${currentPage >= totalPages - 1 ? styles.disabled : ''}`}
+                  aria-label="Next Projects"
+                >
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                  </svg>
+                </button>
+              )}
+            </div>
+
+            {totalPages > 1 && (
+              <div className={styles.pagination}>
+                <div className={styles.dots}>
+                  {Array.from({ length: totalPages }).map((_, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => goToPage(idx)}
+                      className={`${styles.dot} ${idx === currentPage ? styles.dotActive : ''}`}
+                      aria-label={`Go to slide ${idx + 1}`}
+                    />
+                  ))}
+                </div>
+                <span className={styles.pageCounter}>
+                  {String(currentPage + 1).padStart(2, '0')} / {String(totalPages).padStart(2, '0')}
+                </span>
+              </div>
+            )}
+          </>
         )}
       </div>
 
