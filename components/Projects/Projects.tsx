@@ -487,7 +487,11 @@ export default function Projects({ isAdmin = false }: { isAdmin?: boolean }) {
                 <div
                   ref={trackRef}
                   className={styles.track}
-                  style={{ transform: `translateX(-${currentPage * 100}%)` }}
+                  style={{
+                    transform: currentPage === 0
+                      ? 'translateX(0px)'
+                      : `translateX(calc(-${currentPage} * (100% + var(--slide-gap, 48px))))`
+                  }}
                 >
                   {projectPages.map((page, pageIndex) => (
                     <div key={pageIndex} className={styles.gridSlide}>
