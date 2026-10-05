@@ -208,9 +208,7 @@ export default function Projects({ isAdmin = false }: { isAdmin?: boolean }) {
 
   // Carousel States (shows 4 projects per page with arrow traversal)
   const [currentPage, setCurrentPage] = useState(0);
-  const [translateX, setTranslateX] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
-  const trackRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
 
@@ -350,13 +348,6 @@ export default function Projects({ isAdmin = false }: { isAdmin?: boolean }) {
   const PROJECTS_PER_PAGE = 4;
   const totalPages = Math.ceil(filteredProjects.length / PROJECTS_PER_PAGE) || 1;
 
-  const updateSliderOffset = (pageIndex: number) => {
-    if (!trackRef.current) return;
-    const slides = Array.from(trackRef.current.children) as HTMLElement[];
-    if (slides.length === 0 || !slides[pageIndex]) return;
-    setTranslateX(-slides[pageIndex].offsetLeft);
-  };
-
   // Keep currentPage within bounds when items change or filter is updated
   useEffect(() => {
     if (currentPage >= totalPages) {
@@ -364,22 +355,9 @@ export default function Projects({ isAdmin = false }: { isAdmin?: boolean }) {
     }
   }, [totalPages, currentPage]);
 
-  useEffect(() => {
-    updateSliderOffset(currentPage);
-  }, [currentPage, filteredProjects.length]);
-
-  useEffect(() => {
-    const handleResize = () => {
-      updateSliderOffset(currentPage);
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [currentPage]);
-
   const handleFilterChange = (filter: string) => {
     setSelectedFilter(filter);
     setCurrentPage(0);
-    setTranslateX(0);
   };
 
   const handleNavigate = (direction: 'left' | 'right') => {
@@ -395,10 +373,9 @@ export default function Projects({ isAdmin = false }: { isAdmin?: boolean }) {
     if (nextPage !== currentPage) {
       setIsAnimating(true);
       setCurrentPage(nextPage);
-      updateSliderOffset(nextPage);
       setTimeout(() => {
         setIsAnimating(false);
-      }, 600);
+      }, 550);
     }
   };
 
@@ -406,10 +383,9 @@ export default function Projects({ isAdmin = false }: { isAdmin?: boolean }) {
     if (isAnimating || pageIndex === currentPage) return;
     setIsAnimating(true);
     setCurrentPage(pageIndex);
-    updateSliderOffset(pageIndex);
     setTimeout(() => {
       setIsAnimating(false);
-    }, 600);
+    }, 550);
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -507,21 +483,26 @@ export default function Projects({ isAdmin = false }: { isAdmin?: boolean }) {
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
               >
-                <div
-                  ref={trackRef}
-                  className={styles.track}
-                  style={{ transform: `translateX(${translateX}px)` }}
-                >
+                <div className={styles.track}>
                   {projectPages.map((page, pageIndex) => {
-                    const isActive = pageIndex === currentPage;
+                    const isCurrent = pageIndex === currentPage;
+                    const isPast = pageIndex < currentPage;
+                    const slideTransform = isCurrent
+                      ? 'translateX(0%)'
+                      : isPast
+                      ? 'translateX(-120%)'
+                      : 'translateX(120%)';
+
                     return (
                       <div
                         key={pageIndex}
                         className={styles.gridSlide}
                         style={{
-                          visibility: isAnimating || isActive ? 'visible' : 'hidden',
-                          opacity: isAnimating || isActive ? 1 : 0,
-                          pointerEvents: isActive ? 'auto' : 'none',
+                          transform: slideTransform,
+                          opacity: isCurrent ? 1 : 0,
+                          pointerEvents: isCurrent ? 'auto' : 'none',
+                          visibility: isCurrent || isAnimating ? 'visible' : 'hidden',
+                          zIndex: isCurrent ? 2 : 1,
                         }}
                       >
                         {page.map((p, i) => (

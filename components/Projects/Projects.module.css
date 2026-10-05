@@ -144,36 +144,31 @@
 .viewport {
   overflow: hidden;
   width: 100%;
+  position: relative;
   border-radius: 16px;
   padding: 12px 0;
   margin: -12px 0;
 }
 
 .track {
-  display: flex;
-  flex-direction: row;
-  gap: 48px;
-  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
-  will-change: transform;
-}
-
-@media (max-width: 768px) {
-  .track {
-    gap: 24px;
-  }
+  position: relative;
+  width: 100%;
+  display: grid;
+  grid-template-areas: "slide";
 }
 
 .gridSlide {
-  flex: 0 0 100%;
-  min-width: 100%;
+  grid-area: slide;
   width: 100%;
-  max-width: 100%;
   box-sizing: border-box;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 32px;
   align-content: start;
-  transition: opacity 0.3s ease;
+  transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 @media (max-width: 768px) {
