@@ -150,18 +150,16 @@
 }
 
 .track {
-  --slide-gap: 48px;
   display: flex;
   flex-direction: row;
-  gap: var(--slide-gap);
+  gap: 48px;
   transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
   will-change: transform;
-  width: 100%;
 }
 
 @media (max-width: 768px) {
   .track {
-    --slide-gap: 24px;
+    gap: 24px;
   }
 }
 
@@ -175,6 +173,7 @@
   grid-template-columns: repeat(2, 1fr);
   gap: 32px;
   align-content: start;
+  transition: opacity 0.3s ease;
 }
 
 @media (max-width: 768px) {
