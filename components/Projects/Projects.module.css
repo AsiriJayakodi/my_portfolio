@@ -259,6 +259,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  touch-action: pan-y;
 }
 
 .deckCardWrap {
@@ -269,6 +270,82 @@
     transform 0.7s cubic-bezier(0.22, 1, 0.36, 1),
     opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1),
     filter 0.55s ease;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.deckCardDraggable {
+  cursor: grab;
+}
+
+.deckCardDraggable:active {
+  cursor: grabbing;
+}
+
+.swipeHintNudge {
+  animation: cardSwipePeek 2.1s cubic-bezier(0.22, 1, 0.36, 1) 0.55s 1;
+}
+
+@keyframes cardSwipePeek {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
+  }
+  30% {
+    transform: translate3d(-26px, 4px, 0) scale(1) rotate(-1.6deg);
+  }
+  65% {
+    transform: translate3d(18px, 2px, 0) scale(1) rotate(1.1deg);
+  }
+}
+
+.swipeGestureHint {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: -12px;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: var(--text-secondary);
+  pointer-events: none;
+  animation: hintFadeLife 4.2s ease forwards;
+}
+
+.swipeHintDot {
+  animation: hintDotGlide 1.6s ease-in-out infinite;
+}
+
+@keyframes hintDotGlide {
+  0%, 100% {
+    transform: translateX(0);
+    opacity: 0.7;
+  }
+  35% {
+    transform: translateX(-9px);
+    opacity: 1;
+  }
+  70% {
+    transform: translateX(9px);
+    opacity: 1;
+  }
+}
+
+@keyframes hintFadeLife {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  12%, 78% {
+    opacity: 0.9;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(4px);
+  }
 }
 
 .slotCenter {
@@ -446,6 +523,9 @@
   height: 100%;
   object-fit: cover;
   display: block;
+  pointer-events: none;
+  -webkit-user-drag: none;
+  user-select: none;
   transition: transform 0.45s ease;
 }
 
@@ -547,22 +627,11 @@
 
 @media (max-width: 900px) {
   .deckLayout {
-    gap: 20px;
+    gap: 16px;
     min-height: auto;
   }
 
-  .navArrowLeft,
-  .navArrowRight {
-    display: none;
-  }
-
-  .mobileArrows {
-    display: flex;
-    order: 2;
-  }
-
   .deckStage {
-    order: 1;
     height: 490px;
   }
 
@@ -598,7 +667,10 @@
     transition: none;
   }
 
-  .cardActive {
+  .cardActive,
+  .swipeHintNudge,
+  .swipeGestureHint,
+  .swipeHintDot {
     animation: none;
   }
 }

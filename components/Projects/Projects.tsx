@@ -1,7 +1,7 @@
 "use client";
 import styles from './Projects.module.css';
 import { useRef, useEffect, useState } from 'react';
-import { ArrowLeft, ArrowRight, ArrowUpRight } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
 
 // Define the type for our Project data coming from the database
 export type ProjectType = {
@@ -113,18 +113,28 @@ function ProjectCard({
   p,
   i,
   slotOffset,
+  dragOffset,
+  isDragging,
+  showSwipeHint,
+  didDragRef,
   isAdmin,
   onEdit,
   onDelete,
   onSelect,
+  onPointerDown,
 }: {
   p: ProjectType;
   i: number;
   slotOffset: number;
+  dragOffset: number;
+  isDragging: boolean;
+  showSwipeHint: boolean;
+  didDragRef: React.MutableRefObject<boolean>;
   isAdmin?: boolean;
   onEdit?: () => void;
   onDelete?: () => void;
   onSelect?: () => void;
+  onPointerDown?: (e: React.PointerEvent) => void;
 }) {
   const [failedSrc, setFailedSrc] = useState<string | null>(null);
 
@@ -140,9 +150,21 @@ function ProjectCard({
   else if (slotOffset === -2) slotClass = styles.slotExitDownLeft;
   else if (slotOffset === 2) slotClass = styles.slotEnterTopRight;
 
+  const activeDragStyle: React.CSSProperties | undefined =
+    isActive && isDragging
+      ? {
+          transform: `translate3d(${dragOffset}px, ${Math.abs(dragOffset) * 0.08}px, 0) rotate(${dragOffset * 0.035}deg) scale(1)`,
+          transition: 'none',
+          cursor: 'grabbing',
+        }
+      : undefined;
+
   return (
     <div
-      className={`${styles.deckCardWrap} ${slotClass}`}
+      className={`${styles.deckCardWrap} ${slotClass} ${isActive ? styles.deckCardDraggable : ''} ${isActive && showSwipeHint ? styles.swipeHintNudge : ''}`}
+      style={activeDragStyle}
+      onPointerDown={isActive ? onPointerDown : undefined}
+      onDragStart={(e) => e.preventDefault()}
       onClick={!isActive && Math.abs(slotOffset) === 1 ? onSelect : undefined}
       role={!isActive && Math.abs(slotOffset) === 1 ? 'button' : undefined}
       tabIndex={!isActive && Math.abs(slotOffset) === 1 ? 0 : undefined}
@@ -169,6 +191,7 @@ function ProjectCard({
             <img
               src={p.image}
               alt={p.title}
+              draggable={false}
               className={styles.projectImage}
               onError={() => setFailedSrc(p.image)}
             />
@@ -219,8 +242,14 @@ function ProjectCard({
               href={p.liveUrl || p.githubUrl || "#"}
               target="_blank"
               rel="noopener noreferrer"
+              draggable={false}
               className={styles.link}
-              onClick={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                if (didDragRef.current) {
+                  e.preventDefault();
+                }
+                e.stopPropagation();
+              }}
             >
               View
               <ArrowUpRight size={14} />
@@ -237,10 +266,16 @@ export default function Projects({ isAdmin = false }: { isAdmin?: boolean }) {
   const [projects, setProjects] = useState<ProjectType[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Stacked diagonal deck state
+  // Stacked diagonal deck + pointer drag/swipe state
   const [activeIndex, setActiveIndex] = useState(0);
-  const touchStartX = useRef<number | null>(null);
-  const touchEndX = useRef<number | null>(null);
+  const [dragOffset, setDragOffset] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [hasInteracted, setHasInteracted] = useState(false);
+  const didDragRef = useRef(false);
+  const dragStartRef = useRef<{ x: number; active: boolean }>({
+    x: 0,
+    active: false,
+  });
 
   // Modal States
   const [showModal, setShowModal] = useState(false);
@@ -372,36 +407,63 @@ export default function Projects({ isAdmin = false }: { isAdmin?: boolean }) {
 
   const totalCount = projects.length;
   const safeActiveIndex = totalCount > 0 ? activeIndex % totalCount : 0;
+  const showSwipeHint = visible && !hasInteracted && totalCount > 1;
 
-  const handleNavigate = (direction: 'left' | 'right') => {
+  const handleDeckPointerDown = (e: React.PointerEvent) => {
     if (totalCount <= 1) return;
-    setActiveIndex(prev => {
-      if (direction === 'right') {
-        return (prev + 1) % totalCount;
+    const target = e.target as HTMLElement;
+    if (target.closest('button')) return;
+    if (e.button !== 0 && e.pointerType === 'mouse') return;
+
+    didDragRef.current = false;
+    dragStartRef.current = { x: e.clientX, active: true };
+    setIsDragging(true);
+    setDragOffset(0);
+  };
+
+  useEffect(() => {
+    if (!isDragging) return;
+
+    const onPointerMove = (e: PointerEvent) => {
+      if (!dragStartRef.current.active) return;
+      const dx = e.clientX - dragStartRef.current.x;
+      if (Math.abs(dx) > 6) {
+        didDragRef.current = true;
       }
-      return (prev - 1 + totalCount) % totalCount;
-    });
-  };
+      setDragOffset(Math.max(-260, Math.min(260, dx)));
+    };
 
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.targetTouches[0].clientX;
-  };
+    const onPointerEnd = (e: PointerEvent) => {
+      if (!dragStartRef.current.active) return;
+      const dx = e.clientX - dragStartRef.current.x;
+      dragStartRef.current.active = false;
+      setIsDragging(false);
+      setDragOffset(0);
 
-  const handleTouchMove = (e: React.TouchEvent) => {
-    touchEndX.current = e.targetTouches[0].clientX;
-  };
+      // Left swipe -> forward (next); Right swipe -> backward (previous)
+      if (dx <= -45) {
+        setHasInteracted(true);
+        setActiveIndex(prev => (prev + 1) % totalCount);
+      } else if (dx >= 45) {
+        setHasInteracted(true);
+        setActiveIndex(prev => (prev - 1 + totalCount) % totalCount);
+      }
 
-  const handleTouchEnd = () => {
-    if (touchStartX.current === null || touchEndX.current === null) return;
-    const distance = touchStartX.current - touchEndX.current;
-    if (distance > 45) {
-      handleNavigate('right');
-    } else if (distance < -45) {
-      handleNavigate('left');
-    }
-    touchStartX.current = null;
-    touchEndX.current = null;
-  };
+      window.setTimeout(() => {
+        didDragRef.current = false;
+      }, 50);
+    };
+
+    window.addEventListener('pointermove', onPointerMove);
+    window.addEventListener('pointerup', onPointerEnd);
+    window.addEventListener('pointercancel', onPointerEnd);
+
+    return () => {
+      window.removeEventListener('pointermove', onPointerMove);
+      window.removeEventListener('pointerup', onPointerEnd);
+      window.removeEventListener('pointercancel', onPointerEnd);
+    };
+  }, [isDragging, totalCount]);
 
   const getSlotOffset = (idx: number): number => {
     if (totalCount <= 1) return 0;
@@ -451,69 +513,39 @@ export default function Projects({ isAdmin = false }: { isAdmin?: boolean }) {
           </div>
         ) : (
           <div className={`${styles.deckLayout} ${visible ? styles.visible : ''}`}>
-            {totalCount > 1 && (
-              <button
-                type="button"
-                onClick={() => handleNavigate('left')}
-                className={`${styles.navArrowBtn} ${styles.navArrowLeft}`}
-                aria-label="Previous Project"
-                title="Previous Project"
-              >
-                <ArrowLeft size={18} />
-              </button>
-            )}
-
-            {/* Centered diagonal 3-card cascading deck */}
-            <div
-              className={styles.deckStage}
-              onTouchStart={handleTouchStart}
-              onTouchMove={handleTouchMove}
-              onTouchEnd={handleTouchEnd}
-            >
+            {/* Centered diagonal 3-card cascading deck (click, hold & drag left/right) */}
+            <div className={styles.deckStage}>
               {projects.map((p, i) => (
                 <ProjectCard
                   key={p._id || `${p.title}-${i}`}
                   p={p}
                   i={i}
                   slotOffset={getSlotOffset(i)}
+                  dragOffset={dragOffset}
+                  isDragging={isDragging}
+                  showSwipeHint={showSwipeHint}
+                  didDragRef={didDragRef}
                   isAdmin={isAdmin}
                   onEdit={() => openFormModal(p)}
                   onDelete={() => p._id && handleDelete(p._id)}
-                  onSelect={() => setActiveIndex(i)}
+                  onSelect={() => {
+                    setHasInteracted(true);
+                    setActiveIndex(i);
+                  }}
+                  onPointerDown={handleDeckPointerDown}
                 />
               ))}
             </div>
 
-            {totalCount > 1 && (
-              <button
-                type="button"
-                onClick={() => handleNavigate('right')}
-                className={`${styles.navArrowBtn} ${styles.navArrowRight}`}
-                aria-label="Next Project"
-                title="Next Project"
-              >
-                <ArrowRight size={18} />
-              </button>
-            )}
-
-            {totalCount > 1 && (
-              <div className={styles.mobileArrows}>
-                <button
-                  type="button"
-                  onClick={() => handleNavigate('left')}
-                  className={styles.navArrowBtn}
-                  aria-label="Previous Project"
-                >
-                  <ArrowLeft size={18} />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleNavigate('right')}
-                  className={styles.navArrowBtn}
-                  aria-label="Next Project"
-                >
-                  <ArrowRight size={18} />
-                </button>
+            {/* Purely visual first-time swipe gesture indicator (no text) */}
+            {showSwipeHint && (
+              <div className={styles.swipeGestureHint} aria-hidden="true">
+                <svg width="56" height="18" viewBox="0 0 56 18" fill="none">
+                  <path d="M12 4L7 9L12 14" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" opacity="0.55" />
+                  <line x1="18" y1="9" x2="38" y2="9" stroke="currentColor" strokeWidth="1.2" strokeDasharray="2 3" opacity="0.35" />
+                  <circle cx="28" cy="9" r="3.2" fill="currentColor" className={styles.swipeHintDot} />
+                  <path d="M44 4L49 9L44 14" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" opacity="0.55" />
+                </svg>
               </div>
             )}
           </div>
