@@ -237,7 +237,7 @@ export default function AdminPage() {
   const handleUploadCV = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    
+
     // Front-end validation
     if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
       setUploadError('Only PDF files are allowed');
@@ -480,8 +480,8 @@ export default function AdminPage() {
   // Render Login Panel
   if (!authenticated) {
     return (
-      <div className={styles.adminWrapper} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: 'var(--bg-primary)' }}>
-        <div className={styles.loginCard} style={{ width: '100%', maxWidth: '400px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '16px', padding: '32px', boxShadow: 'var(--shadow-md)' }}>
+      <div className={styles.adminWrapper} style={{ position: 'relative', zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
+        <div className={styles.loginCard} style={{ position: 'relative', zIndex: 20, width: '100%', maxWidth: '400px', background: 'var(--glass-bg)', backdropFilter: 'blur(18px)', WebkitBackdropFilter: 'blur(18px)', border: '1px solid var(--border-color)', borderRadius: '16px', padding: '32px', boxShadow: 'var(--shadow-md)' }}>
           <h1 className={styles.title} style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)', letterSpacing: '-0.02em', textAlign: 'center', margin: '0 0 8px', fontSize: '24px', fontWeight: '700' }}>Admin Workspace</h1>
           <p className={styles.subtitle} style={{ textAlign: 'center', color: 'var(--text-secondary)', fontSize: '14px', margin: '0 0 24px', fontFamily: 'var(--font-sans)' }}>Enter credentials to access visual CMS tools</p>
           <form onSubmit={handleLogin}>
@@ -489,6 +489,7 @@ export default function AdminPage() {
               <label className={styles.label} style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)', marginBottom: '8px' }}>Admin Password</label>
               <input
                 type="password"
+                autoFocus
                 required
                 className={styles.input}
                 style={{ width: '100%', padding: '12px', background: 'var(--input-bg)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '14px', outline: 'none' }}
@@ -563,8 +564,8 @@ export default function AdminPage() {
 
         {/* Theme and Logout Controls */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <button 
-            onClick={toggleTheme} 
+          <button
+            onClick={toggleTheme}
             aria-label="Toggle Theme"
             style={{
               background: 'var(--border-subtle)',
@@ -604,7 +605,7 @@ export default function AdminPage() {
 
       {/* Main Workspace Frame */}
       <main style={{ padding: activeTab === 'visual' ? '0' : '40px 24px' }}>
-        
+
         {/* Tab 1: Visual Page Replica (passes isAdmin=true) */}
         {activeTab === 'visual' && (
           <div style={{ pointerEvents: 'auto' }}>
@@ -659,7 +660,7 @@ export default function AdminPage() {
             ) : (
               /* If No Image is Selected: Show Current Photo & Upload Dropzone */
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '28px', alignItems: 'start' }}>
-                
+
                 {/* Left: Upload & Drag Drop Card */}
                 <div style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '16px', padding: '28px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
                   <div>
@@ -865,7 +866,7 @@ export default function AdminPage() {
 
             {/* Settings Form Card */}
             <div style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '16px', padding: '28px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              
+
               {/* Toggle: Master Enable */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '16px', borderBottom: '1px solid var(--border-color)' }}>
                 <div>
@@ -923,7 +924,7 @@ export default function AdminPage() {
 
               {/* Individual Feature Toggles Grid */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                
+
                 {/* Cursor Interaction */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '10px' }}>
                   <div>
@@ -1095,7 +1096,7 @@ export default function AdminPage() {
             {/* Current Active CV Box */}
             <div style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '16px', padding: '28px' }}>
               <h3 style={{ fontSize: '16px', color: 'var(--text-primary)', fontFamily: 'var(--font-heading)', fontWeight: '700', margin: '0 0 16px' }}>Current Active CV</h3>
-              
+
               {cvList.some(c => c.isActive) ? (
                 (() => {
                   const activeCV = cvList.find(c => c.isActive)!;
@@ -1174,7 +1175,7 @@ export default function AdminPage() {
             {/* Version History Table */}
             <div style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '16px', padding: '28px' }}>
               <h3 style={{ fontSize: '16px', color: 'var(--text-primary)', fontFamily: 'var(--font-heading)', fontWeight: '700', margin: '0 0 16px' }}>CV Version History</h3>
-              
+
               {cvList.length === 0 ? (
                 <div style={{ padding: '20px 0', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '14px' }}>
                   No version history records found.

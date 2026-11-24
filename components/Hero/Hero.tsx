@@ -1,10 +1,18 @@
 "use client";
 import styles from "./Hero.module.css";
 import Link from "next/link";
+import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { ArrowUpRight, Download, Moon, Sun } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { fetchProfileData, clearProfileCache } from '@/lib/profileClient';
 
-const DEFAULT_AVATAR = "/profile.webp";
+const Hero3DBackground = dynamic(
+  () => import('@/components/ThreeScene/Hero3DBackground'),
+  { ssr: false }
+);
 
 const ROLES = [
   'IT Undergraduate',
@@ -12,6 +20,15 @@ const ROLES = [
   'Cloud & Serverless',
   'IoT Developer',
 ];
+
+const NAV_CARDS = [
+  { id: 'about', index: '01', title: 'About', subtitle: 'Background & story', slot: 'leftTop' },
+  { id: 'skills', index: '02', title: 'Skills', subtitle: 'Tech stack & tools', slot: 'leftMid' },
+  { id: 'projects', index: '03', title: 'Projects', subtitle: 'Featured builds', slot: 'leftBot' },
+  { id: 'experience', index: '04', title: 'Experience', subtitle: 'Journey & roles', slot: 'rightTop' },
+  { id: 'blogs-articles', index: '05', title: 'Articles', subtitle: 'Writing & notes', slot: 'rightMid' },
+  { id: 'contact', index: '06', title: 'Contact', subtitle: 'Let’s connect', slot: 'rightBot' },
+] as const;
 
 function useTypewriter(items: string[], speed = 80) {
   const [display, setDisplay] = useState('');
@@ -60,9 +77,24 @@ interface ProfileData {
 }
 
 export default function Hero({ isAdmin = false }: { isAdmin?: boolean }) {
+  const router = useRouter();
   const [profile, setProfile] = useState<ProfileData | null>(null);
-  const [avatarSrc, setAvatarSrc] = useState<string>(DEFAULT_AVATAR);
   const [downloading, setDownloading] = useState(false);
+  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+
+  useEffect(() => {
+    const current = document.documentElement.getAttribute('data-theme') as 'dark' | 'light' | null;
+    if (current) setTheme(current);
+  }, []);
+
+  const toggleTheme = () => {
+    const next = theme === 'dark' ? 'light' : 'dark';
+    setTheme(next);
+    document.documentElement.setAttribute('data-theme', next);
+    try {
+      localStorage.setItem('portfolio-theme', next);
+    } catch {}
+  };
 
   const handleDownloadCV = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -118,28 +150,13 @@ export default function Hero({ isAdmin = false }: { isAdmin?: boolean }) {
       const data = await fetchProfileData(force);
       if (data) {
         setProfile(data);
-        if (data.avatarUrl) {
-          const finalUrl = data.avatarUrl.includes('avatars.githubusercontent.com') ? DEFAULT_AVATAR : data.avatarUrl;
-          setAvatarSrc(finalUrl);
-          try {
-            localStorage.setItem('portfolio_avatar_url', finalUrl);
-          } catch {}
-        }
       }
     } catch {
       // Fallback
     }
   };
 
-  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
-    try {
-      const cached = localStorage.getItem('portfolio_avatar_url');
-      if (cached && !cached.includes('avatars.githubusercontent.com')) {
-        setAvatarSrc(cached);
-      }
-    } catch {}
-
     loadProfile();
 
     const handleProfileUpdate = () => {
@@ -152,7 +169,6 @@ export default function Hero({ isAdmin = false }: { isAdmin?: boolean }) {
       window.removeEventListener('profileUpdated', handleProfileUpdate);
     };
   }, []);
-  /* eslint-enable react-hooks/set-state-in-effect */
 
   const openFormModal = () => {
     if (profile) {
@@ -232,76 +248,103 @@ export default function Hero({ isAdmin = false }: { isAdmin?: boolean }) {
     }
   }, []);
 
-  // Split name for visual glitch styling in three rows
   const nameToUse = profile?.name || "Asiri Indrajith Jayakodi";
-  const nameParts = nameToUse.split(' ').filter(part => part.trim().length > 0);
-
-  let row1 = "";
-  let row2 = "";
-  let row3 = "";
-
-  if (nameParts.length >= 3) {
-    row1 = nameParts[0];
-    row2 = nameParts[1];
-    row3 = nameParts.slice(2).join(' ') + '.';
-  } else if (nameParts.length === 2) {
-    row1 = nameParts[0];
-    row2 = "";
-    row3 = nameParts[1] + '.';
-  } else {
-    row1 = "";
-    row2 = "";
-    row3 = nameToUse + '.';
-  }
 
   return (
     <section id="hero" ref={ref} onMouseMove={handleMouse} className={styles.heroSection}>
       {/* Subtle grid */}
       <div className={styles.gridOverlay} />
 
+      {/* React Three Fiber 3D background */}
+      <Hero3DBackground />
+
       {/* Radial spotlight */}
       <div className={styles.spotlight} style={{
         background: `radial-gradient(600px circle at ${cursor.x}px ${cursor.y}px, rgba(255,255,255,0.03) 0%, transparent 70%)`
       }} />
 
+      {/* Subtle theme toggle in corner since top navbar is removed */}
+      <button
+        type="button"
+        onClick={toggleTheme}
+        className={styles.floatingThemeBtn}
+        aria-label="Toggle Theme"
+        title="Toggle Theme"
+      >
+        {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
+      </button>
+
       {/* Main content */}
       <div className={styles.container}>
-        <div className={styles.grid}>
-          {/* Left — text */}
-          <div className={styles.leftContent}>
-            {/* Status pill */}
-            <div className={styles.statusPill}>
-              <span className={styles.statusDot} />
-              <span className={styles.statusText}>{profile?.cgpaVal ? `Undergrad at Uni of Moratuwa • CGPA ${profile.cgpaVal.replace(' CGPA', '')}` : 'Undergrad at Uni of Moratuwa • CGPA 3.58'}</span>
+        <div className={styles.centerStage}>
+          {/* Center portrait + floating glassmorphism navigation cards */}
+          <div className={styles.portraitHub}>
+            <div className={styles.portraitZoomLayer}>
+              <div
+                className={styles.portraitFrame}
+                style={{
+                  transform: `perspective(1000px) rotateX(${tilt.rx}deg) rotateY(${tilt.ry}deg) translate3d(${tilt.tx}px, ${tilt.ty}px, 0)`,
+                  transition: 'transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)',
+                }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/profile-hero.png"
+                  alt={profile?.name || "Asiri Indrajith"}
+                  className={styles.portraitImg}
+                  fetchPriority="high"
+                  decoding="async"
+                />
+              </div>
             </div>
 
-            {/* Name stacked in three rows */}
-            <div className={styles.nameContainer} style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                {row1 && <h1 className={styles.nameRow}>{row1}</h1>}
-                {row2 && <h1 className={styles.nameRow}>{row2}</h1>}
-                <h1 className={styles.nameRow}>
-                  {row3.endsWith('.') ? (
-                    <>
-                      {row3.slice(0, -1)}<span className={styles.nameAccent}>.</span>
-                    </>
-                  ) : (
-                    row3
-                  )}
-                </h1>
-              </div>
+            {/* Animated shadcn glassmorphism navigation cards */}
+            <nav className={styles.navCardsLayer} aria-label="Section Navigation">
+              {NAV_CARDS.map((card, idx) => {
+                const isLeft = card.slot.startsWith('left');
+                return (
+                  <div
+                    key={card.id}
+                    className={`${styles.navCardScrollWrap} ${styles[card.slot]} ${
+                      isLeft ? styles.scrollDriftLeft : styles.scrollDriftRight
+                    }`}
+                  >
+                    <Link href={`#${card.id}`} className={styles.navCardLink}>
+                      <Card
+                        className={styles.navGlassCard}
+                        style={{ animationDelay: `${idx * 0.45}s` }}
+                      >
+                        <CardHeader>
+                          <span className={styles.navCardIndex}>{card.index}</span>
+                          <CardTitle>{card.title}</CardTitle>
+                          <CardDescription>{card.subtitle}</CardDescription>
+                        </CardHeader>
+                      </Card>
+                    </Link>
+                  </div>
+                );
+              })}
+            </nav>
+          </div>
+
+          {/* Bottom identity: Name + Sub-quote + Glassmorphism shadcn CTAs */}
+          <div className={styles.bottomIdentity}>
+            <div className={styles.nameInlineRow}>
+              <h1 className={styles.nameHeading}>
+                {nameToUse}
+                <span className={styles.nameAccent}>.</span>
+              </h1>
               {isAdmin && (
                 <button
                   onClick={openFormModal}
-                  style={{ background: 'var(--border-subtle)', border: '1px solid var(--border-strong)', color: 'var(--text-primary)', cursor: 'pointer', fontSize: '13px', padding: '6px 14px', borderRadius: '6px', fontFamily: 'var(--font-sans)', fontWeight: '600', alignSelf: 'flex-start', marginTop: '10px' }}
+                  style={{ background: 'var(--border-subtle)', border: '1px solid var(--border-strong)', color: 'var(--text-primary)', cursor: 'pointer', fontSize: '13px', padding: '6px 14px', borderRadius: '6px', fontFamily: 'var(--font-sans)', fontWeight: '600' }}
                 >
                   ✏️ Edit Profile
                 </button>
               )}
             </div>
 
-            {/* Typewriter role */}
-            <div className={styles.roleContainer}>
+            <div className={styles.roleContainerCentered}>
               <div className={styles.roleLine} />
               <span className={styles.roleText}>
                 {role}
@@ -309,69 +352,26 @@ export default function Hero({ isAdmin = false }: { isAdmin?: boolean }) {
               </span>
             </div>
 
-            <p className={styles.description}>
-              {profile?.intro || "Third-year IT Undergraduate at University of Moratuwa specializing in full-stack software engineering and serverless cloud architectures."}
-            </p>
-
-            {/* CTA Buttons */}
-            <div className={styles.ctaGroup}>
-              <Link href="#projects" className={styles.primaryBtn}>
+            <div className={styles.ctaGroupCentered}>
+              <Button
+                type="button"
+                variant="glass"
+                size="default"
+                onClick={() => router.push('#projects')}
+              >
                 View Projects
-              </Link>
-              <button
+                <ArrowUpRight size={16} />
+              </Button>
+              <Button
+                type="button"
+                variant="glass"
+                size="default"
                 onClick={handleDownloadCV}
                 disabled={downloading}
-                className={styles.secondaryBtn}
               >
                 {downloading ? 'Preparing CV...' : 'Download CV'}
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
-                </svg>
-              </button>
-            </div>
-          </div>
-
-          {/* Right — avatar card with animations */}
-          <div className={styles.rightContent}>
-            <div
-              className={styles.avatarWrapper}
-              style={{
-                transform: `perspective(1000px) rotateX(${tilt.rx}deg) rotateY(${tilt.ry}deg) translate3d(${tilt.tx}px, ${tilt.ty}px, 0)`,
-                transition: 'transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)',
-              }}
-            >
-              {/* Spinning rings */}
-              <div className={styles.ringOuter}>
-                {[0, 90, 180, 270].map(a => (
-                  <div key={a} className={styles.ringDot} style={{
-                    transform: `rotate(${a}deg) translateX(188px) translateY(-50%) translateX(-4px)`
-                  }} />
-                ))}
-              </div>
-              <div className={styles.ringInner} />
-
-              {/* Card */}
-              <div className={styles.avatarCard}>
-                <div className={styles.scanLine} />
-                <div className={styles.avatarPlaceholder}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={avatarSrc}
-                    alt={profile?.name || "Asiri Indrajith"}
-                    className={styles.profileImg}
-                    fetchPriority="high"
-                    decoding="async"
-                  />
-                </div>
-                <div className={styles.gradientOverlay} />
-
-                {/* Info badge */}
-                <div className={styles.infoBadge}>
-                  <div className={styles.badgeName}>Asiri Indrajith</div>
-                  <div className={styles.badgeDetails}>IT • Univ of Moratuwa</div>
-                </div>
-                <div className={styles.cornerAccent} />
-              </div>
+                <Download size={15} />
+              </Button>
             </div>
           </div>
         </div>

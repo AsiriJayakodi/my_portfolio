@@ -134,151 +134,106 @@
   font-weight: 600;
 }
 
-/* Slider & Carousel Layout */
-.sliderWrapper {
+/* ── Centered Diagonal 3-Card Cascade Deck + Left-Side Arrows ─────────────── */
+.deckLayout {
   position: relative;
-  width: 100%;
-  padding: 10px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 600px;
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
 }
 
-.viewport {
-  overflow: hidden;
-  width: 100%;
-  position: relative;
-  border-radius: 16px;
-  padding: 12px 0;
-  margin: -12px 0;
+.deckLayout.visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
-.track {
-  position: relative;
-  width: 100%;
-  display: grid;
-  grid-template-areas: "slide";
-}
-
-.gridSlide {
-  grid-area: slide;
-  width: 100%;
-  box-sizing: border-box;
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 32px;
-  align-content: start;
-  transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1);
-  will-change: transform, opacity;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-}
-
-@media (max-width: 768px) {
-  .gridSlide {
-    grid-template-columns: 1fr;
-    gap: 24px;
-  }
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 32px;
-}
-
-@media (max-width: 768px) {
-  .grid {
-    grid-template-columns: 1fr;
-    gap: 24px;
-  }
-}
-
-/* Navigation Arrowhead Buttons */
-.navArrow {
+.deckControls {
   position: absolute;
+  left: 0;
   top: 50%;
   transform: translateY(-50%);
   z-index: 25;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.arrowGroup {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.navArrowBtn {
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: rgba(18, 20, 29, 0.85);
-  border: 1px solid var(--border-color);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
   color: var(--text-primary);
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
-  transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-
-.navArrow:hover:not(.disabled) {
-  background: var(--border-subtle, rgba(255, 255, 255, 0.15));
-  border-color: var(--text-primary);
-  transform: translateY(-50%) scale(1.1);
-  color: #ffffff;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
-}
-
-.navArrow:active:not(.disabled) {
-  transform: translateY(-50%) scale(0.96);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 10px 26px var(--shadow-color);
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.25s ease, background 0.25s ease;
 }
 
 .navArrowLeft {
-  left: -24px;
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 25;
 }
 
 .navArrowRight {
-  right: -24px;
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 25;
 }
 
-@media (max-width: 1260px) {
-  .navArrowLeft {
-    left: 8px;
-  }
-  .navArrowRight {
-    right: 8px;
-  }
+.navArrowLeft:hover,
+.navArrowRight:hover {
+  transform: translateY(-50%) scale(1.08);
+  border-color: var(--border-hover);
+  background: var(--bg-card-hover);
 }
 
-@media (max-width: 768px) {
-  .navArrow {
-    width: 40px;
-    height: 40px;
-  }
-  .navArrowLeft {
-    left: 4px;
-  }
-  .navArrowRight {
-    right: 4px;
-  }
+.navArrowBtn:hover {
+  border-color: var(--border-hover);
+  background: var(--bg-card-hover);
 }
 
-.disabled {
-  opacity: 0.2;
-  cursor: not-allowed;
-  pointer-events: none;
-}
-
-/* Pagination Dots & Counter */
-.pagination {
-  display: flex;
+.mobileArrows {
+  display: none;
   align-items: center;
   justify-content: center;
-  gap: 16px;
-  margin-top: 36px;
+  gap: 14px;
+  margin-top: 8px;
 }
 
 .dots {
   display: flex;
   align-items: center;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 4px;
 }
 
 .dot {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
   border-radius: 9999px;
   background: var(--border-color);
   border: none;
@@ -288,49 +243,245 @@
 }
 
 .dot:hover:not(.dotActive) {
-  background: var(--border-hover, rgba(255, 255, 255, 0.4));
+  background: var(--border-hover);
 }
 
 .dotActive {
-  width: 28px;
-  background: var(--btn-primary-bg, #ffffff);
+  width: 24px;
+  background: var(--text-primary);
   border-radius: 6px;
 }
 
-.pageCounter {
-  font-family: var(--font-mono);
-  font-size: 13px;
+.deckStage {
+  position: relative;
+  width: 100%;
+  height: 620px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: pan-y;
+}
+
+.deckCardWrap {
+  position: absolute;
+  width: min(440px, 86vw);
+  will-change: transform, opacity;
+  transition:
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.55s ease;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.deckCardDraggable {
+  cursor: grab;
+}
+
+.deckCardDraggable:active {
+  cursor: grabbing;
+}
+
+.swipeHintNudge {
+  animation: cardSwipePeek 2.1s cubic-bezier(0.22, 1, 0.36, 1) 0.55s 1;
+}
+
+@keyframes cardSwipePeek {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
+  }
+  30% {
+    transform: translate3d(-26px, 4px, 0) scale(1) rotate(-1.6deg);
+  }
+  65% {
+    transform: translate3d(18px, 2px, 0) scale(1) rotate(1.1deg);
+  }
+}
+
+.swipeGestureHint {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: -12px;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   color: var(--text-secondary);
-  letter-spacing: 0.05em;
+  pointer-events: none;
+  animation: hintFadeLife 4.2s ease forwards;
 }
 
-.cardReveal {
-  opacity: 0;
-  transform: translateY(24px);
-  transition: opacity 0.7s ease, transform 0.7s ease;
+.swipeHintDot {
+  animation: hintDotGlide 1.6s ease-in-out infinite;
 }
 
-.cardReveal.visible {
+@keyframes hintDotGlide {
+  0%, 100% {
+    transform: translateX(0);
+    opacity: 0.7;
+  }
+  35% {
+    transform: translateX(-9px);
+    opacity: 1;
+  }
+  70% {
+    transform: translateX(9px);
+    opacity: 1;
+  }
+}
+
+@keyframes hintFadeLife {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  12%, 78% {
+    opacity: 0.9;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+.slotCenter {
+  transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
+  z-index: 15;
   opacity: 1;
-  transform: translateY(0);
+  filter: none;
+  pointer-events: auto;
+}
+
+/* Previous card goes DOWN to bottom-left (low contrast so center stands out) */
+.slotBottomLeft {
+  transform: translate3d(-225px, 115px, 0) scale(0.84) rotate(-4deg);
+  z-index: 6;
+  opacity: 0.32;
+  filter: brightness(0.6) saturate(0.4) blur(0.6px);
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+/* Next card waits at top-right (low contrast so center stands out) */
+.slotTopRight {
+  transform: translate3d(225px, -115px, 0) scale(0.84) rotate(3.8deg);
+  z-index: 5;
+  opacity: 0.32;
+  filter: brightness(0.6) saturate(0.4) blur(0.6px);
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.slotBottomLeft:hover,
+.slotTopRight:hover {
+  opacity: 0.52;
+  filter: brightness(0.8) saturate(0.7);
+}
+
+.slotExitDownLeft {
+  transform: translate3d(-320px, 210px, 0) scale(0.72) rotate(-7deg);
+  z-index: 2;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.slotEnterTopRight {
+  transform: translate3d(320px, -210px, 0) scale(0.72) rotate(7deg);
+  z-index: 2;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.slotHidden {
+  transform: translate3d(260px, -160px, 0) scale(0.7);
+  z-index: 0;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .card {
   background: var(--bg-secondary);
-  border-radius: 16px;
+  border-radius: 18px;
   border: 1px solid var(--border-color);
   overflow: hidden;
-  height: 100%;
-  transition: border-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 22px 50px rgba(0, 0, 0, 0.45);
   display: flex;
   flex-direction: column;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.35s ease;
 }
 
-.card:hover {
+.cardActive {
+  animation: deckCardFloat 5.5s ease-in-out infinite;
+  border-color: var(--border-strong);
+  box-shadow: 0 28px 64px rgba(0, 0, 0, 0.58);
+}
+
+.cardRecessed:hover {
   border-color: var(--border-hover);
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-md);
+}
+
+@keyframes deckCardFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+[data-theme='light'] .card {
+  box-shadow: 0 20px 44px rgba(0, 0, 0, 0.1);
+}
+
+/* Template-inspired top bar inside each card */
+.cardTopBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 16px;
+  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.cardTopLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cardIconBox {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: var(--border-subtle);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cardTopLabel {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.cardTopRight {
+  display: flex;
+  align-items: center;
+}
+
+.cardIndexPill {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
 }
 
 .imagePlaceholder {
@@ -341,10 +492,29 @@
   background: var(--bg-tertiary);
 }
 
+.imageBadge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 10;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  background: rgba(10, 10, 12, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: #f5f5f5;
+}
+
 .imageOverlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to bottom, transparent 60%, var(--bg-secondary) 100%);
+  background: linear-gradient(to bottom, transparent 58%, var(--bg-secondary) 100%);
   pointer-events: none;
 }
 
@@ -353,49 +523,74 @@
   height: 100%;
   object-fit: cover;
   display: block;
-  transition: transform 0.4s ease;
+  pointer-events: none;
+  -webkit-user-drag: none;
+  user-select: none;
+  transition: transform 0.45s ease;
 }
 
-.card:hover .projectImage {
+.cardActive:hover .projectImage {
   transform: scale(1.05);
 }
 
 .content {
-  padding: 24px 20px;
+  padding: 16px 18px 18px;
   display: flex;
   flex-direction: column;
-  flex-grow: 1;
+}
+
+.cardKicker {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
 }
 
 .title {
   font-family: var(--font-heading);
   font-weight: 700;
-  font-size: clamp(17px, 2.2vw, 20px);
+  font-size: clamp(17px, 2vw, 19px);
   color: var(--text-primary);
-  margin: 0 0 10px;
+  margin: 0 0 8px;
   letter-spacing: -0.01em;
+  line-height: 1.25;
 }
 
 .desc {
   color: var(--text-secondary);
-  font-size: 14px;
-  line-height: 1.7;
-  margin: 0 0 20px;
+  font-size: 13px;
+  line-height: 1.55;
+  margin: 0 0 14px;
   font-family: var(--font-sans);
-  flex-grow: 1;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.cardDivider {
+  border-top: 1px solid var(--border-subtle);
+  margin-bottom: 12px;
+}
+
+.cardFooter {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .tagsContainer {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 20px;
+  gap: 5px;
+  flex: 1;
 }
 
 .tag {
-  padding: 4px 10px;
+  padding: 3px 8px;
   border-radius: 4px;
-  font-size: 12px;
+  font-size: 11px;
   background: var(--border-subtle);
   border: 1px solid var(--border-color);
   color: var(--text-secondary);
@@ -405,18 +600,77 @@
 .link {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   font-family: var(--font-sans);
   font-weight: 600;
-  font-size: 14px;
+  font-size: 13px;
   color: var(--text-primary);
   text-decoration: none;
+  white-space: nowrap;
   transition: gap 0.2s ease, opacity 0.2s ease;
-  margin-top: auto;
-  min-height: 36px;
 }
 
 .link:hover {
-  gap: 10px;
-  opacity: 0.8;
+  gap: 7px;
+  opacity: 0.85;
+}
+
+@media (max-width: 1100px) {
+  .slotBottomLeft {
+    transform: translate3d(-165px, 95px, 0) scale(0.82) rotate(-4deg);
+  }
+
+  .slotTopRight {
+    transform: translate3d(165px, -95px, 0) scale(0.82) rotate(3.8deg);
+  }
+}
+
+@media (max-width: 900px) {
+  .deckLayout {
+    gap: 16px;
+    min-height: auto;
+  }
+
+  .deckStage {
+    height: 490px;
+  }
+
+  .slotBottomLeft {
+    transform: translate3d(-75px, 64px, 0) scale(0.82) rotate(-3.5deg);
+    opacity: 0.25;
+  }
+
+  .slotTopRight {
+    transform: translate3d(75px, -64px, 0) scale(0.82) rotate(3.5deg);
+    opacity: 0.25;
+  }
+}
+
+@media (max-width: 520px) {
+  .deckStage {
+    height: 485px;
+  }
+
+  .slotBottomLeft {
+    transform: translate3d(-32px, 44px, 0) scale(0.85) rotate(-2deg);
+    opacity: 0.22;
+  }
+
+  .slotTopRight {
+    transform: translate3d(32px, -44px, 0) scale(0.85) rotate(2deg);
+    opacity: 0.22;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .deckCardWrap {
+    transition: none;
+  }
+
+  .cardActive,
+  .swipeHintNudge,
+  .swipeGestureHint,
+  .swipeHintDot {
+    animation: none;
+  }
 }

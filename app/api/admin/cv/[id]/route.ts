@@ -1,6 +1,4 @@
 import { NextResponse } from 'next/server';
-import fs from 'node:fs';
-import path from 'node:path';
 import mongoose from 'mongoose';
 import connectToDatabase from '@/lib/db';
 import CV from '@/models/CV';
@@ -66,20 +64,7 @@ export async function DELETE(
       return NextResponse.json({ success: true, message: 'CV already removed' });
     }
 
-    // 1. Try to delete actual PDF file from local storage disk (graceful on read-only serverless)
-    try {
-      if (cvRecord.storedFileName) {
-        const storageDir = path.join(process.cwd(), 'storage', 'cv');
-        const filePath = path.join(storageDir, cvRecord.storedFileName);
-        if (fs.existsSync(filePath)) {
-          fs.unlinkSync(filePath);
-        }
-      }
-    } catch {
-      // Ignore disk delete errors in serverless
-    }
-
-    // 2. Delete CV database entry
+    // Delete CV database entry
     await CV.findByIdAndDelete(id);
 
     return NextResponse.json({ success: true, message: 'CV version deleted successfully' });

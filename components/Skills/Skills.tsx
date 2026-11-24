@@ -1,6 +1,6 @@
 "use client";
 import styles from './Skills.module.css';
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, useCallback } from 'react';
 
 function useInView(threshold = 0.15) {
   const ref = useRef<HTMLDivElement>(null);
@@ -84,14 +84,13 @@ function TechRow({
   }
 
   return (
-    <div 
+    <div
       className={`${styles.techRow} ${!isActive ? styles.inactive : ''}`}
       style={{ '--accent-color': color } as React.CSSProperties}
     >
       <div className={styles.techArrow}>→</div>
       <div className={styles.techRowInfo}>
         <span className={styles.techRowName}>{name}</span>
-        {description && <span className={styles.techRowDesc}>{description}</span>}
       </div>
 
       {isAdmin && (
@@ -104,7 +103,13 @@ function TechRow({
   );
 }
 
-export default function Skills({ isAdmin = false }: { isAdmin?: boolean }) {
+export default function Skills({
+  isAdmin = false,
+  sectionId = "skills",
+}: {
+  isAdmin?: boolean;
+  sectionId?: string;
+}) {
   const { ref, visible } = useInView();
   const [skills, setSkills] = useState<SkillData[]>([]);
   const [categories, setCategories] = useState<CategoryData[]>([]);
@@ -294,8 +299,229 @@ export default function Skills({ isAdmin = false }: { isAdmin?: boolean }) {
     }
   };
 
+  const visibleCategories = categories.filter(c => isAdmin || c.isActive);
+
+  // Zigzag Timeline SVG & Scroll Synchronization
+  const timelineRef = useRef<HTMLDivElement>(null);
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const dotRefs = useRef<(SVGCircleElement | null)[]>([]);
+  const maskPathRef = useRef<SVGPathElement | null>(null);
+  const [svgData, setSvgData] = useState<{
+    width: number;
+    height: number;
+    pathD: string;
+    points: { x: number; y: number }[];
+  }>({ width: 0, height: 0, pathD: '', points: [] });
+
+  const pathMetricsRef = useRef<{
+    totalLength: number;
+    thresholds: number[];
+  }>({ totalLength: 1, thresholds: [] });
+
+  const measureTimeline = useCallback(() => {
+    const container = timelineRef.current;
+    if (!container) return;
+
+    const width = container.offsetWidth;
+    const height = container.offsetHeight;
+    const isMobile = window.innerWidth <= 768;
+    const points: { x: number; y: number }[] = [];
+
+    const anchorRatios = [0.46, 0.36, 0.58, 0.42, 0.54, 0.44];
+
+    cardRefs.current.slice(0, visibleCategories.length).forEach((el, idx) => {
+      if (!el) return;
+      const top = el.offsetTop;
+      const left = el.offsetLeft;
+      const w = el.offsetWidth;
+      const h = el.offsetHeight;
+
+      if (isMobile) {
+        points.push({ x: left, y: top + Math.min(44, h * 0.35) });
+      } else {
+        const isLeft = idx % 2 === 0;
+        const ratio = anchorRatios[idx % anchorRatios.length];
+        points.push({
+          x: isLeft ? left + w : left,
+          y: top + h * ratio,
+        });
+      }
+    });
+
+    if (points.length === 0) {
+      setSvgData({ width, height, pathD: '', points: [] });
+      return;
+    }
+
+    let d = '';
+    const segLengths: number[] = [0];
+
+    if (isMobile) {
+      const spineX = 14;
+      d = `M ${points[0].x} ${points[0].y}`;
+      let cumulative = 0;
+      for (let i = 0; i < points.length - 1; i++) {
+        const p1 = points[i];
+        const p2 = points[i + 1];
+        const midY = (p1.y + p2.y) * 0.5;
+        const segD = `M ${p1.x} ${p1.y} C ${spineX} ${p1.y}, ${spineX} ${midY}, ${spineX} ${midY} C ${spineX} ${midY}, ${spineX} ${p2.y}, ${p2.x} ${p2.y}`;
+        d += ` C ${spineX} ${p1.y}, ${spineX} ${midY}, ${spineX} ${midY} C ${spineX} ${midY}, ${spineX} ${p2.y}, ${p2.x} ${p2.y}`;
+
+        const tempSvg = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        tempSvg.setAttribute('d', segD);
+        cumulative += tempSvg.getTotalLength();
+        segLengths.push(cumulative);
+      }
+    } else {
+      // Unique organic curve profile for each card-to-card segment
+      const curveProfiles = [
+        { x1: 0.52, y1: -0.18, x2: 0.72, y2: 0.12 },
+        { x1: 0.35, y1: 0.24, x2: 0.65, y2: -0.22 },
+        { x1: 0.68, y1: -0.12, x2: 0.28, y2: 0.25 },
+        { x1: 0.42, y1: 0.28, x2: 0.78, y2: -0.15 },
+        { x1: 0.62, y1: -0.22, x2: 0.38, y2: 0.18 },
+      ];
+
+      d = `M ${points[0].x} ${points[0].y}`;
+      let cumulative = 0;
+      for (let i = 0; i < points.length - 1; i++) {
+        const p1 = points[i];
+        const p2 = points[i + 1];
+        const dx = p2.x - p1.x;
+        const dy = p2.y - p1.y;
+        const prof = curveProfiles[i % curveProfiles.length];
+
+        const c1x = p1.x + dx * prof.x1;
+        const c1y = p1.y + dy * (0.25 + prof.y1);
+        const c2x = p1.x + dx * prof.x2;
+        const c2y = p1.y + dy * (0.75 + prof.y2);
+
+        const segD = `M ${p1.x} ${p1.y} C ${c1x} ${c1y}, ${c2x} ${c2y}, ${p2.x} ${p2.y}`;
+        d += ` C ${c1x} ${c1y}, ${c2x} ${c2y}, ${p2.x} ${p2.y}`;
+
+        const tempSvg = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        tempSvg.setAttribute('d', segD);
+        cumulative += tempSvg.getTotalLength();
+        segLengths.push(cumulative);
+      }
+    }
+
+    const totalLength = Math.max(segLengths[segLengths.length - 1] || 1, 1);
+    const thresholds = segLengths.map(len => len / totalLength);
+    pathMetricsRef.current = { totalLength, thresholds };
+
+    setSvgData({ width, height, pathD: d, points });
+  }, [visibleCategories.length]);
+
+  useEffect(() => {
+    const container = timelineRef.current;
+    if (!container) return;
+
+    const rafMeasure = requestAnimationFrame(measureTimeline);
+    const ro = new ResizeObserver(() => {
+      measureTimeline();
+    });
+    ro.observe(container);
+    cardRefs.current.forEach(el => {
+      if (el) ro.observe(el);
+    });
+    window.addEventListener('resize', measureTimeline, { passive: true });
+
+    return () => {
+      cancelAnimationFrame(rafMeasure);
+      ro.disconnect();
+      window.removeEventListener('resize', measureTimeline);
+    };
+  }, [measureTimeline, skills.length, categories.length]);
+
+  useEffect(() => {
+    const container = timelineRef.current;
+    if (!container) return;
+
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const applyState = (progress: number, entered: boolean) => {
+      const { totalLength, thresholds } = pathMetricsRef.current;
+      const maskPath = maskPathRef.current;
+
+      if (maskPath) {
+        maskPath.style.strokeDasharray = `${totalLength}`;
+        maskPath.style.strokeDashoffset = `${totalLength * (1 - progress)}`;
+      }
+
+      cardRefs.current.slice(0, visibleCategories.length).forEach((el, idx) => {
+        if (!el) return;
+        const threshold = thresholds[idx] ?? 0;
+        const revealed =
+          isAdmin ||
+          reducedMotion ||
+          (idx === 0 ? entered : progress >= Math.max(0.02, threshold - 0.06));
+        el.dataset.revealed = revealed ? 'true' : 'false';
+
+        const dot = dotRefs.current[idx];
+        if (dot) {
+          dot.dataset.revealed = revealed ? 'true' : 'false';
+        }
+      });
+    };
+
+    if (isAdmin || reducedMotion) {
+      applyState(1, true);
+      return;
+    }
+
+    let rafId = 0;
+    let targetProgress = 0;
+    let currentProgress = 0;
+    let hasEntered = false;
+
+    const readScroll = () => {
+      const rect = container.getBoundingClientRect();
+      const vh = window.innerHeight;
+      hasEntered = rect.top <= vh * 0.88;
+      // Card 01 is shown first; the line only starts drawing once the user scrolls further
+      const startY = vh * 0.5;
+      const travel = Math.max(rect.height - vh * 0.66, vh * 0.45);
+      targetProgress = Math.max(0, Math.min(1, (startY - rect.top) / travel));
+    };
+
+    const tick = () => {
+      currentProgress += (targetProgress - currentProgress) * 0.14;
+      if (Math.abs(targetProgress - currentProgress) < 0.001) {
+        currentProgress = targetProgress;
+      }
+
+      applyState(currentProgress, hasEntered);
+
+      if (Math.abs(targetProgress - currentProgress) >= 0.001) {
+        rafId = window.requestAnimationFrame(tick);
+      } else {
+        rafId = 0;
+      }
+    };
+
+    const onScroll = () => {
+      readScroll();
+      if (!rafId) {
+        rafId = window.requestAnimationFrame(tick);
+      }
+    };
+
+    readScroll();
+    currentProgress = targetProgress;
+    applyState(currentProgress, hasEntered);
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll, { passive: true });
+
+    return () => {
+      if (rafId) window.cancelAnimationFrame(rafId);
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+    };
+  }, [svgData, isAdmin, visibleCategories.length]);
+
   return (
-    <section id="skills" className={styles.skillsSection}>
+    <section id={sectionId} className={styles.skillsSection}>
       <div className={styles.container}>
         <div ref={ref} className={`${styles.header} ${visible ? styles.visible : ''}`}>
           <div className={styles.sectionLabel}>{"// tech.stack"}</div>
@@ -313,20 +539,125 @@ export default function Skills({ isAdmin = false }: { isAdmin?: boolean }) {
           )}
         </div>
 
-        <div className={styles.grid}>
-          {categories
-            .filter(c => isAdmin || c.isActive)
-            .map((cat, ci) => {
-              const catColor = cat.accentColor || 'var(--border-strong)';
-              const indexStr = String(ci + 1).padStart(2, '0');
+        <div ref={timelineRef} className={styles.timelineContainer}>
+          {/* Animated Zigzag Dashed SVG Path */}
+          {svgData.pathD && (
+            <svg
+              className={styles.zigzagSvg}
+              width={svgData.width}
+              height={svgData.height}
+              viewBox={`0 0 ${svgData.width} ${svgData.height}`}
+              fill="none"
+              aria-hidden="true"
+            >
+              <defs>
+                <mask id="zigzag-reveal-mask">
+                  <path
+                    ref={maskPathRef}
+                    d={svgData.pathD}
+                    stroke="#ffffff"
+                    strokeWidth="6"
+                    strokeLinecap="round"
+                    fill="none"
+                  />
+                </mask>
+              </defs>
 
-              return (
-                <div key={cat.name} className={`${styles.card} ${visible ? styles.visible : ''}`}
-                  style={{
-                    transitionDelay: `${ci * 0.12}s`,
-                    '--accent-color': catColor,
-                  } as React.CSSProperties}>
-                  
+              {/* Subtle base track guide */}
+              <path
+                d={svgData.pathD}
+                className={styles.zigzagTrackBase}
+                strokeDasharray="6 8"
+              />
+
+              {/* Progressively drawn dashed zigzag line */}
+              <path
+                d={svgData.pathD}
+                className={styles.zigzagTrackActive}
+                strokeDasharray="6 8"
+                mask="url(#zigzag-reveal-mask)"
+              />
+
+              {/* Connection nodes at each card anchor */}
+              {svgData.points.map((pt, idx) => (
+                <circle
+                  key={idx}
+                  ref={el => { dotRefs.current[idx] = el; }}
+                  cx={pt.x}
+                  cy={pt.y}
+                  r="4.5"
+                  className={styles.zigzagNode}
+                  data-revealed="false"
+                />
+              ))}
+            </svg>
+          )}
+
+          {visibleCategories.map((cat, ci) => {
+            const catColor = cat.accentColor || 'var(--border-strong)';
+            const indexStr = String(ci + 1).padStart(2, '0');
+            const isLeft = ci % 2 === 0;
+            const pinAngles = [-26, 24, -18, 27, -22, 20];
+            const pinAngle = pinAngles[ci % pinAngles.length];
+            const shadowOffsetX = pinAngle < 0 ? 35 : 29;
+
+            return (
+              <div
+                key={cat.name}
+                ref={el => { cardRefs.current[ci] = el; }}
+                data-revealed="false"
+                className={`${styles.card} ${isLeft ? styles.cardLeft : styles.cardRight}`}
+                style={{ '--accent-color': catColor } as React.CSSProperties}
+              >
+                {/* Realistic angled 3D Pushpin (varied left/right tilt) */}
+                <div
+                  className={styles.pushPin}
+                  style={{ left: isLeft ? '47%' : '53%' }}
+                  aria-hidden="true"
+                >
+                  <svg viewBox="0 0 64 64" width="44" height="44" fill="none">
+                    <defs>
+                      <radialGradient id={`pin-cap-${ci}`} cx="35%" cy="28%" r="68%">
+                        <stop offset="0%" stopColor="#f4f4f5" />
+                        <stop offset="28%" stopColor="#a1a1aa" />
+                        <stop offset="72%" stopColor="#3f3f46" />
+                        <stop offset="100%" stopColor="#18181b" />
+                      </radialGradient>
+                      <linearGradient id={`pin-neck-${ci}`} x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#27272a" />
+                        <stop offset="42%" stopColor="#71717a" />
+                        <stop offset="100%" stopColor="#18181b" />
+                      </linearGradient>
+                      <radialGradient id={`pin-flange-${ci}`} cx="40%" cy="32%" r="65%">
+                        <stop offset="0%" stopColor="#d4d4d8" />
+                        <stop offset="48%" stopColor="#52525b" />
+                        <stop offset="100%" stopColor="#18181b" />
+                      </radialGradient>
+                      <linearGradient id={`pin-needle-${ci}`} x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#71717a" />
+                        <stop offset="50%" stopColor="#f4f4f5" />
+                        <stop offset="100%" stopColor="#52525b" />
+                      </linearGradient>
+                    </defs>
+                    {/* Soft cast shadow on card surface */}
+                    <ellipse cx={shadowOffsetX} cy="51" rx="13" ry="5.5" fill="rgba(0,0,0,0.58)" />
+                    {/* Angled 3D Pushpin body */}
+                    <g transform={`rotate(${pinAngle} 32 36)`}>
+                      {/* Metal needle */}
+                      <polygon points="30.2,40 33.8,40 32,55" fill={`url(#pin-needle-${ci})`} />
+                      {/* Wide circular flange */}
+                      <ellipse cx="32" cy="37" rx="13.5" ry="6.2" fill={`url(#pin-flange-${ci})`} />
+                      {/* Cylindrical neck */}
+                      <path d="M25.5 23 L38.5 23 L37 36.5 Q32 39 27 36.5 Z" fill={`url(#pin-neck-${ci})`} />
+                      {/* Glossy 3D spherical top cap */}
+                      <ellipse cx="32" cy="18.5" rx="11.5" ry="9.2" fill={`url(#pin-cap-${ci})`} />
+                      {/* Specular highlight */}
+                      <ellipse cx="28" cy="14.5" rx="3.8" ry="2.1" transform="rotate(-20 28 14.5)" fill="rgba(255,255,255,0.65)" />
+                    </g>
+                  </svg>
+                </div>
+
+                <div className={styles.cardInner}>
                   {deletingCatName === cat.name ? (
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', minHeight: '220px', padding: '10px' }}>
                       <span style={{ fontSize: '24px', marginBottom: '12px' }}>⚠️</span>
@@ -406,10 +737,10 @@ export default function Skills({ isAdmin = false }: { isAdmin?: boolean }) {
                       </div>
                     </>
                   )}
-
                 </div>
-              );
-            })}
+              </div>
+            );
+          })}
         </div>
       </div>
 

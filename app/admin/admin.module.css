@@ -1,6 +1,8 @@
 .adminWrapper {
+  position: relative;
+  z-index: 10;
   min-height: 100vh;
-  background: var(--bg-primary);
+  background: transparent;
   color: var(--text-primary);
   font-family: var(--font-sans);
   padding: 80px 24px 40px;

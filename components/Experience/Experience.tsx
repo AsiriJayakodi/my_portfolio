@@ -1,6 +1,6 @@
 "use client";
 import styles from './Experience.module.css';
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, useCallback } from 'react';
 
 function useInView(threshold = 0.1) {
   const ref = useRef<HTMLDivElement>(null);
@@ -38,12 +38,10 @@ export default function Experience({ isAdmin = false }: { isAdmin?: boolean }) {
   const { ref, visible } = useInView();
   const [experiences, setExperiences] = useState<ExperienceData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [startIndex, setStartIndex] = useState(0);
 
-  const trackRef = useRef<HTMLDivElement>(null);
-  const [translateY, setTranslateY] = useState(0);
-  const [viewportHeight, setViewportHeight] = useState<number | string>('auto');
-  const [isAnimating, setIsAnimating] = useState(false);
+  const timelineRef = useRef<HTMLDivElement>(null);
+  const progressRef = useRef<HTMLDivElement>(null);
+  const [revealedCount, setRevealedCount] = useState(0);
 
   // Modal States
   const [showModal, setShowModal] = useState(false);
@@ -69,80 +67,106 @@ export default function Experience({ isAdmin = false }: { isAdmin?: boolean }) {
   };
 
   useEffect(() => {
-    loadExperiences();
+    let active = true;
+    fetch('/api/experience')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (active && data) {
+          setExperiences(data);
+        }
+      })
+      .catch((error) => {
+        console.error("Failed to load experiences", error);
+      })
+      .finally(() => {
+        if (active) {
+          setLoading(false);
+        }
+      });
+    return () => {
+      active = false;
+    };
   }, []);
 
-  const updateLayout = (index: number) => {
-    if (!trackRef.current) return;
-    const items = Array.from(trackRef.current.children) as HTMLElement[];
-    if (items.length === 0) return;
+  const syncTimelineScroll = useCallback(() => {
+    const timelineEl = timelineRef.current;
+    if (!timelineEl || experiences.length === 0) return;
 
-    let targetTranslateY = 0;
-    for (let i = 0; i < index; i++) {
-      if (items[i]) {
-        const rect = items[i].getBoundingClientRect();
-        const style = window.getComputedStyle(items[i]);
-        const marginBottom = parseFloat(style.marginBottom || '0');
-        targetTranslateY += rect.height + marginBottom;
+    const lineStartY = 15;
+    const maxFill = Math.max(0, timelineEl.offsetHeight - lineStartY);
+
+    if (isAdmin) {
+      if (progressRef.current) {
+        progressRef.current.style.height = `${maxFill}px`;
       }
+      setRevealedCount(experiences.length);
+      return;
     }
 
-    let targetHeight = 0;
-    const limit = Math.min(index + 3, items.length);
-    for (let i = index; i < limit; i++) {
-      if (items[i]) {
-        const rect = items[i].getBoundingClientRect();
-        const style = window.getComputedStyle(items[i]);
-        const marginBottom = parseFloat(style.marginBottom || '0');
-        targetHeight += rect.height;
-        if (i < limit - 1) {
-          targetHeight += marginBottom;
-        }
-      }
+    const rect = timelineEl.getBoundingClientRect();
+    const vh = window.innerHeight;
+    const atPageBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 12;
+
+    const focusY = vh * 0.62;
+    const rawFill = atPageBottom ? maxFill : focusY - rect.top - lineStartY;
+    const clampedFill = Math.max(0, Math.min(maxFill, rawFill));
+
+    if (progressRef.current) {
+      progressRef.current.style.height = `${clampedFill}px`;
     }
 
-    setTranslateY(-targetTranslateY);
-    setViewportHeight(targetHeight);
-  };
+    const tipY = lineStartY + clampedFill;
+    const itemEls = Array.from(timelineEl.querySelectorAll(`.${styles.timelineItem}`)) as HTMLElement[];
+
+    if (atPageBottom) {
+      setRevealedCount(itemEls.length);
+      return;
+    }
+
+    let nextCount = 0;
+    for (let i = 0; i < itemEls.length; i++) {
+      const el = itemEls[i];
+      const elRect = el.getBoundingClientRect();
+      const dotEl = el.querySelector(`.${styles.timelineDot}`) as HTMLElement | null;
+      const dotTopInItem = dotEl ? dotEl.offsetTop + dotEl.offsetHeight / 2 : 15;
+      const dotYInTimeline = el.offsetTop + dotTopInItem;
+
+      const isActive =
+        i === 0
+          ? elRect.top <= vh * 0.72
+          : tipY >= dotYInTimeline - 8;
+
+      if (isActive) {
+        nextCount = i + 1;
+      } else {
+        break;
+      }
+    }
+    setRevealedCount(nextCount);
+  }, [experiences.length, isAdmin]);
 
   useEffect(() => {
-    if (experiences.length === 0 || isAdmin) return;
+    if (loading || experiences.length === 0) return;
 
-    // Trigger initial measurement immediately and in a animation frame
-    updateLayout(startIndex);
-    const frameId = requestAnimationFrame(() => {
-      updateLayout(startIndex);
-    });
-
-    const handleResize = () => {
-      updateLayout(startIndex);
+    let rafId: number | null = null;
+    const scheduleSync = () => {
+      if (rafId !== null) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = null;
+        syncTimelineScroll();
+      });
     };
 
-    window.addEventListener('resize', handleResize);
+    scheduleSync();
+    window.addEventListener('scroll', scheduleSync, { passive: true });
+    window.addEventListener('resize', scheduleSync, { passive: true });
+
     return () => {
-      cancelAnimationFrame(frameId);
-      window.removeEventListener('resize', handleResize);
+      if (rafId !== null) cancelAnimationFrame(rafId);
+      window.removeEventListener('scroll', scheduleSync);
+      window.removeEventListener('resize', scheduleSync);
     };
-  }, [experiences, startIndex, isAdmin]);
-
-  const handleNavigate = (direction: 'up' | 'down') => {
-    if (isAnimating) return;
-
-    let nextIndex = startIndex;
-    if (direction === 'up' && startIndex > 0) {
-      nextIndex = startIndex - 1;
-    } else if (direction === 'down' && startIndex < experiences.length - 3) {
-      nextIndex = startIndex + 1;
-    }
-
-    if (nextIndex !== startIndex) {
-      setIsAnimating(true);
-      setStartIndex(nextIndex);
-      setTimeout(() => {
-        setIsAnimating(false);
-      }, 600); // Wait for the transition to finish
-    }
-  };
+  }, [loading, experiences.length, syncTimelineScroll]);
 
   const openFormModal = (exp: ExperienceData | null = null) => {
     if (exp) {
@@ -209,7 +233,7 @@ export default function Experience({ isAdmin = false }: { isAdmin?: boolean }) {
   };
 
   if (loading) {
-    return <section className={styles.experienceSection}></section>;
+    return <section id="experience" className={styles.experienceSection}></section>;
   }
 
   if (!isAdmin && experiences.length === 0) {
@@ -217,13 +241,13 @@ export default function Experience({ isAdmin = false }: { isAdmin?: boolean }) {
   }
 
   const renderCard = (exp: ExperienceData, index: number) => {
-    const isVisible = isAdmin || (index >= startIndex && index < startIndex + 3);
-    const isHidden = !isAdmin ? false : !isVisible;
+    const isRevealed = isAdmin || index < revealedCount;
+    const sideClass = index % 2 === 0 ? styles.timelineItemLeft : styles.timelineItemRight;
 
     return (
-      <div 
-        key={exp._id || index} 
-        className={`${styles.timelineItem} ${isHidden ? styles.hiddenTimelineItem : ''}`}
+      <div
+        key={exp._id || index}
+        className={`${styles.timelineItem} ${sideClass} ${isRevealed ? styles.itemRevealed : ''}`}
       >
         <div className={styles.timelineDot}></div>
         <div className={styles.timelineContent}>
@@ -275,52 +299,10 @@ export default function Experience({ isAdmin = false }: { isAdmin?: boolean }) {
         </div>
 
 
-        {!isAdmin && (
-          <div style={{ textAlign: 'center', marginBottom: '20px', position: 'relative', zIndex: 10 }}>
-            <button
-              onClick={() => handleNavigate('up')}
-              disabled={startIndex === 0 || isAnimating}
-              className={`${styles.showMoreBtn} ${startIndex === 0 ? styles.disabled : ''}`}
-              aria-label="Scroll Up"
-            >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="18 15 12 9 6 15"></polyline>
-              </svg>
-            </button>
-          </div>
-        )}
-
-        <div 
-          className={`${styles.timeline} ${!isAdmin ? styles.viewport : ''}`}
-          style={!isAdmin ? { height: viewportHeight } : undefined}
-        >
-          {!isAdmin ? (
-            <div 
-              ref={trackRef} 
-              className={styles.track} 
-              style={{ transform: `translateY(${translateY}px)` }}
-            >
-              {experiences.map((exp, index) => renderCard(exp, index))}
-            </div>
-          ) : (
-            experiences.map((exp, index) => renderCard(exp, index))
-          )}
+        <div ref={timelineRef} className={styles.timeline}>
+          <div ref={progressRef} className={styles.timelineProgress} aria-hidden="true" />
+          {experiences.map((exp, index) => renderCard(exp, index))}
         </div>
-
-        {!isAdmin && (
-          <div style={{ textAlign: 'center', marginTop: '10px', position: 'relative', zIndex: 10 }}>
-            <button
-              onClick={() => handleNavigate('down')}
-              disabled={startIndex >= experiences.length - 3 || isAnimating}
-              className={`${styles.showMoreBtn} ${startIndex >= experiences.length - 3 ? styles.disabled : ''}`}
-              aria-label="Scroll Down"
-            >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="6 9 12 15 18 9"></polyline>
-              </svg>
-            </button>
-          </div>
-        )}
       </div>
 
       {/* Admin Modal */}

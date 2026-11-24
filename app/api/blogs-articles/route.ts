@@ -3,6 +3,8 @@ import connectToDatabase from '@/lib/db';
 import BlogArticle from '@/models/BlogArticle';
 import { checkAdminSession } from '@/lib/auth';
 
+export const dynamic = 'force-dynamic';
+
 const DEFAULT_ITEMS = [
   {
     title: "Building a Modern Next.js Portfolio with Glassmorphism",

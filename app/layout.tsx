@@ -1,8 +1,26 @@
 import type { Metadata } from "next";
+import { Inter, Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/components/Navbar/Navbar";
 import SmoothScroll from "@/components/SmoothScroll";
 import CosmicBackground from "@/components/CosmicBackground/CosmicBackground";
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  variable: "--font-space-grotesk",
+  display: "swap",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-jetbrains-mono",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "Asiri Indrajith Jayakodi | Portfolio",
@@ -40,9 +58,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" data-theme="dark" suppressHydrationWarning>
+    <html
+      lang="en"
+      data-theme="dark"
+      className={`${inter.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable}`}
+      suppressHydrationWarning
+    >
       <head>
-        <link rel="preload" as="image" href="/profile.webp" type="image/webp" fetchPriority="high" />
+        <link rel="preload" as="image" href="/profile-hero.png" type="image/png" fetchPriority="high" />
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -60,7 +83,6 @@ export default function RootLayout({
       <body>
         <CosmicBackground />
         <SmoothScroll>
-          <Navbar />
           {children}
         </SmoothScroll>
       </body>

@@ -1,0 +1,142 @@
+.stageRoot {
+  position: relative;
+  width: 100%;
+}
+
+/* Track = 3.0 viewports of pinned choreography + 1 viewport for the sticky layer itself */
+.stageTrack {
+  position: relative;
+  height: 400vh;
+}
+
+/* Lands in the middle of the "About holds fully visible" range (stage scroll 1.55) */
+.aboutAnchor {
+  position: absolute;
+  top: 155vh;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  pointer-events: none;
+}
+
+.stickyViewport {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100dvh;
+  min-height: 100vh;
+  min-height: 100dvh;
+  width: 100%;
+  overflow: hidden;
+}
+
+.heroLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  opacity: clamp(0, calc(1 - max(var(--hero-p, 0) - 0.88, 0) / 0.12), 1);
+  pointer-events: none;
+}
+
+.stageTrack[data-phase="hero"] .heroLayer {
+  pointer-events: auto;
+}
+
+/* About: zooms in, holds (or pans on mobile), then zooms out & dissolves while Tech Stack zooms in */
+.aboutLayer {
+  position: relative;
+  z-index: 5;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  will-change: transform, opacity;
+  opacity: clamp(0, calc(var(--about-in, 0) * (1 - var(--about-out, 0))), 1);
+  transform:
+    translate3d(0, calc(-1 * var(--about-pan, 0) * var(--about-pan-max, 0px)), 0)
+    scale(calc(0.84 + var(--about-in, 0) * 0.16 + var(--about-out, 0) * 0.12));
+  transform-origin: 50% calc(45% + var(--about-pan, 0) * var(--about-pan-max, 0px));
+  pointer-events: none;
+}
+
+.stageTrack[data-phase="about"] .aboutLayer {
+  pointer-events: auto;
+}
+
+/* Tech Stack wrapper: its top meets the viewport top exactly when the pin ends */
+.nextWrap {
+  position: relative;
+  z-index: 6;
+  margin-top: -100vh;
+}
+
+.nextInner {
+  position: relative;
+  will-change: transform, opacity;
+  transform-origin: 50% 38vh;
+  opacity: 0;
+  visibility: hidden;
+}
+
+@media (max-width: 960px) {
+  .stageTrack {
+    height: 500vh;
+    height: 500dvh;
+  }
+
+  .aboutAnchor {
+    top: 135vh;
+    top: 135dvh;
+  }
+
+  .aboutLayer {
+    height: auto;
+    min-height: 100%;
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding: 20px 0 36px;
+    transform-origin: 50% calc(40vh + var(--about-pan, 0) * var(--about-pan-max, 0px));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stageTrack {
+    height: auto;
+  }
+
+  .aboutAnchor {
+    top: auto;
+    bottom: 0;
+  }
+
+  .stickyViewport {
+    position: relative;
+    height: auto;
+    overflow: visible;
+  }
+
+  .heroLayer {
+    position: relative;
+    opacity: 1;
+    pointer-events: auto !important;
+  }
+
+  .aboutLayer {
+    opacity: 1 !important;
+    transform: none !important;
+    pointer-events: auto;
+    height: auto;
+  }
+
+  .nextWrap {
+    margin-top: 0;
+  }
+
+  .nextInner {
+    opacity: 1 !important;
+    transform: none !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+  }
+}

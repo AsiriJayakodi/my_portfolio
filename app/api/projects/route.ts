@@ -3,6 +3,8 @@ import connectToDatabase from '../../../lib/db';
 import Project from '../../../models/Project';
 import { checkAdminSession } from '@/lib/auth';
 
+export const dynamic = 'force-dynamic';
+
 const DEFAULT_PROJECTS = [
   {
     title: "Enterprise HR Management System (HRMS) -- Enlear",
