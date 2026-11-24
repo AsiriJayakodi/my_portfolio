@@ -9,6 +9,10 @@
   transition: opacity 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
+.canvasContainer * {
+  pointer-events: none !important;
+}
+
 .cosmicCanvas {
   display: block;
   width: 100%;

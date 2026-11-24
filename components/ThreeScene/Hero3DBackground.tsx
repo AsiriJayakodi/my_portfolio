@@ -90,6 +90,10 @@ function StarLayer({
 
   useFrame((_, delta) => {
     if (reducedMotion || !pointsRef.current) return;
+    const scrollP = parseFloat(
+      document.documentElement.style.getPropertyValue("--hero-scroll-p") || "0"
+    );
+    if (scrollP >= 0.99) return;
     pointsRef.current.rotation.y += delta * speedY;
     pointsRef.current.rotation.x += delta * 0.005;
   });

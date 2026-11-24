@@ -233,7 +233,7 @@ export default function Experience({ isAdmin = false }: { isAdmin?: boolean }) {
   };
 
   if (loading) {
-    return <section className={styles.experienceSection}></section>;
+    return <section id="experience" className={styles.experienceSection}></section>;
   }
 
   if (!isAdmin && experiences.length === 0) {

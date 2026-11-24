@@ -388,6 +388,7 @@ export default function CosmicScene3D({ settings }: { settings: CosmicConfig }) 
       dpr={[1, 1.5]}
       camera={{ position: [0, 0, 8], fov: 55 }}
       gl={{ alpha: true, antialias: false, powerPreference: "high-performance" }}
+      style={{ pointerEvents: "none" }}
     >
       <DeepStarfield
         count={count}

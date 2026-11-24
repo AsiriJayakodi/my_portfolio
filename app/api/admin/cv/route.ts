@@ -1,6 +1,4 @@
 import { NextResponse } from 'next/server';
-import fs from 'node:fs';
-import path from 'node:path';
 import connectToDatabase from '@/lib/db';
 import CV from '@/models/CV';
 import { checkAdminSession } from '@/lib/auth';
@@ -54,31 +52,19 @@ export async function POST(request: Request) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // 3. Unique stored file name
+    // 3. Unique stored file identifier
     const timestamp = Date.now();
     const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
     const storedFileName = `cv-${timestamp}-${safeName}`;
 
-    // 4. Optionally write to local disk cache (fails gracefully in serverless/Vercel)
-    try {
-      const storageDir = path.join(process.cwd(), 'storage', 'cv');
-      if (!fs.existsSync(storageDir)) {
-        fs.mkdirSync(storageDir, { recursive: true });
-      }
-      const filePath = path.join(storageDir, storedFileName);
-      await fs.promises.writeFile(filePath, buffer);
-    } catch {
-      // Ephemeral / Read-only environments like Vercel Lambda
-    }
-
-    // 5. Version number increment
+    // 4. Version number increment
     const count = await CV.countDocuments({});
     const nextVersion = count + 1;
 
-    // 6. Deactivate existing active CVs
+    // 5. Deactivate existing active CVs
     await CV.updateMany({ isActive: true }, { isActive: false });
 
-    // 7. Save new CV document directly in Mongo with fileData buffer
+    // 6. Save new CV document directly in MongoDB with fileData buffer
     const newCV = await CV.create({
       originalFileName: file.name,
       storedFileName,
