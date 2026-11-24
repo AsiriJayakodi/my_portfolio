@@ -44,17 +44,17 @@ export default function HeroAboutStage({
         currentP = targetP;
       }
 
-      // Hero phase runs 0 -> 0.72; About reveal runs 0.56 -> 0.96
-      const rawHeroP = Math.max(0, Math.min(1, currentP / 0.72));
-      const heroP = easeInOutQuad(rawHeroP);
-      const rawAboutP = Math.max(0, Math.min(1, (currentP - 0.56) / 0.4));
-      const aboutP = easeInOutQuad(rawAboutP);
+      // Hero dissolves across 0.00 -> 0.55; About zooms in across 0.36 -> 0.74 and stays 100% visible
+      const heroP = easeInOutQuad(Math.max(0, Math.min(1, currentP / 0.55)));
+      const aboutP = easeInOutQuad(
+        Math.max(0, Math.min(1, (currentP - 0.36) / 0.38))
+      );
 
       track.style.setProperty("--hero-p", heroP.toFixed(4));
       track.style.setProperty("--about-p", aboutP.toFixed(4));
       document.documentElement.style.setProperty("--hero-scroll-p", heroP.toFixed(4));
 
-      track.dataset.phase = currentP >= 0.62 ? "about" : "hero";
+      track.dataset.phase = currentP >= 0.46 ? "about" : "hero";
 
       if (Math.abs(targetP - currentP) >= 0.0005) {
         rafId = window.requestAnimationFrame(tick);
@@ -86,7 +86,6 @@ export default function HeroAboutStage({
 
   return (
     <div ref={trackRef} className={styles.stageTrack} data-phase="hero">
-      {/* Anchor target positioned where About is 100% revealed */}
       <div id="about" className={styles.aboutAnchor} aria-hidden="true" />
 
       <div className={styles.stickyViewport}>

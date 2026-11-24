@@ -7,6 +7,8 @@ import { DEFAULT_COSMIC_SETTINGS, CosmicConfig } from "@/lib/cosmicConstants";
 
 const CosmicScene3D = dynamic(() => import("./CosmicScene3D"), { ssr: false });
 
+const COSMIC_CACHE_KEY = "portfolio_cosmic_settings_v1";
+
 export default function CosmicBackground({
   previewSettings,
 }: {
@@ -22,12 +24,26 @@ export default function CosmicBackground({
       return;
     }
 
+    try {
+      const cached = localStorage.getItem(COSMIC_CACHE_KEY);
+      if (cached) {
+        setSettings(JSON.parse(cached) as CosmicConfig);
+      }
+    } catch {
+      // Ignore cache read error
+    }
+
     const fetchSettings = async () => {
       try {
         const res = await fetch("/api/settings/cosmic");
         if (res.ok) {
-          const data = await res.json();
+          const data = (await res.json()) as CosmicConfig;
           setSettings(data);
+          try {
+            localStorage.setItem(COSMIC_CACHE_KEY, JSON.stringify(data));
+          } catch {
+            // Ignore cache write error
+          }
         }
       } catch {
         // Fallback to default
@@ -39,6 +55,11 @@ export default function CosmicBackground({
     const handleSettingsUpdate = (e: CustomEvent<CosmicConfig>) => {
       if (e.detail) {
         setSettings(e.detail);
+        try {
+          localStorage.setItem(COSMIC_CACHE_KEY, JSON.stringify(e.detail));
+        } catch {
+          // Ignore cache write error
+        }
       }
     };
 

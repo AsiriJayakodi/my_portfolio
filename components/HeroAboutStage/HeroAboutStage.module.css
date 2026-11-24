@@ -26,10 +26,11 @@
   inset: 0;
   z-index: 2;
   opacity: clamp(0, calc(1 - max(var(--hero-p, 0) - 0.88, 0) / 0.12), 1);
+  pointer-events: none;
 }
 
-.stageTrack[data-phase="about"] .heroLayer {
-  pointer-events: none;
+.stageTrack[data-phase="hero"] .heroLayer {
+  pointer-events: auto;
 }
 
 .aboutLayer {

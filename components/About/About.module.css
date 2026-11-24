@@ -320,6 +320,8 @@
 }
 
 .tag {
+  position: relative;
+  overflow: hidden;
   padding: 6px 14px;
   border-radius: 6px;
   background: var(--border-subtle);
@@ -333,19 +335,52 @@
   transition:
     opacity 0.45s ease,
     transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
-    border-color 0.2s ease,
-    background 0.2s ease;
+    border-color 0.25s ease,
+    background 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.tag::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 25%, rgba(255, 255, 255, 0.08) 50%, transparent 75%);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+  pointer-events: none;
 }
 
 .rightContent.visible .tag {
   opacity: 1;
   transform: translateY(0);
+  animation: tagPulseFloat 5s ease-in-out infinite;
 }
 
+.rightContent.visible .tag:nth-child(2) { animation-delay: 0.4s; }
+.rightContent.visible .tag:nth-child(3) { animation-delay: 0.8s; }
+.rightContent.visible .tag:nth-child(4) { animation-delay: 1.2s; }
+.rightContent.visible .tag:nth-child(5) { animation-delay: 1.6s; }
+
 .tag:hover {
-  transform: translateY(-2px);
+  transform: translateY(-3px) scale(1.03);
   border-color: var(--border-hover);
   background: var(--bg-card-hover);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28);
+}
+
+.tag:hover::after {
+  transform: translateX(100%);
+}
+
+@keyframes tagPulseFloat {
+  0%, 100% {
+    transform: translateY(0);
+    border-color: var(--border-color);
+  }
+  50% {
+    transform: translateY(-3px);
+    border-color: var(--border-strong);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -357,7 +392,8 @@
   }
 
   .eduDot,
-  .floatingBadge {
+  .floatingBadge,
+  .rightContent.visible .tag {
     animation: none;
   }
 }

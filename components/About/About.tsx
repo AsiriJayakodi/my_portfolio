@@ -65,7 +65,8 @@ export default function About({
   isAdmin?: boolean;
   sectionId?: string;
 }) {
-  const { ref, visible } = useInView();
+  const { ref, visible: inViewVisible } = useInView();
+  const visible = sectionId !== "about" ? true : inViewVisible;
   const [profile, setProfile] = useState<ProfileData | null>(null);
 
   // Modals Visibility

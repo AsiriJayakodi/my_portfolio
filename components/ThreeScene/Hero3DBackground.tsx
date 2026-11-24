@@ -2,7 +2,6 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { PointMaterial, Points, Sparkles } from "@react-three/drei";
 import * as THREE from "three";
 
 interface ThemePalette {
@@ -32,45 +31,64 @@ function createSeededRandom(seed: number) {
   };
 }
 
-function Starfield({
-  palette,
+function StarLayer({
+  count,
+  spread,
+  size,
+  color,
+  opacity,
+  speedY,
+  seed,
+  position = [0, 0, 0],
   reducedMotion,
 }: {
-  palette: ThemePalette;
+  count: number;
+  spread: [number, number, number];
+  size: number;
+  color: string;
+  opacity: number;
+  speedY: number;
+  seed: number;
+  position?: [number, number, number];
   reducedMotion: boolean;
 }) {
   const pointsRef = useRef<THREE.Points>(null);
 
   const positions = useMemo(() => {
-    const count = 1200;
     const coords = new Float32Array(count * 3);
-    const rand = createSeededRandom(42);
+    const rand = createSeededRandom(seed);
     for (let i = 0; i < count; i++) {
       const i3 = i * 3;
-      coords[i3] = (rand() - 0.5) * 28;
-      coords[i3 + 1] = (rand() - 0.5) * 16;
-      coords[i3 + 2] = (rand() - 0.5) * 14 - 4;
+      coords[i3] = (rand() - 0.5) * spread[0];
+      coords[i3 + 1] = (rand() - 0.5) * spread[1];
+      coords[i3 + 2] = (rand() - 0.5) * spread[2] - 4;
     }
     return coords;
-  }, []);
+  }, [count, spread, seed]);
 
   useFrame((_, delta) => {
     if (reducedMotion || !pointsRef.current) return;
-    pointsRef.current.rotation.y += delta * 0.018;
+    pointsRef.current.rotation.y += delta * speedY;
     pointsRef.current.rotation.x += delta * 0.005;
   });
 
   return (
-    <Points ref={pointsRef} positions={positions} stride={3} frustumCulled={false}>
-      <PointMaterial
+    <points ref={pointsRef} position={position} frustumCulled={false}>
+      <bufferGeometry>
+        <bufferAttribute
+          attach="attributes-position"
+          args={[positions, 3]}
+        />
+      </bufferGeometry>
+      <pointsMaterial
         transparent
-        color={palette.particles}
-        size={0.04}
+        color={color}
+        size={size}
         sizeAttenuation
         depthWrite={false}
-        opacity={palette.particleOpacity}
+        opacity={opacity}
       />
-    </Points>
+    </points>
   );
 }
 
@@ -156,29 +174,41 @@ export default function Hero3DBackground() {
       }}
     >
       <Canvas
-        dpr={[1, 2]}
+        dpr={[1, 1.5]}
         camera={{ position: [0, 0, 7.5], fov: 50 }}
-        gl={{ alpha: true, antialias: true, powerPreference: "high-performance" }}
+        gl={{ alpha: true, antialias: false, powerPreference: "high-performance" }}
       >
-        <Starfield palette={palette} reducedMotion={reducedMotion} />
-        <Sparkles
-          count={90}
-          scale={[24, 14, 10]}
-          size={2.8}
-          speed={reducedMotion ? 0 : 0.25}
-          opacity={palette.particleOpacity * 0.55}
-          color={palette.accent}
+        <StarLayer
+          count={950}
+          spread={[28, 16, 14]}
+          size={0.045}
+          color={palette.particles}
+          opacity={palette.particleOpacity}
+          speedY={0.018}
+          seed={42}
+          reducedMotion={reducedMotion}
         />
-        <group position={[-5.2, 0.4, -3.5]}>
-          <Sparkles
-            count={45}
-            scale={[7, 9, 5]}
-            size={3.4}
-            speed={reducedMotion ? 0 : 0.2}
-            opacity={palette.particleOpacity * 0.65}
-            color={palette.particles}
-          />
-        </group>
+        <StarLayer
+          count={120}
+          spread={[24, 14, 10]}
+          size={0.075}
+          color={palette.accent}
+          opacity={palette.particleOpacity * 0.55}
+          speedY={-0.012}
+          seed={108}
+          reducedMotion={reducedMotion}
+        />
+        <StarLayer
+          count={55}
+          spread={[7, 9, 5]}
+          size={0.085}
+          color={palette.particles}
+          opacity={palette.particleOpacity * 0.65}
+          speedY={0.01}
+          seed={256}
+          position={[-5.2, 0.4, -3.5]}
+          reducedMotion={reducedMotion}
+        />
         <CameraRig pointerRef={pointerRef} reducedMotion={reducedMotion} />
       </Canvas>
     </div>

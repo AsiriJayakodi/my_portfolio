@@ -2,7 +2,6 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { PointMaterial, Points, Sparkles } from "@react-three/drei";
 import * as THREE from "three";
 import type { CosmicConfig } from "@/lib/cosmicConstants";
 
@@ -15,9 +14,9 @@ function createSeededRandom(seed: number) {
 }
 
 const DENSITY_COUNT: Record<CosmicConfig["particleDensity"], number> = {
-  low: 600,
-  medium: 1200,
-  high: 2000,
+  low: 500,
+  medium: 950,
+  high: 1500,
 };
 
 const INTENSITY_ALPHA: Record<CosmicConfig["intensity"], number> = {
@@ -51,18 +50,24 @@ function DeepStarfield({
   count,
   color,
   opacity,
+  size,
+  speedY,
+  seed,
   reducedMotion,
 }: {
   count: number;
   color: string;
   opacity: number;
+  size: number;
+  speedY: number;
+  seed: number;
   reducedMotion: boolean;
 }) {
   const ref = useRef<THREE.Points>(null);
 
   const positions = useMemo(() => {
     const coords = new Float32Array(count * 3);
-    const rand = createSeededRandom(1337 + count);
+    const rand = createSeededRandom(seed + count);
     for (let i = 0; i < count; i++) {
       const i3 = i * 3;
       coords[i3] = (rand() - 0.5) * 32;
@@ -70,25 +75,28 @@ function DeepStarfield({
       coords[i3 + 2] = (rand() - 0.5) * 28 - 4;
     }
     return coords;
-  }, [count]);
+  }, [count, seed]);
 
   useFrame((_, delta) => {
     if (reducedMotion || !ref.current) return;
-    ref.current.rotation.y += delta * 0.014;
-    ref.current.rotation.x += delta * 0.005;
+    ref.current.rotation.y += delta * speedY;
+    ref.current.rotation.x += delta * 0.004;
   });
 
   return (
-    <Points ref={ref} positions={positions} stride={3} frustumCulled={false}>
-      <PointMaterial
+    <points ref={ref} frustumCulled={false}>
+      <bufferGeometry>
+        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
+      </bufferGeometry>
+      <pointsMaterial
         transparent
         color={color}
-        size={0.055}
+        size={size}
         sizeAttenuation
         depthWrite={false}
         opacity={opacity}
       />
-    </Points>
+    </points>
   );
 }
 
@@ -127,11 +135,11 @@ function LineArtPlanet({
     <group>
       {/* Fine line-art orbital path */}
       <mesh rotation={[Math.PI / 2, 0, 0]}>
-        <torusGeometry args={[spec.distance, 0.007, 8, 128]} />
+        <torusGeometry args={[spec.distance, 0.006, 6, 64]} />
         <meshBasicMaterial
           color={mutedColor}
           transparent
-          opacity={opacity * 0.26}
+          opacity={opacity * 0.13}
         />
       </mesh>
 
@@ -144,26 +152,26 @@ function LineArtPlanet({
               color={lineColor}
               wireframe
               transparent
-              opacity={opacity * 0.52}
+              opacity={opacity * 0.22}
             />
           </mesh>
 
           {spec.hasRing && (
             <>
               <mesh rotation={[Math.PI / 2.4, 0.25, 0]}>
-                <torusGeometry args={[spec.radius * 1.65, 0.006, 8, 64]} />
+                <torusGeometry args={[spec.radius * 1.65, 0.005, 6, 48]} />
                 <meshBasicMaterial
                   color={lineColor}
                   transparent
-                  opacity={opacity * 0.45}
+                  opacity={opacity * 0.2}
                 />
               </mesh>
               <mesh rotation={[Math.PI / 2.4, 0.25, 0]}>
-                <torusGeometry args={[spec.radius * 2.05, 0.005, 8, 64]} />
+                <torusGeometry args={[spec.radius * 2.05, 0.004, 6, 48]} />
                 <meshBasicMaterial
                   color={mutedColor}
                   transparent
-                  opacity={opacity * 0.3}
+                  opacity={opacity * 0.14}
                 />
               </mesh>
             </>
@@ -177,7 +185,7 @@ function LineArtPlanet({
                   color={lineColor}
                   wireframe
                   transparent
-                  opacity={opacity * 0.48}
+                  opacity={opacity * 0.2}
                 />
               </mesh>
             </group>
@@ -224,35 +232,32 @@ function LineArtSolarSystem({
       position={[-1.4, -0.4, -7.2]}
       rotation={[0.48, -0.18, -0.18]}
     >
-      {/* Line-art geodesic Sun */}
       <mesh ref={sunRef}>
         <icosahedronGeometry args={[0.72, 1]} />
         <meshBasicMaterial
           color={lineColor}
           wireframe
           transparent
-          opacity={opacity * 0.55}
+          opacity={opacity * 0.24}
         />
       </mesh>
 
-      {/* Sun inner geometric core */}
       <mesh>
         <octahedronGeometry args={[0.38, 0]} />
         <meshBasicMaterial
           color={mutedColor}
           wireframe
           transparent
-          opacity={opacity * 0.35}
+          opacity={opacity * 0.16}
         />
       </mesh>
 
-      {/* Sun outer equatorial line ring */}
       <mesh ref={coronaRingRef} rotation={[Math.PI / 2.2, 0.3, 0]}>
-        <torusGeometry args={[1.0, 0.008, 8, 96]} />
+        <torusGeometry args={[1.0, 0.007, 6, 56]} />
         <meshBasicMaterial
           color={lineColor}
           transparent
-          opacity={opacity * 0.38}
+          opacity={opacity * 0.18}
         />
       </mesh>
 
@@ -344,34 +349,38 @@ export default function CosmicScene3D({ settings }: { settings: CosmicConfig }) 
     };
   }, []);
 
-  const count = DENSITY_COUNT[settings.particleDensity] ?? 1200;
+  const count = DENSITY_COUNT[settings.particleDensity] ?? 950;
   const baseOpacity = INTENSITY_ALPHA[settings.intensity] ?? 0.65;
   const starColor = isLight ? "#404040" : "#e5e5e5";
-  const lineColor = isLight ? "#171717" : "#f5f5f5";
-  const mutedLineColor = isLight ? "#525252" : "#a3a3a3";
+  const lineColor = isLight ? "#525252" : "#8a8a8a";
+  const mutedLineColor = isLight ? "#737373" : "#666666";
   const finalOpacity = isLight ? baseOpacity * 0.55 : baseOpacity;
 
   return (
     <Canvas
-      dpr={[1, 2]}
+      dpr={[1, 1.5]}
       camera={{ position: [0, 0, 8], fov: 55 }}
-      gl={{ alpha: true, antialias: true, powerPreference: "high-performance" }}
+      gl={{ alpha: true, antialias: false, powerPreference: "high-performance" }}
     >
       <DeepStarfield
         count={count}
         color={starColor}
         opacity={finalOpacity}
+        size={0.055}
+        speedY={0.014}
+        seed={1337}
         reducedMotion={reducedMotion}
       />
 
       {settings.galaxyClouds && (
-        <Sparkles
-          count={Math.round(count * 0.08)}
-          scale={[22, 16, 14]}
-          size={3.0}
-          speed={reducedMotion ? 0 : 0.22}
-          opacity={finalOpacity * 0.4}
+        <DeepStarfield
+          count={Math.round(count * 0.12)}
           color={mutedLineColor}
+          opacity={finalOpacity * 0.45}
+          size={0.085}
+          speedY={-0.01}
+          seed={4096}
+          reducedMotion={reducedMotion}
         />
       )}
 
