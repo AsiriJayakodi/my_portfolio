@@ -1,0 +1,107 @@
+.stageTrack {
+  position: relative;
+  height: 240vh;
+}
+
+.aboutAnchor {
+  position: absolute;
+  top: 62%;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  pointer-events: none;
+}
+
+.stickyViewport {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  min-height: 100vh;
+  width: 100%;
+  overflow: hidden;
+}
+
+.heroLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  opacity: clamp(0, calc(1 - max(var(--hero-p, 0) - 0.88, 0) / 0.12), 1);
+}
+
+.stageTrack[data-phase="about"] .heroLayer {
+  pointer-events: none;
+}
+
+.aboutLayer {
+  position: relative;
+  z-index: 5;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  will-change: transform, opacity;
+  opacity: var(--about-p, 0);
+  transform: scale(calc(0.84 + var(--about-p, 0) * 0.16));
+  transform-origin: 50% 45%;
+  pointer-events: none;
+}
+
+.stageTrack[data-phase="about"] .aboutLayer {
+  pointer-events: auto;
+}
+
+@media (max-width: 960px) {
+  .stageTrack {
+    height: auto;
+  }
+
+  .aboutAnchor {
+    top: auto;
+    bottom: 0;
+  }
+
+  .stickyViewport {
+    position: relative;
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+  }
+
+  .heroLayer {
+    position: relative;
+    opacity: 1;
+    pointer-events: auto !important;
+  }
+
+  .aboutLayer {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+    height: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stageTrack {
+    height: auto;
+  }
+
+  .stickyViewport {
+    position: relative;
+    height: auto;
+    overflow: visible;
+  }
+
+  .heroLayer {
+    position: relative;
+    opacity: 1;
+  }
+
+  .aboutLayer {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+    height: auto;
+  }
+}

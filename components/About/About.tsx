@@ -45,7 +45,7 @@ interface ProfileData {
 }
 
 const FALLBACK_EDUCATION = [
-  { title: "BSc (Hons) in Information Technology", subtitle: "University of Moratuwa • CGPA: 3.58/4.0 (2023 - Present)" },
+  { title: "BSc (Hons) in Information Technology", subtitle: "University of Moratuwa • CGPA: 3.27/4.0 (2023 - Present)" },
   { title: "G.C.E. Advanced Level (2022/23)", subtitle: "Maliyadeva College -- Kurunegala • ICT (A), Combined Maths (B), Physics (B)" },
   { title: "G.C.E. Ordinary Level (2019)", subtitle: "9 A's" }
 ];
@@ -58,7 +58,13 @@ const FALLBACK_CERTIFICATIONS = [
 
 const FALLBACK_SOFT_SKILLS = ["Leadership", "Problem-Solving", "Time Management", "Presentation Skills", "Critical Thinking"];
 
-export default function About({ isAdmin = false }: { isAdmin?: boolean }) {
+export default function About({
+  isAdmin = false,
+  sectionId = "about",
+}: {
+  isAdmin?: boolean;
+  sectionId?: string;
+}) {
   const { ref, visible } = useInView();
   const [profile, setProfile] = useState<ProfileData | null>(null);
 
@@ -96,7 +102,7 @@ export default function About({ isAdmin = false }: { isAdmin?: boolean }) {
   // Left Pane triggers
   const openEduModal = () => {
     if (profile) {
-      setFormCgpaVal(profile.cgpaVal || '3.58 CGPA');
+      setFormCgpaVal(profile.cgpaVal || '3.27 CGPA');
       setFormCgpaLabel(profile.cgpaLabel || 'University of Moratuwa');
       setFormCertifications(profile.certifications ? profile.certifications.join(', ') : FALLBACK_CERTIFICATIONS.join(', '));
       setFormEducation(profile.education && profile.education.length > 0 ? [...profile.education] : [...FALLBACK_EDUCATION]);
@@ -196,16 +202,44 @@ export default function About({ isAdmin = false }: { isAdmin?: boolean }) {
   const educationJourney = profile?.education && profile.education.length > 0 ? profile.education : FALLBACK_EDUCATION;
   const certificationsList = profile?.certifications && profile.certifications.length > 0 ? profile.certifications : FALLBACK_CERTIFICATIONS;
   const softSkillsList = profile?.softSkills && profile.softSkills.length > 0 ? profile.softSkills : FALLBACK_SOFT_SKILLS;
-  const cgpaValueText = profile?.cgpaVal || "3.58 CGPA";
+  const cgpaValueText = profile?.cgpaVal || "3.27 CGPA";
   const cgpaLabelText = profile?.cgpaLabel || "University of Moratuwa";
+  const cardTiltRef = useRef<HTMLDivElement>(null);
+
+  const handleCardMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const el = cardTiltRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width;
+    const y = (e.clientY - rect.top) / rect.height;
+    const rx = (0.5 - y) * 6;
+    const ry = (x - 0.5) * 6;
+    el.style.setProperty("--card-rx", `${rx.toFixed(2)}deg`);
+    el.style.setProperty("--card-ry", `${ry.toFixed(2)}deg`);
+    el.style.setProperty("--glow-x", `${(x * 100).toFixed(1)}%`);
+    el.style.setProperty("--glow-y", `${(y * 100).toFixed(1)}%`);
+  };
+
+  const handleCardMouseLeave = () => {
+    const el = cardTiltRef.current;
+    if (!el) return;
+    el.style.setProperty("--card-rx", "0deg");
+    el.style.setProperty("--card-ry", "0deg");
+  };
 
   return (
-    <section id="about" ref={ref} className={styles.aboutSection}>
+    <section id={sectionId} ref={ref} className={styles.aboutSection}>
       <div className={styles.container}>
         <div className={styles.grid}>
 
           {/* Left Column — Education stack */}
-          <div className={`${styles.leftContent} ${visible ? styles.visible : ''}`} style={{ position: 'relative' }}>
+          <div
+            ref={cardTiltRef}
+            onMouseMove={handleCardMouseMove}
+            onMouseLeave={handleCardMouseLeave}
+            className={`${styles.leftContent} ${visible ? styles.visible : ''}`}
+            style={{ position: 'relative' }}
+          >
             {isAdmin && (
               <button
                 onClick={openEduModal}
@@ -218,18 +252,26 @@ export default function About({ isAdmin = false }: { isAdmin?: boolean }) {
             <div className={styles.cardBg} />
 
             <div className={styles.mainCard}>
+              <div className={styles.cardSheen} aria-hidden="true" />
               <div className={styles.educationList}>
                 <h3 className={styles.eduTitle}>Education Journey</h3>
 
                 {educationJourney.map((edu, idx) => (
-                  <div key={idx} className={styles.eduItem}>
+                  <div
+                    key={idx}
+                    className={styles.eduItem}
+                    style={{ transitionDelay: `${0.12 + idx * 0.1}s` }}
+                  >
                     <div className={styles.eduDot} />
                     <h4>{edu.title}</h4>
                     <p>{edu.subtitle}</p>
                   </div>
                 ))}
 
-                <div className={styles.eduItem}>
+                <div
+                  className={styles.eduItem}
+                  style={{ transitionDelay: `${0.12 + educationJourney.length * 0.1}s` }}
+                >
                   <div className={styles.eduDot} />
                   <h4>Certifications</h4>
                   {certificationsList.map((cert, idx) => (
@@ -266,13 +308,19 @@ export default function About({ isAdmin = false }: { isAdmin?: boolean }) {
             </h2>
 
             <p className={styles.paragraph} style={{ whiteSpace: 'pre-wrap' }}>
-              {profile?.bio || `Third-year IT Undergraduate at the University of Moratuwa (CGPA 3.58/4.0) with a strong foundation in computer science and full-stack software development. Skilled in modern web frameworks like Next.js and React, alongside serverless cloud architectures using AWS (Cognito, Lambda, AppSync, DynamoDB). Hands-on experience delivering enterprise-grade software solutions, and passionate about building scalable, secure applications while continuously expanding technical capabilities within the industry.`}
+              {profile?.bio || `Third-year IT Undergraduate at the University of Moratuwa (CGPA 3.27/4.0) with a strong foundation in computer science and full-stack software development. Skilled in modern web frameworks like Next.js and React, alongside serverless cloud architectures using AWS (Cognito, Lambda, AppSync, DynamoDB). Hands-on experience delivering enterprise-grade software solutions, and passionate about building scalable, secure applications while continuously expanding technical capabilities within the industry.`}
             </p>
 
             {/* Tags (Soft Skills) */}
             <div className={styles.tagsContainer}>
-              {softSkillsList.map(tag => (
-                <span key={tag} className={styles.tag}>{tag}</span>
+              {softSkillsList.map((tag, idx) => (
+                <span
+                  key={tag}
+                  className={styles.tag}
+                  style={{ transitionDelay: `${0.2 + idx * 0.06}s` }}
+                >
+                  {tag}
+                </span>
               ))}
             </div>
           </div>

@@ -68,6 +68,11 @@
   border: 1px solid var(--border-subtle);
   pointer-events: none;
   z-index: 0;
+  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.leftContent:hover .cardBg {
+  transform: translate3d(4px, 4px, 0);
 }
 
 @media (max-width: 768px) {
@@ -83,13 +88,48 @@
   position: relative;
   z-index: 2;
   border-radius: 20px;
-  overflow: visible;
+  overflow: hidden;
   height: 100%;
   min-height: 400px;
   border: 1px solid var(--border-color);
   box-shadow: var(--shadow-md);
   background: var(--bg-secondary);
   padding: 40px 32px 85px 32px;
+  transform: perspective(1000px) rotateX(var(--card-rx, 0deg)) rotateY(var(--card-ry, 0deg));
+  transition:
+    transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1),
+    border-color 0.25s ease,
+    box-shadow 0.3s ease;
+}
+
+.leftContent:hover .mainCard {
+  border-color: var(--border-hover);
+}
+
+.cardSheen {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  background: radial-gradient(
+    420px circle at var(--glow-x, 50%) var(--glow-y, 50%),
+    rgba(255, 255, 255, 0.06),
+    transparent 65%
+  );
+}
+
+[data-theme='light'] .cardSheen {
+  background: radial-gradient(
+    420px circle at var(--glow-x, 50%) var(--glow-y, 50%),
+    rgba(0, 0, 0, 0.04),
+    transparent 65%
+  );
+}
+
+.leftContent:hover .cardSheen {
+  opacity: 1;
 }
 
 @media (max-width: 768px) {
@@ -118,6 +158,14 @@
   padding-left: 20px;
   margin-bottom: 20px;
   border-left: 1px solid var(--border-color);
+  opacity: 0;
+  transform: translateX(-14px);
+  transition: opacity 0.55s ease, transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.leftContent.visible .eduItem {
+  opacity: 1;
+  transform: translateX(0);
 }
 
 .eduItem:last-child {
@@ -133,6 +181,17 @@
   border-radius: 50%;
   background: var(--text-primary);
   border: 2px solid var(--bg-secondary);
+  box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.35);
+  animation: dotPulse 3s ease-in-out infinite;
+}
+
+@keyframes dotPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.25);
+  }
+  50% {
+    box-shadow: 0 0 0 5px rgba(255, 255, 255, 0);
+  }
 }
 
 .eduItem h4 {
@@ -156,14 +215,28 @@
   bottom: -18px;
   right: 24px;
   z-index: 30;
-  background: var(--bg-secondary);
+  background: var(--glass-bg);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border-radius: 12px;
   padding: 12px 20px;
   border: 1px solid var(--border-strong);
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
-  animation: fade-up 0.8s ease;
+  animation: badgeFloat 4.5s ease-in-out infinite;
+  transition: transform 0.25s ease, border-color 0.25s ease;
+}
+
+.floatingBadge:hover {
+  border-color: var(--border-hover);
+}
+
+@keyframes badgeFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
 }
 
 @media (max-width: 768px) {
@@ -255,4 +328,36 @@
   font-size: 13px;
   font-family: var(--font-sans);
   font-weight: 500;
+  opacity: 0;
+  transform: translateY(10px);
+  transition:
+    opacity 0.45s ease,
+    transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+.rightContent.visible .tag {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.tag:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-hover);
+  background: var(--bg-card-hover);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .eduItem,
+  .tag {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .eduDot,
+  .floatingBadge {
+    animation: none;
+  }
 }

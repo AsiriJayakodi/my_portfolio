@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import Navbar from "@/components/Navbar/Navbar";
 import SmoothScroll from "@/components/SmoothScroll";
 import CosmicBackground from "@/components/CosmicBackground/CosmicBackground";
 
@@ -60,7 +59,6 @@ export default function RootLayout({
       <body>
         <CosmicBackground />
         <SmoothScroll>
-          <Navbar />
           {children}
         </SmoothScroll>
       </body>
