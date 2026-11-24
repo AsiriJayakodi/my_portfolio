@@ -46,6 +46,26 @@ const LINE_PLANETS: LinePlanetSpec[] = [
   { name: "Neptune", radius: 0.16, distance: 6.85, speed: 0.09, initialAngle: 4.8 },
 ];
 
+function createStarSpriteTexture() {
+  const size = 32;
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext("2d");
+  if (ctx) {
+    const half = size / 2;
+    const grad = ctx.createRadialGradient(half, half, 0, half, half, half);
+    grad.addColorStop(0, "rgba(255, 255, 255, 1)");
+    grad.addColorStop(0.35, "rgba(255, 255, 255, 0.7)");
+    grad.addColorStop(1, "rgba(255, 255, 255, 0)");
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, size, size);
+  }
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.needsUpdate = true;
+  return tex;
+}
+
 function DeepStarfield({
   count,
   color,
@@ -53,6 +73,7 @@ function DeepStarfield({
   size,
   speedY,
   seed,
+  sprite,
   reducedMotion,
 }: {
   count: number;
@@ -61,6 +82,7 @@ function DeepStarfield({
   size: number;
   speedY: number;
   seed: number;
+  sprite: THREE.Texture | null;
   reducedMotion: boolean;
 }) {
   const ref = useRef<THREE.Points>(null);
@@ -72,7 +94,7 @@ function DeepStarfield({
       const i3 = i * 3;
       coords[i3] = (rand() - 0.5) * 32;
       coords[i3 + 1] = (rand() - 0.5) * 32;
-      coords[i3 + 2] = (rand() - 0.5) * 28 - 4;
+      coords[i3 + 2] = (rand() - 0.5) * 24 - 6;
     }
     return coords;
   }, [count, seed]);
@@ -90,6 +112,8 @@ function DeepStarfield({
       </bufferGeometry>
       <pointsMaterial
         transparent
+        map={sprite}
+        alphaTest={0.01}
         color={color}
         size={size}
         sizeAttenuation
@@ -349,6 +373,9 @@ export default function CosmicScene3D({ settings }: { settings: CosmicConfig }) 
     };
   }, []);
 
+  const starSprite = useMemo(() => createStarSpriteTexture(), []);
+  useEffect(() => () => starSprite.dispose(), [starSprite]);
+
   const count = DENSITY_COUNT[settings.particleDensity] ?? 950;
   const baseOpacity = INTENSITY_ALPHA[settings.intensity] ?? 0.65;
   const starColor = isLight ? "#404040" : "#e5e5e5";
@@ -366,9 +393,10 @@ export default function CosmicScene3D({ settings }: { settings: CosmicConfig }) 
         count={count}
         color={starColor}
         opacity={finalOpacity}
-        size={0.055}
+        size={0.09}
         speedY={0.014}
         seed={1337}
+        sprite={starSprite}
         reducedMotion={reducedMotion}
       />
 
@@ -377,9 +405,10 @@ export default function CosmicScene3D({ settings }: { settings: CosmicConfig }) 
           count={Math.round(count * 0.12)}
           color={mutedLineColor}
           opacity={finalOpacity * 0.45}
-          size={0.085}
+          size={0.14}
           speedY={-0.01}
           seed={4096}
+          sprite={starSprite}
           reducedMotion={reducedMotion}
         />
       )}

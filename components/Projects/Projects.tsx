@@ -1,6 +1,7 @@
 "use client";
 import styles from './Projects.module.css';
 import { useRef, useEffect, useState } from 'react';
+import { ArrowLeft, ArrowRight, ArrowUpRight } from 'lucide-react';
 
 // Define the type for our Project data coming from the database
 export type ProjectType = {
@@ -13,8 +14,6 @@ export type ProjectType = {
   liveUrl?: string;
   color?: string;
 };
-
-const FILTERS = ['All', 'Full Stack', 'Frontend', 'Backend', 'IoT', 'AI/ML'];
 
 function useInView(threshold = 0.15) {
   const ref = useRef<HTMLDivElement>(null);
@@ -41,14 +40,14 @@ function ProjectVisualFallback({ tags }: { tags: string[]; color?: string }) {
 
   if (isIoT) {
     return (
-      <svg width="100%" height="100%" style={{ opacity: 0.25, position: 'absolute', inset: 0 }}>
+      <svg viewBox="0 0 380 180" width="100%" height="100%" style={{ opacity: 0.35, position: 'absolute', inset: 0, color: 'var(--text-primary)' }}>
         <defs>
           <pattern id="grid-iot" width="24" height="24" patternUnits="userSpaceOnUse">
             <path d="M 24 0 L 0 0 0 24" fill="none" stroke="currentColor" strokeWidth="0.5" opacity="0.3" />
           </pattern>
         </defs>
         <rect width="100%" height="100%" fill="url(#grid-iot)" />
-        <g stroke="currentColor" strokeWidth="1" fill="none" opacity="0.5">
+        <g stroke="currentColor" strokeWidth="1" fill="none" opacity="0.6">
           <circle cx="50" cy="50" r="4" fill="currentColor" />
           <circle cx="150" cy="80" r="6" fill="currentColor" />
           <circle cx="280" cy="40" r="4" fill="currentColor" />
@@ -61,8 +60,8 @@ function ProjectVisualFallback({ tags }: { tags: string[]; color?: string }) {
 
   if (isAI) {
     return (
-      <svg width="100%" height="100%" style={{ opacity: 0.25, position: 'absolute', inset: 0 }}>
-        <g stroke="currentColor" strokeWidth="0.8" fill="none" opacity="0.4">
+      <svg viewBox="0 0 380 180" width="100%" height="100%" style={{ opacity: 0.35, position: 'absolute', inset: 0, color: 'var(--text-primary)' }}>
+        <g stroke="currentColor" strokeWidth="0.8" fill="none" opacity="0.5">
           <line x1="40" y1="40" x2="100" y2="70" />
           <line x1="40" y1="40" x2="80" y2="120" />
           <line x1="100" y1="70" x2="160" y2="50" />
@@ -71,7 +70,7 @@ function ProjectVisualFallback({ tags }: { tags: string[]; color?: string }) {
           <line x1="160" y1="100" x2="220" y2="90" />
           <line x1="220" y1="90" x2="280" y2="60" />
         </g>
-        <g fill="currentColor" opacity="0.6">
+        <g fill="currentColor" opacity="0.7">
           <circle cx="40" cy="40" r="3" />
           <circle cx="100" cy="70" r="3" />
           <circle cx="80" cy="120" r="4" />
@@ -86,8 +85,8 @@ function ProjectVisualFallback({ tags }: { tags: string[]; color?: string }) {
 
   if (isWeb3) {
     return (
-      <svg width="100%" height="100%" style={{ opacity: 0.25, position: 'absolute', inset: 0 }}>
-        <g stroke="currentColor" strokeWidth="1" fill="none" transform="translate(170, 70)" opacity="0.5">
+      <svg viewBox="0 0 380 180" width="100%" height="100%" style={{ opacity: 0.35, position: 'absolute', inset: 0, color: 'var(--text-primary)' }}>
+        <g stroke="currentColor" strokeWidth="1" fill="none" transform="translate(190, 90)" opacity="0.6">
           <path d="M 0,-30 L 40,-15 L 0,0 L -40,-15 Z" />
           <path d="M -40,-15 L -40,20 L 0,35 L 0,0 Z" />
           <path d="M 40,-15 L 40,20 L 0,35 L 0,0 Z" />
@@ -101,10 +100,10 @@ function ProjectVisualFallback({ tags }: { tags: string[]; color?: string }) {
   }
 
   return (
-    <svg width="100%" height="100%" style={{ opacity: 0.15, position: 'absolute', inset: 0 }}>
-      <g stroke="currentColor" strokeWidth="0.5" opacity="0.3">
-        <path d="M0,15 L400,15 M0,45 L400,45 M0,75 L400,75 M0,105 L400,105 M0,135 L400,135 M0,165 L400,165" />
-        <path d="M40,0 L40,200 M120,0 L120,200 M200,0 L200,200 M280,0 L280,200 M360,0 L360,200" />
+    <svg viewBox="0 0 380 180" width="100%" height="100%" style={{ opacity: 0.28, position: 'absolute', inset: 0, color: 'var(--text-primary)' }}>
+      <g stroke="currentColor" strokeWidth="0.6" opacity="0.35">
+        <path d="M0,20 L380,20 M0,55 L380,55 M0,90 L380,90 M0,125 L380,125 M0,160 L380,160" />
+        <path d="M40,0 L40,180 M120,0 L120,180 M200,0 L200,180 M280,0 L280,180 M350,0 L350,180" />
       </g>
     </svg>
   );
@@ -113,51 +112,57 @@ function ProjectVisualFallback({ tags }: { tags: string[]; color?: string }) {
 function ProjectCard({
   p,
   i,
+  slotOffset,
   isAdmin,
   onEdit,
   onDelete,
-  sectionVisible,
+  onSelect,
 }: {
   p: ProjectType;
   i: number;
+  slotOffset: number;
   isAdmin?: boolean;
   onEdit?: () => void;
   onDelete?: () => void;
-  sectionVisible?: boolean;
+  onSelect?: () => void;
 }) {
-  const { ref, visible } = useInView(0.15);
-  const [imgError, setImgError] = useState(false);
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
 
-  useEffect(() => {
-    setImgError(false);
-  }, [p.image]);
+  const hasImage = Boolean(p.image && p.image.trim() && failedSrc !== p.image);
+  const isActive = slotOffset === 0;
+  const primaryCategory = p.tags[0] || 'Engineering';
+  const indexLabel = String(i + 1).padStart(2, '0');
 
-  const hasImage = Boolean(p.image && p.image.trim() && !imgError);
-  const isCardVisible = visible || sectionVisible;
+  let slotClass = styles.slotHidden;
+  if (slotOffset === 0) slotClass = styles.slotCenter;
+  else if (slotOffset === -1) slotClass = styles.slotBottomLeft;
+  else if (slotOffset === 1) slotClass = styles.slotTopRight;
+  else if (slotOffset === -2) slotClass = styles.slotExitDownLeft;
+  else if (slotOffset === 2) slotClass = styles.slotEnterTopRight;
 
   return (
     <div
-      ref={ref}
-      className={`${styles.cardReveal} ${isCardVisible ? styles.visible : ''}`}
-      style={{ transitionDelay: `${(i % 4) * 0.08}s`, position: 'relative' }}
+      className={`${styles.deckCardWrap} ${slotClass}`}
+      onClick={!isActive && Math.abs(slotOffset) === 1 ? onSelect : undefined}
+      role={!isActive && Math.abs(slotOffset) === 1 ? 'button' : undefined}
+      tabIndex={!isActive && Math.abs(slotOffset) === 1 ? 0 : undefined}
+      onKeyDown={
+        !isActive && Math.abs(slotOffset) === 1
+          ? (e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onSelect?.();
+              }
+            }
+          : undefined
+      }
+      aria-label={!isActive ? `Focus project ${p.title}` : undefined}
     >
-      {isAdmin && (
-        <div style={{ position: 'absolute', top: '15px', right: '15px', zIndex: 100, display: 'flex', gap: '6px' }}>
-          <button
-            onClick={(e) => { e.stopPropagation(); onEdit?.(); }}
-            style={{ padding: '4px 10px', background: 'var(--border-subtle)', border: '1px solid var(--border-strong)', borderRadius: '4px', color: 'var(--text-primary)', cursor: 'pointer', fontSize: '11px', fontWeight: '600' }}
-          >
-            ✏️ Edit
-          </button>
-          <button
-            onClick={(e) => { e.stopPropagation(); onDelete?.(); }}
-            style={{ padding: '4px 10px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', borderRadius: '4px', color: '#ef4444', cursor: 'pointer', fontSize: '11px', fontWeight: '600' }}
-          >
-            🗑️ Delete
-          </button>
-        </div>
-      )}
-      <div className={styles.card}>
+      <div
+        className={`${styles.card} ${isActive ? styles.cardActive : styles.cardRecessed}`}
+        style={{ animationDelay: `${(i % 3) * 0.6}s` }}
+      >
+        {/* Full-bleed 16:9 description image at the top, matching the reference card */}
         <div className={styles.imagePlaceholder}>
           {hasImage ? (
             /* eslint-disable-next-line @next/next/no-img-element */
@@ -165,35 +170,62 @@ function ProjectCard({
               src={p.image}
               alt={p.title}
               className={styles.projectImage}
-              onError={() => setImgError(true)}
+              onError={() => setFailedSrc(p.image)}
             />
           ) : (
             <ProjectVisualFallback tags={p.tags} />
           )}
           <div className={styles.imageOverlay} />
+
+          <div className={styles.imageBadge}>
+            <span>{indexLabel}</span>
+            <span>•</span>
+            <span>{primaryCategory}</span>
+          </div>
+
+          {isAdmin && (
+            <div style={{ position: 'absolute', top: '12px', right: '12px', zIndex: 20, display: 'flex', gap: '6px' }}>
+              <button
+                onClick={(e) => { e.stopPropagation(); onEdit?.(); }}
+                style={{ padding: '4px 9px', background: 'rgba(0,0,0,0.75)', border: '1px solid var(--border-strong)', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontSize: '10px', fontWeight: '600', backdropFilter: 'blur(6px)' }}
+              >
+                ✏️ Edit
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); onDelete?.(); }}
+                style={{ padding: '4px 9px', background: 'rgba(239, 68, 68, 0.25)', border: '1px solid rgba(239, 68, 68, 0.4)', borderRadius: '6px', color: '#fca5a5', cursor: 'pointer', fontSize: '10px', fontWeight: '600', backdropFilter: 'blur(6px)' }}
+              >
+                🗑️
+              </button>
+            </div>
+          )}
         </div>
 
+        {/* Body */}
         <div className={styles.content}>
           <h3 className={styles.title}>{p.title}</h3>
           <p className={styles.desc}>{p.description}</p>
 
-          <div className={styles.tagsContainer}>
-            {p.tags.map(tag => (
-              <span key={tag} className={styles.tag}>{tag}</span>
-            ))}
-          </div>
+          <div className={styles.cardDivider} />
 
-          <a
-            href={p.liveUrl || p.githubUrl || "#"}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.link}
-          >
-            View Project
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <path d="M5 12h14M12 5l7 7-7 7" />
-            </svg>
-          </a>
+          <div className={styles.cardFooter}>
+            <div className={styles.tagsContainer}>
+              {p.tags.map(tag => (
+                <span key={tag} className={styles.tag}>{tag}</span>
+              ))}
+            </div>
+
+            <a
+              href={p.liveUrl || p.githubUrl || "#"}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.link}
+              onClick={(e) => e.stopPropagation()}
+            >
+              View
+              <ArrowUpRight size={14} />
+            </a>
+          </div>
         </div>
       </div>
     </div>
@@ -204,11 +236,9 @@ export default function Projects({ isAdmin = false }: { isAdmin?: boolean }) {
   const { ref, visible } = useInView();
   const [projects, setProjects] = useState<ProjectType[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedFilter, setSelectedFilter] = useState('All');
 
-  // Carousel States (shows 4 projects per page with arrow traversal)
-  const [currentPage, setCurrentPage] = useState(0);
-  const [isAnimating, setIsAnimating] = useState(false);
+  // Stacked diagonal deck state
+  const [activeIndex, setActiveIndex] = useState(0);
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
 
@@ -225,7 +255,7 @@ export default function Projects({ isAdmin = false }: { isAdmin?: boolean }) {
 
   const loadProjects = async () => {
     try {
-      const res = await fetch('/api/projects');
+      const res = await fetch('/api/projects', { cache: 'no-store' });
       const data = await res.json();
       if (Array.isArray(data)) {
         setProjects(data);
@@ -340,52 +370,17 @@ export default function Projects({ isAdmin = false }: { isAdmin?: boolean }) {
     }
   };
 
-  const filteredProjects = projects.filter(p => {
-    if (selectedFilter === 'All') return true;
-    return p.tags.some(tag => tag.toLowerCase() === selectedFilter.toLowerCase());
-  });
-
-  const PROJECTS_PER_PAGE = 4;
-  const totalPages = Math.ceil(filteredProjects.length / PROJECTS_PER_PAGE) || 1;
-
-  // Keep currentPage within bounds when items change or filter is updated
-  useEffect(() => {
-    if (currentPage >= totalPages) {
-      setCurrentPage(Math.max(0, totalPages - 1));
-    }
-  }, [totalPages, currentPage]);
-
-  const handleFilterChange = (filter: string) => {
-    setSelectedFilter(filter);
-    setCurrentPage(0);
-  };
+  const totalCount = projects.length;
+  const safeActiveIndex = totalCount > 0 ? activeIndex % totalCount : 0;
 
   const handleNavigate = (direction: 'left' | 'right') => {
-    if (isAnimating) return;
-
-    let nextPage = currentPage;
-    if (direction === 'left' && currentPage > 0) {
-      nextPage = currentPage - 1;
-    } else if (direction === 'right' && currentPage < totalPages - 1) {
-      nextPage = currentPage + 1;
-    }
-
-    if (nextPage !== currentPage) {
-      setIsAnimating(true);
-      setCurrentPage(nextPage);
-      setTimeout(() => {
-        setIsAnimating(false);
-      }, 550);
-    }
-  };
-
-  const goToPage = (pageIndex: number) => {
-    if (isAnimating || pageIndex === currentPage) return;
-    setIsAnimating(true);
-    setCurrentPage(pageIndex);
-    setTimeout(() => {
-      setIsAnimating(false);
-    }, 550);
+    if (totalCount <= 1) return;
+    setActiveIndex(prev => {
+      if (direction === 'right') {
+        return (prev + 1) % totalCount;
+      }
+      return (prev - 1 + totalCount) % totalCount;
+    });
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -399,21 +394,28 @@ export default function Projects({ isAdmin = false }: { isAdmin?: boolean }) {
   const handleTouchEnd = () => {
     if (touchStartX.current === null || touchEndX.current === null) return;
     const distance = touchStartX.current - touchEndX.current;
-    const minSwipeDistance = 50;
-    if (distance > minSwipeDistance) {
+    if (distance > 45) {
       handleNavigate('right');
-    } else if (distance < -minSwipeDistance) {
+    } else if (distance < -45) {
       handleNavigate('left');
     }
     touchStartX.current = null;
     touchEndX.current = null;
   };
 
-  // Chunk filtered projects into groups of 4
-  const projectPages: ProjectType[][] = [];
-  for (let i = 0; i < filteredProjects.length; i += PROJECTS_PER_PAGE) {
-    projectPages.push(filteredProjects.slice(i, i + PROJECTS_PER_PAGE));
-  }
+  const getSlotOffset = (idx: number): number => {
+    if (totalCount <= 1) return 0;
+    if (totalCount === 2) {
+      return idx === safeActiveIndex ? 0 : 1;
+    }
+    const diff = (idx - safeActiveIndex + totalCount) % totalCount;
+    if (diff === 0) return 0;
+    if (diff === 1) return 1;
+    if (diff === totalCount - 1) return -1;
+    if (diff === 2 && totalCount >= 5) return 2;
+    if (diff === totalCount - 2 && totalCount >= 4) return -2;
+    return 99;
+  };
 
   return (
     <section id="projects" className={styles.projectsSection}>
@@ -439,123 +441,82 @@ export default function Projects({ isAdmin = false }: { isAdmin?: boolean }) {
           </p>
         </div>
 
-        {/* Filter Tabs */}
-        <div className={`${styles.filterContainer} ${visible ? styles.visible : ''}`}>
-          {FILTERS.map(f => (
-            <button
-              key={f}
-              onClick={() => handleFilterChange(f)}
-              className={`${styles.filterBtn} ${selectedFilter === f ? styles.filterBtnActive : ''}`}
-            >
-              {f}
-            </button>
-          ))}
-        </div>
-
         {loading ? (
           <div style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '4rem 0', fontFamily: 'var(--font-mono)' }}>
             Loading projects...
           </div>
-        ) : filteredProjects.length === 0 ? (
+        ) : projects.length === 0 ? (
           <div style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '4rem 0', fontFamily: 'var(--font-mono)' }}>
-            No projects found matching the filter.
+            No projects found.
           </div>
         ) : (
-          <>
-            <div className={styles.sliderWrapper}>
-              {filteredProjects.length > PROJECTS_PER_PAGE && (
+          <div className={`${styles.deckLayout} ${visible ? styles.visible : ''}`}>
+            {totalCount > 1 && (
+              <button
+                type="button"
+                onClick={() => handleNavigate('left')}
+                className={`${styles.navArrowBtn} ${styles.navArrowLeft}`}
+                aria-label="Previous Project"
+                title="Previous Project"
+              >
+                <ArrowLeft size={18} />
+              </button>
+            )}
+
+            {/* Centered diagonal 3-card cascading deck */}
+            <div
+              className={styles.deckStage}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+            >
+              {projects.map((p, i) => (
+                <ProjectCard
+                  key={p._id || `${p.title}-${i}`}
+                  p={p}
+                  i={i}
+                  slotOffset={getSlotOffset(i)}
+                  isAdmin={isAdmin}
+                  onEdit={() => openFormModal(p)}
+                  onDelete={() => p._id && handleDelete(p._id)}
+                  onSelect={() => setActiveIndex(i)}
+                />
+              ))}
+            </div>
+
+            {totalCount > 1 && (
+              <button
+                type="button"
+                onClick={() => handleNavigate('right')}
+                className={`${styles.navArrowBtn} ${styles.navArrowRight}`}
+                aria-label="Next Project"
+                title="Next Project"
+              >
+                <ArrowRight size={18} />
+              </button>
+            )}
+
+            {totalCount > 1 && (
+              <div className={styles.mobileArrows}>
                 <button
                   type="button"
                   onClick={() => handleNavigate('left')}
-                  disabled={currentPage === 0 || isAnimating}
-                  className={`${styles.navArrow} ${styles.navArrowLeft} ${currentPage === 0 ? styles.disabled : ''}`}
-                  aria-label="Previous Projects"
+                  className={styles.navArrowBtn}
+                  aria-label="Previous Project"
                 >
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="15 18 9 12 15 6"></polyline>
-                  </svg>
+                  <ArrowLeft size={18} />
                 </button>
-              )}
-
-              <div
-                className={styles.viewport}
-                onTouchStart={handleTouchStart}
-                onTouchMove={handleTouchMove}
-                onTouchEnd={handleTouchEnd}
-              >
-                <div className={styles.track}>
-                  {projectPages.map((page, pageIndex) => {
-                    const isCurrent = pageIndex === currentPage;
-                    const isPast = pageIndex < currentPage;
-                    const slideTransform = isCurrent
-                      ? 'translateX(0%)'
-                      : isPast
-                      ? 'translateX(-120%)'
-                      : 'translateX(120%)';
-
-                    return (
-                      <div
-                        key={pageIndex}
-                        className={styles.gridSlide}
-                        style={{
-                          transform: slideTransform,
-                          opacity: isCurrent ? 1 : 0,
-                          pointerEvents: isCurrent ? 'auto' : 'none',
-                          visibility: isCurrent || isAnimating ? 'visible' : 'hidden',
-                          zIndex: isCurrent ? 2 : 1,
-                        }}
-                      >
-                        {page.map((p, i) => (
-                          <ProjectCard
-                            key={p._id || `${p.title}-${pageIndex}-${i}`}
-                            p={p}
-                            i={i}
-                            isAdmin={isAdmin}
-                            onEdit={() => openFormModal(p)}
-                            onDelete={() => p._id && handleDelete(p._id)}
-                            sectionVisible={visible}
-                          />
-                        ))}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {filteredProjects.length > PROJECTS_PER_PAGE && (
                 <button
                   type="button"
                   onClick={() => handleNavigate('right')}
-                  disabled={currentPage >= totalPages - 1 || isAnimating}
-                  className={`${styles.navArrow} ${styles.navArrowRight} ${currentPage >= totalPages - 1 ? styles.disabled : ''}`}
-                  aria-label="Next Projects"
+                  className={styles.navArrowBtn}
+                  aria-label="Next Project"
                 >
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="9 18 15 12 9 6"></polyline>
-                  </svg>
+                  <ArrowRight size={18} />
                 </button>
-              )}
-            </div>
-
-            {totalPages > 1 && (
-              <div className={styles.pagination}>
-                <div className={styles.dots}>
-                  {Array.from({ length: totalPages }).map((_, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      onClick={() => goToPage(idx)}
-                      className={`${styles.dot} ${idx === currentPage ? styles.dotActive : ''}`}
-                      aria-label={`Go to slide ${idx + 1}`}
-                    />
-                  ))}
-                </div>
-                <span className={styles.pageCounter}>
-                  {String(currentPage + 1).padStart(2, '0')} / {String(totalPages).padStart(2, '0')}
-                </span>
               </div>
             )}
-          </>
+          </div>
         )}
       </div>
 

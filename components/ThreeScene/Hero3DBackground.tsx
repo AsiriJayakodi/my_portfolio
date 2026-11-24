@@ -31,6 +31,26 @@ function createSeededRandom(seed: number) {
   };
 }
 
+function createStarSpriteTexture() {
+  const size = 32;
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext("2d");
+  if (ctx) {
+    const half = size / 2;
+    const grad = ctx.createRadialGradient(half, half, 0, half, half, half);
+    grad.addColorStop(0, "rgba(255, 255, 255, 1)");
+    grad.addColorStop(0.35, "rgba(255, 255, 255, 0.7)");
+    grad.addColorStop(1, "rgba(255, 255, 255, 0)");
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, size, size);
+  }
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.needsUpdate = true;
+  return tex;
+}
+
 function StarLayer({
   count,
   spread,
@@ -39,6 +59,7 @@ function StarLayer({
   opacity,
   speedY,
   seed,
+  sprite,
   position = [0, 0, 0],
   reducedMotion,
 }: {
@@ -49,6 +70,7 @@ function StarLayer({
   opacity: number;
   speedY: number;
   seed: number;
+  sprite: THREE.Texture | null;
   position?: [number, number, number];
   reducedMotion: boolean;
 }) {
@@ -82,6 +104,8 @@ function StarLayer({
       </bufferGeometry>
       <pointsMaterial
         transparent
+        map={sprite}
+        alphaTest={0.01}
         color={color}
         size={size}
         sizeAttenuation
@@ -160,6 +184,9 @@ export default function Hero3DBackground() {
     };
   }, []);
 
+  const starSprite = useMemo(() => createStarSpriteTexture(), []);
+  useEffect(() => () => starSprite.dispose(), [starSprite]);
+
   const palette = isLight ? LIGHT_PALETTE : DARK_PALETTE;
 
   return (
@@ -181,31 +208,34 @@ export default function Hero3DBackground() {
         <StarLayer
           count={950}
           spread={[28, 16, 14]}
-          size={0.045}
+          size={0.08}
           color={palette.particles}
           opacity={palette.particleOpacity}
           speedY={0.018}
           seed={42}
+          sprite={starSprite}
           reducedMotion={reducedMotion}
         />
         <StarLayer
           count={120}
           spread={[24, 14, 10]}
-          size={0.075}
+          size={0.12}
           color={palette.accent}
           opacity={palette.particleOpacity * 0.55}
           speedY={-0.012}
           seed={108}
+          sprite={starSprite}
           reducedMotion={reducedMotion}
         />
         <StarLayer
           count={55}
           spread={[7, 9, 5]}
-          size={0.085}
+          size={0.13}
           color={palette.particles}
           opacity={palette.particleOpacity * 0.65}
           speedY={0.01}
           seed={256}
+          sprite={starSprite}
           position={[-5.2, 0.4, -3.5]}
           reducedMotion={reducedMotion}
         />

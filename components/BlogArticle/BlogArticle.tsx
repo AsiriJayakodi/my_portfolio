@@ -56,7 +56,7 @@ export default function BlogArticle({ isAdmin = false }: { isAdmin?: boolean }) 
 
   const loadItems = async () => {
     try {
-      const res = await fetch('/api/blogs-articles');
+      const res = await fetch('/api/blogs-articles', { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         setItems(data);
