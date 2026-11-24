@@ -1,11 +1,13 @@
+/* Track = 3.0 viewports of pinned choreography + 1 viewport for the sticky layer itself */
 .stageTrack {
   position: relative;
-  height: 240vh;
+  height: 400vh;
 }
 
+/* Lands in the middle of the "About holds fully visible" range (stage scroll 1.55) */
 .aboutAnchor {
   position: absolute;
-  top: 62%;
+  top: 155vh;
   left: 0;
   width: 100%;
   height: 1px;
@@ -33,6 +35,7 @@
   pointer-events: auto;
 }
 
+/* About: zooms in, holds, then zooms out & dissolves while Tech Stack zooms in */
 .aboutLayer {
   position: relative;
   z-index: 5;
@@ -42,14 +45,29 @@
   align-items: center;
   justify-content: center;
   will-change: transform, opacity;
-  opacity: var(--about-p, 0);
-  transform: scale(calc(0.84 + var(--about-p, 0) * 0.16));
+  opacity: clamp(0, calc(var(--about-in, 0) * (1 - var(--about-out, 0))), 1);
+  transform: scale(calc(0.84 + var(--about-in, 0) * 0.16 + var(--about-out, 0) * 0.12));
   transform-origin: 50% 45%;
   pointer-events: none;
 }
 
 .stageTrack[data-phase="about"] .aboutLayer {
   pointer-events: auto;
+}
+
+/* Tech Stack wrapper: its top meets the viewport top exactly when the pin ends */
+.nextWrap {
+  position: relative;
+  z-index: 6;
+  margin-top: -100vh;
+}
+
+.nextInner {
+  position: relative;
+  will-change: transform, opacity;
+  transform-origin: 50% 38vh;
+  opacity: 0;
+  visibility: hidden;
 }
 
 @media (max-width: 960px) {
@@ -76,16 +94,32 @@
   }
 
   .aboutLayer {
-    opacity: 1;
-    transform: none;
+    opacity: 1 !important;
+    transform: none !important;
     pointer-events: auto;
     height: auto;
+  }
+
+  .nextWrap {
+    margin-top: 0;
+  }
+
+  .nextInner {
+    opacity: 1 !important;
+    transform: none !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .stageTrack {
     height: auto;
+  }
+
+  .aboutAnchor {
+    top: auto;
+    bottom: 0;
   }
 
   .stickyViewport {
@@ -97,12 +131,24 @@
   .heroLayer {
     position: relative;
     opacity: 1;
+    pointer-events: auto !important;
   }
 
   .aboutLayer {
-    opacity: 1;
-    transform: none;
+    opacity: 1 !important;
+    transform: none !important;
     pointer-events: auto;
     height: auto;
+  }
+
+  .nextWrap {
+    margin-top: 0;
+  }
+
+  .nextInner {
+    opacity: 1 !important;
+    transform: none !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
   }
 }

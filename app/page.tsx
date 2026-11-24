@@ -12,8 +12,8 @@ export default function Home() {
       <HeroAboutStage
         hero={<Hero isAdmin={false} />}
         about={<About sectionId="about-content" />}
+        next={<Skills isAdmin={false} />}
       />
-      <Skills isAdmin={false} />
       <Projects isAdmin={false} />
       <Experience />
       <BlogArticle isAdmin={false} />

@@ -478,9 +478,9 @@ export default function Skills({
       const rect = container.getBoundingClientRect();
       const vh = window.innerHeight;
       hasEntered = rect.top <= vh * 0.88;
-      // Start drawing after Card 01 is in view; finish as the bottom cards reach the middle of the viewport
-      const startY = vh * 0.56;
-      const travel = Math.max(rect.height - vh * 0.62, vh * 0.45);
+      // Card 01 is shown first; the line only starts drawing once the user scrolls further
+      const startY = vh * 0.5;
+      const travel = Math.max(rect.height - vh * 0.66, vh * 0.45);
       targetProgress = Math.max(0, Math.min(1, (startY - rect.top) / travel));
     };
 

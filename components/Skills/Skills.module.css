@@ -1,7 +1,8 @@
 .skillsSection {
   padding: 110px 0;
   background: transparent;
-  overflow-x: hidden;
+  overflow-x: clip;
+  position: relative;
 }
 
 @media (max-width: 768px) {
@@ -27,8 +28,8 @@
   text-align: center;
   margin-bottom: 72px;
   opacity: 0;
-  transform: translateY(24px);
-  transition: opacity 0.7s ease, transform 0.7s ease;
+  transform: translateY(28px) scale(0.88);
+  transition: opacity 0.75s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.75s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 @media (max-width: 768px) {
@@ -39,7 +40,7 @@
 
 .header.visible {
   opacity: 1;
-  transform: translateY(0);
+  transform: translateY(0) scale(1);
 }
 
 .sectionLabel {
@@ -130,10 +131,14 @@
   flex-direction: column;
   box-shadow: 0 20px 44px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.05);
   opacity: 0;
-  transform: translateY(28px) scale(0.96) rotate(var(--card-tilt, 0deg));
+  filter: blur(4px);
+  transform-origin: 50% 50%;
+  transform: translateY(16px) scale(0.76) rotate(var(--card-tilt, 0deg));
+  will-change: transform, opacity, filter;
   transition:
-    opacity 0.65s cubic-bezier(0.2, 0.8, 0.2, 1),
-    transform 0.65s cubic-bezier(0.2, 0.8, 0.2, 1),
+    opacity 1.1s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 1.2s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 1s cubic-bezier(0.22, 1, 0.36, 1),
     border-color 0.3s ease,
     box-shadow 0.3s ease;
 }
@@ -163,6 +168,7 @@
 
 .card[data-revealed="true"] {
   opacity: 1;
+  filter: blur(0);
   transform: translateY(0) scale(1) rotate(var(--card-tilt, 0deg));
 }
 
@@ -263,6 +269,7 @@
   .card,
   .zigzagNode {
     opacity: 1 !important;
+    filter: none !important;
     transform: none !important;
     transition: none !important;
   }
