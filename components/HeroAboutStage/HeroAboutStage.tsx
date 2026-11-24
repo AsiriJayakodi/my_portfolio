@@ -44,17 +44,20 @@ export default function HeroAboutStage({
   next: React.ReactNode;
 }) {
   const trackRef = useRef<HTMLDivElement>(null);
+  const aboutLayerRef = useRef<HTMLDivElement>(null);
   const nextWrapRef = useRef<HTMLDivElement>(null);
   const nextInnerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const track = trackRef.current;
+    const aboutLayer = aboutLayerRef.current;
     const wrap = nextWrapRef.current;
     const inner = nextInnerRef.current;
-    if (!track || !wrap || !inner) return;
+    if (!track || !aboutLayer || !wrap || !inner) return;
 
     const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const isStatic = () => motionQuery.matches || window.innerWidth <= 960;
+    const isStatic = () => motionQuery.matches;
+    const isMobileStage = () => window.innerWidth <= 960;
 
     let rafId = 0;
     let targetS = 0;
@@ -68,6 +71,8 @@ export default function HeroAboutStage({
       track.style.setProperty("--hero-p", "0");
       track.style.setProperty("--about-in", "1");
       track.style.setProperty("--about-out", "0");
+      track.style.setProperty("--about-pan", "0");
+      track.style.setProperty("--about-pan-max", "0px");
       document.documentElement.style.setProperty("--hero-scroll-p", "0");
       setPhase("about");
     };
@@ -112,9 +117,14 @@ export default function HeroAboutStage({
     const applyStageProgress = () => {
       const heroP = ease(clamp01(currentS / 1.0));
       const aboutIn = ease(clamp01((currentS - 0.6) / 0.7));
+      const mobile = isMobileStage();
+      const panMax = mobile ? Math.max(0, aboutLayer.scrollHeight - window.innerHeight + 24) : 0;
+      const aboutPan = mobile && panMax > 0 ? ease(clamp01((currentS - 1.3) / 1.15)) : 0;
 
       track.style.setProperty("--hero-p", heroP.toFixed(4));
       track.style.setProperty("--about-in", aboutIn.toFixed(4));
+      track.style.setProperty("--about-pan", aboutPan.toFixed(4));
+      track.style.setProperty("--about-pan-max", `${panMax.toFixed(1)}px`);
       document.documentElement.style.setProperty("--hero-scroll-p", heroP.toFixed(4));
     };
 
@@ -138,7 +148,7 @@ export default function HeroAboutStage({
       const aboutOut = applyNextZone();
 
       if (targetS < 0.55) setPhase("hero");
-      else if (targetS < 2.4 && aboutOut < 0.2) setPhase("about");
+      else if (aboutOut < 0.2) setPhase("about");
       else setPhase("after");
 
       if (!rafId) rafId = window.requestAnimationFrame(tick);
@@ -159,13 +169,13 @@ export default function HeroAboutStage({
   }, []);
 
   return (
-    <>
+    <div className={styles.stageRoot}>
       <div ref={trackRef} className={styles.stageTrack} data-phase="hero">
         <div id="about" className={styles.aboutAnchor} aria-hidden="true" />
 
         <div className={styles.stickyViewport}>
           <div className={styles.heroLayer}>{hero}</div>
-          <div className={styles.aboutLayer}>{about}</div>
+          <div ref={aboutLayerRef} className={styles.aboutLayer}>{about}</div>
         </div>
       </div>
 
@@ -174,6 +184,6 @@ export default function HeroAboutStage({
           {next}
         </div>
       </div>
-    </>
+    </div>
   );
 }

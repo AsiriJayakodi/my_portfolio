@@ -1,7 +1,9 @@
 .heroSection {
   position: relative;
   height: 100vh;
+  height: 100dvh;
   min-height: 100vh;
+  min-height: 100dvh;
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -12,8 +14,9 @@
 
 @media (max-width: 960px) {
   .heroSection {
-    padding: 56px 0 40px;
-    height: auto;
+    padding: 36px 0 18px;
+    height: 100vh;
+    height: 100dvh;
     min-height: 100dvh;
   }
 }
@@ -525,15 +528,17 @@
 
 /* Cards zoom MORE (1 -> 1.85) and fade AFTER the portrait (0.52 -> 0.92) */
 .scrollDriftLeft {
+  --drift-x: 280px;
   transform:
-    translate3d(calc(var(--hero-p, 0) * -280px), calc(var(--hero-p, 0) * -32px), 0)
+    translate3d(calc(var(--hero-p, 0) * -1 * var(--drift-x)), calc(var(--hero-p, 0) * -32px), 0)
     scale(calc(1 + var(--hero-p, 0) * 0.85));
   opacity: clamp(0, calc(1 - max(var(--hero-p, 0) - 0.52, 0) / 0.40), 1);
 }
 
 .scrollDriftRight {
+  --drift-x: 280px;
   transform:
-    translate3d(calc(var(--hero-p, 0) * 280px), calc(var(--hero-p, 0) * -32px), 0)
+    translate3d(calc(var(--hero-p, 0) * var(--drift-x)), calc(var(--hero-p, 0) * -32px), 0)
     scale(calc(1 + var(--hero-p, 0) * 0.85));
   opacity: clamp(0, calc(1 - max(var(--hero-p, 0) - 0.52, 0) / 0.40), 1);
 }
@@ -679,50 +684,63 @@
 
 @media (max-width: 960px) {
   .portraitHub {
-    flex-direction: column;
-    gap: 16px;
-  }
-
-  .portraitZoomLayer,
-  .scrollDriftLeft,
-  .scrollDriftRight,
-  .bottomIdentity {
-    transform: none;
-    opacity: 1;
+    width: min(760px, 100%);
   }
 
   .portraitFrame {
-    height: clamp(230px, 38dvh, 340px);
-    max-width: 74vw;
+    height: clamp(380px, 66dvh, 620px);
+    max-width: 82vw;
   }
 
-  .navCardsLayer {
-    position: static;
-    width: 100%;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
-    z-index: 16;
-  }
-
-  .navCardScrollWrap {
-    position: static;
+  .scrollDriftLeft,
+  .scrollDriftRight {
+    --drift-x: 185px;
   }
 
   .navGlassCard {
-    width: 100%;
-    padding: 10px 12px;
-    --card-rot: 0deg;
-    animation: none;
+    width: clamp(134px, 23vw, 170px);
+  }
+
+  .leftTop {
+    top: 14%;
+    left: 2%;
+  }
+
+  .leftMid {
+    top: 44%;
+    left: 5%;
+  }
+
+  .leftBot {
+    top: 74%;
+    left: 1%;
+  }
+
+  .rightTop {
+    top: 14%;
+    right: 2%;
+  }
+
+  .rightMid {
+    top: 44%;
+    right: 5%;
+  }
+
+  .rightBot {
+    top: 74%;
+    right: 1%;
   }
 
   .bottomIdentity {
-    margin-top: 8px;
-    gap: 10px;
+    margin-top: -68px;
+  }
+
+  .nameHeading {
+    font-size: clamp(26px, 5vw, 38px);
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 600px) {
   .floatingThemeBtn {
     top: 14px;
     right: 14px;
@@ -730,17 +748,88 @@
     height: 36px;
   }
 
-  .navCardsLayer {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px;
+  .portraitFrame {
+    height: clamp(330px, 58dvh, 490px);
+    max-width: 78vw;
   }
 
-  .navCardTitle {
+  .scrollDriftLeft,
+  .scrollDriftRight {
+    --drift-x: 112px;
+  }
+
+  .navGlassCard {
+    width: clamp(102px, 27.5vw, 134px);
+    border-radius: 10px;
+  }
+
+  .navGlassCard > div {
+    padding: 7px 9px;
+    gap: 2px;
+  }
+
+  .navGlassCard h3 {
+    font-size: 11.5px;
+  }
+
+  .navGlassCard p {
+    font-size: 9.5px;
+    line-height: 1.25;
+  }
+
+  .navCardIndex {
+    font-size: 8.5px;
+  }
+
+  .leftTop {
+    top: 12%;
+    left: 0;
+  }
+
+  .leftMid {
+    top: 41%;
+    left: 1%;
+  }
+
+  .leftBot {
+    top: 70%;
+    left: 0;
+  }
+
+  .rightTop {
+    top: 12%;
+    right: 0;
+  }
+
+  .rightMid {
+    top: 41%;
+    right: 1%;
+  }
+
+  .rightBot {
+    top: 70%;
+    right: 0;
+  }
+
+  .bottomIdentity {
+    margin-top: -54px;
+    gap: 6px;
+  }
+
+  .nameHeading {
+    font-size: clamp(24px, 6.2vw, 32px);
+  }
+
+  .ctaGroupCentered {
+    gap: 10px;
+    margin-top: 4px;
+  }
+
+  .primaryBtn,
+  .secondaryBtn {
+    padding: 9px 16px;
     font-size: 13px;
-  }
-
-  .navCardSub {
-    font-size: 10.5px;
+    min-height: 40px;
   }
 }
 

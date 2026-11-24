@@ -415,6 +415,85 @@
   }
 }
 
+@media (max-width: 480px) {
+  .folderStage {
+    height: 445px;
+  }
+
+  .folderCardWrap {
+    width: min(246px, 68vw);
+  }
+
+  .folderCard {
+    height: 300px;
+  }
+
+  .folderBack {
+    width: min(520px, 90vw);
+    height: 224px;
+  }
+
+  .folderFrontWrap {
+    width: min(532px, 92vw);
+    height: 176px;
+  }
+
+  .folderBrandLabel {
+    font-size: 14px;
+  }
+
+  .folderActionPill {
+    padding: 6px 10px;
+    gap: 5px;
+    max-width: 55%;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .slotCenter {
+    --py: 18px;
+    --sy: -28px;
+    --ps: 0.91;
+    --ss: 1.01;
+  }
+
+  .slotLeft1 {
+    --px: -18px;
+    --sx: -76px;
+    --py: 24px;
+    --sy: -6px;
+    --pr: -3deg;
+    --sr: -9deg;
+  }
+
+  .slotRight1 {
+    --px: 18px;
+    --sx: 76px;
+    --py: 24px;
+    --sy: -6px;
+    --pr: 3deg;
+    --sr: 9deg;
+  }
+
+  .slotLeft2 {
+    --px: -30px;
+    --sx: -114px;
+    --py: 32px;
+    --sy: 16px;
+    --pr: -5deg;
+    --sr: -15deg;
+  }
+
+  .slotRight2 {
+    --px: 30px;
+    --sx: 114px;
+    --py: 32px;
+    --sy: 16px;
+    --pr: 5deg;
+    --sr: 15deg;
+  }
+}
+
 .swipeHintNudge {
   animation: folderSwipePeek 2.1s cubic-bezier(0.22, 1, 0.36, 1) 0.45s 1;
 }

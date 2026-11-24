@@ -648,17 +648,17 @@
 
 @media (max-width: 520px) {
   .deckStage {
-    height: 450px;
+    height: 485px;
   }
 
   .slotBottomLeft {
-    transform: translate3d(-28px, 42px, 0) scale(0.86) rotate(-2deg);
-    opacity: 0.2;
+    transform: translate3d(-32px, 44px, 0) scale(0.85) rotate(-2deg);
+    opacity: 0.22;
   }
 
   .slotTopRight {
-    transform: translate3d(28px, -42px, 0) scale(0.86) rotate(2deg);
-    opacity: 0.2;
+    transform: translate3d(32px, -44px, 0) scale(0.85) rotate(2deg);
+    opacity: 0.22;
   }
 }
 
