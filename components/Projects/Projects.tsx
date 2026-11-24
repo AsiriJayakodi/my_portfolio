@@ -140,7 +140,6 @@ function ProjectCard({
 
   const hasImage = Boolean(p.image && p.image.trim() && failedSrc !== p.image);
   const isActive = slotOffset === 0;
-  const primaryCategory = p.tags[0] || 'Engineering';
   const indexLabel = String(i + 1).padStart(2, '0');
 
   let slotClass = styles.slotHidden;
@@ -202,8 +201,6 @@ function ProjectCard({
 
           <div className={styles.imageBadge}>
             <span>{indexLabel}</span>
-            <span>•</span>
-            <span>{primaryCategory}</span>
           </div>
 
           {isAdmin && (
