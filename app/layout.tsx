@@ -3,6 +3,8 @@ import { Inter, Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import SmoothScroll from "@/components/SmoothScroll";
 import CosmicBackground from "@/components/CosmicBackground/CosmicBackground";
+import connectToDatabase from "@/lib/db";
+import Profile from "@/models/Profile";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -22,42 +24,56 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
-export const metadata: Metadata = {
-  title: "Asiri Indrajith Jayakodi | Portfolio",
-  description: "BSc (Hons) in IT Undergraduate at University of Moratuwa. Frontend & Backend Developer, IoT Enthusiast.",
-  keywords: [
-    "Asiri Indrajith Jayakodi",
-    "Asiri Indrajith",
-    "Asiri Jayakodi",
-    "University of Moratuwa",
-    "Portfolio",
-    "Web Developer",
-    "Full Stack Developer",
-    "Software Engineer Sri Lanka",
-    "IoT Enthusiast"
-  ],
-  authors: [{ name: "Asiri Indrajith Jayakodi" }],
-  icons: {
-    icon: [
-      { url: "/aj-logo-white.png", media: "(prefers-color-scheme: dark)", type: "image/png" },
-      { url: "/aj-logo.png", media: "(prefers-color-scheme: light)", type: "image/png" },
-    ],
-    apple: "/icon.png",
-  },
-  openGraph: {
-    title: "Asiri Indrajith Jayakodi | Portfolio",
-    description: "BSc (Hons) in IT Undergraduate at University of Moratuwa. Frontend & Backend Developer, IoT Enthusiast.",
-    url: "https://asiriindrajith.dev",
-    siteName: "Asiri Indrajith Portfolio",
-    locale: "en_US",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Asiri Indrajith Jayakodi | Portfolio",
-    description: "BSc (Hons) in IT Undergraduate at University of Moratuwa. Frontend & Backend Developer, IoT Enthusiast.",
+export async function generateMetadata(): Promise<Metadata> {
+  let logoUrl = "";
+  try {
+    await connectToDatabase();
+    const profile = await Profile.findOne({}, { logoUrl: 1 }).lean<{ logoUrl?: string }>();
+    if (profile?.logoUrl) {
+      logoUrl = profile.logoUrl;
+    }
+  } catch {
+    // Fallback when DB is unavailable during build
   }
-};
+
+  return {
+    title: "Asiri Indrajith Jayakodi | Portfolio",
+    description: "BSc (Hons) in IT Undergraduate at University of Moratuwa. Frontend & Backend Developer, IoT Enthusiast.",
+    keywords: [
+      "Asiri Indrajith Jayakodi",
+      "Asiri Indrajith",
+      "Asiri Jayakodi",
+      "University of Moratuwa",
+      "Portfolio",
+      "Web Developer",
+      "Full Stack Developer",
+      "Software Engineer Sri Lanka",
+      "IoT Enthusiast"
+    ],
+    authors: [{ name: "Asiri Indrajith Jayakodi" }],
+    ...(logoUrl
+      ? {
+          icons: {
+            icon: logoUrl,
+            apple: logoUrl,
+          },
+        }
+      : {}),
+    openGraph: {
+      title: "Asiri Indrajith Jayakodi | Portfolio",
+      description: "BSc (Hons) in IT Undergraduate at University of Moratuwa. Frontend & Backend Developer, IoT Enthusiast.",
+      url: "https://asiriindrajith.dev",
+      siteName: "Asiri Indrajith Portfolio",
+      locale: "en_US",
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: "Asiri Indrajith Jayakodi | Portfolio",
+      description: "BSc (Hons) in IT Undergraduate at University of Moratuwa. Frontend & Backend Developer, IoT Enthusiast.",
+    },
+  };
+}
 
 export default function RootLayout({
   children,
@@ -67,8 +83,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      translate="no"
       data-theme="dark"
-      className={`${inter.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable}`}
+      className={`${inter.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable} notranslate`}
       suppressHydrationWarning
     >
       <head>

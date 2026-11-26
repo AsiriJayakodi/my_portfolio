@@ -7,11 +7,26 @@ import Experience from "@/components/Experience/Experience";
 import BlogArticle from "@/components/BlogArticle/BlogArticle";
 import Contact from "@/components/Contact/Contact";
 import FloatingBrandLogo from "@/components/FloatingBrandLogo/FloatingBrandLogo";
+import connectToDatabase from "@/lib/db";
+import Profile from "@/models/Profile";
 
-export default function Home() {
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
+  let logoUrl = "";
+  try {
+    await connectToDatabase();
+    const profile = await Profile.findOne({}, { logoUrl: 1 }).lean<{ logoUrl?: string }>();
+    if (profile?.logoUrl) {
+      logoUrl = profile.logoUrl;
+    }
+  } catch {
+    // Fallback to client fetch if DB read fails
+  }
+
   return (
     <main>
-      <FloatingBrandLogo />
+      <FloatingBrandLogo initialLogoUrl={logoUrl} />
       <HeroAboutStage
         hero={<Hero isAdmin={false} />}
         about={<About sectionId="about-content" />}
@@ -24,4 +39,3 @@ export default function Home() {
     </main>
   );
 }
-

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { fetchProfileData, clearProfileCache } from '@/lib/profileClient';
 import Hero3DBackground from '@/components/ThreeScene/Hero3DBackground';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 const subscribe = () => () => {};
 const getClientSnapshot = () => true;
@@ -252,11 +253,16 @@ export default function Hero({ isAdmin = false }: { isAdmin?: boolean }) {
 
   return (
     <section id="hero" ref={ref} onMouseMove={handleMouse} className={styles.heroSection}>
-      {/* Subtle grid */}
+      {/* Subtle grid + instant SSR starfield before WebGL finishes initializing */}
       <div className={styles.gridOverlay} />
+      <div className={styles.heroInstantStars} aria-hidden="true" />
 
       {/* React Three Fiber 3D background */}
-      {isClient && <Hero3DBackground />}
+      {isClient && (
+        <ErrorBoundary>
+          <Hero3DBackground />
+        </ErrorBoundary>
+      )}
 
       {/* Radial spotlight */}
       <div className={styles.spotlight} style={{

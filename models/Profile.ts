@@ -17,6 +17,7 @@ export interface IProfile extends Document {
   linkedin: string;
   resumeUrl: string;
   avatarUrl?: string;
+  logoUrl?: string;
   education: IEducation[];
   certifications: string[];
   cgpaVal: string;
@@ -41,6 +42,7 @@ const ProfileSchema: Schema = new Schema({
   linkedin: { type: String, required: true },
   resumeUrl: { type: String, required: true },
   avatarUrl: { type: String, default: "/profile.webp" },
+  logoUrl: { type: String, default: "" },
   education: { type: [EducationSchema], default: [] },
   certifications: { type: [String], default: [] },
   cgpaVal: { type: String, default: "" },

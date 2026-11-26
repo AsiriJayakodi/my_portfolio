@@ -27,6 +27,7 @@
   display: block;
   user-select: none;
   -webkit-user-drag: none;
+  transform: scale(1.35);
   filter: brightness(0) invert(1);
   transition: filter 0.25s ease;
 }
