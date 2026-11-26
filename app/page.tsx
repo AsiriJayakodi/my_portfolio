@@ -6,9 +6,12 @@ import Projects from "@/components/Projects/Projects";
 import Experience from "@/components/Experience/Experience";
 import BlogArticle from "@/components/BlogArticle/BlogArticle";
 import Contact from "@/components/Contact/Contact";
+import FloatingBrandLogo from "@/components/FloatingBrandLogo/FloatingBrandLogo";
+
 export default function Home() {
   return (
     <main>
+      <FloatingBrandLogo />
       <HeroAboutStage
         hero={<Hero isAdmin={false} />}
         about={<About sectionId="about-content" />}

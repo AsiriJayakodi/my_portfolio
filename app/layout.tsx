@@ -37,6 +37,13 @@ export const metadata: Metadata = {
     "IoT Enthusiast"
   ],
   authors: [{ name: "Asiri Indrajith Jayakodi" }],
+  icons: {
+    icon: [
+      { url: "/aj-logo-white.png", media: "(prefers-color-scheme: dark)", type: "image/png" },
+      { url: "/aj-logo.png", media: "(prefers-color-scheme: light)", type: "image/png" },
+    ],
+    apple: "/icon.png",
+  },
   openGraph: {
     title: "Asiri Indrajith Jayakodi | Portfolio",
     description: "BSc (Hons) in IT Undergraduate at University of Moratuwa. Frontend & Backend Developer, IoT Enthusiast.",

@@ -95,7 +95,7 @@
     min-height: 100%;
     align-items: flex-start;
     justify-content: flex-start;
-    padding: 20px 0 36px;
+    padding: 64px 0 36px;
     transform-origin: 50% calc(40vh + var(--about-pan, 0) * var(--about-pan-max, 0px));
   }
 }

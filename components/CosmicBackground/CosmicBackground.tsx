@@ -1,11 +1,13 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import dynamic from "next/dynamic";
+import React, { useEffect, useState, useSyncExternalStore } from "react";
 import styles from "./CosmicBackground.module.css";
 import { DEFAULT_COSMIC_SETTINGS, CosmicConfig } from "@/lib/cosmicConstants";
+import CosmicScene3D from "./CosmicScene3D";
 
-const CosmicScene3D = dynamic(() => import("./CosmicScene3D"), { ssr: false });
+const subscribe = () => () => {};
+const getClientSnapshot = () => true;
+const getServerSnapshot = () => false;
 
 const COSMIC_CACHE_KEY = "portfolio_cosmic_settings_v1";
 
@@ -14,6 +16,7 @@ export default function CosmicBackground({
 }: {
   previewSettings?: CosmicConfig;
 }) {
+  const isClient = useSyncExternalStore(subscribe, getClientSnapshot, getServerSnapshot);
   const [settings, setSettings] = useState<CosmicConfig>(
     previewSettings || DEFAULT_COSMIC_SETTINGS
   );
@@ -80,7 +83,7 @@ export default function CosmicBackground({
   return (
     <div className={styles.canvasContainer} aria-hidden="true">
       <div className={styles.deepSpaceOverlay} />
-      <CosmicScene3D settings={settings} />
+      {isClient && <CosmicScene3D settings={settings} />}
     </div>
   );
 }

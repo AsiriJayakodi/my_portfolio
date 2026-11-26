@@ -1,18 +1,17 @@
 "use client";
 import styles from "./Hero.module.css";
 import Link from "next/link";
-import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useSyncExternalStore } from 'react';
 import { ArrowUpRight, Download, Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { fetchProfileData, clearProfileCache } from '@/lib/profileClient';
+import Hero3DBackground from '@/components/ThreeScene/Hero3DBackground';
 
-const Hero3DBackground = dynamic(
-  () => import('@/components/ThreeScene/Hero3DBackground'),
-  { ssr: false }
-);
+const subscribe = () => () => {};
+const getClientSnapshot = () => true;
+const getServerSnapshot = () => false;
 
 const ROLES = [
   'IT Undergraduate',
@@ -78,6 +77,7 @@ interface ProfileData {
 
 export default function Hero({ isAdmin = false }: { isAdmin?: boolean }) {
   const router = useRouter();
+  const isClient = useSyncExternalStore(subscribe, getClientSnapshot, getServerSnapshot);
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [downloading, setDownloading] = useState(false);
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
@@ -256,7 +256,7 @@ export default function Hero({ isAdmin = false }: { isAdmin?: boolean }) {
       <div className={styles.gridOverlay} />
 
       {/* React Three Fiber 3D background */}
-      <Hero3DBackground />
+      {isClient && <Hero3DBackground />}
 
       {/* Radial spotlight */}
       <div className={styles.spotlight} style={{
