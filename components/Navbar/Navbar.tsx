@@ -4,7 +4,7 @@ import Link from 'next/link';
 import styles from './Navbar.module.css';
 import { fetchProfileData, clearProfileCache } from '@/lib/profileClient';
 
-const DEFAULT_AVATAR = "/profile.webp";
+const DEFAULT_AVATAR = "/api/assets/profile.webp";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -26,7 +26,7 @@ export default function Navbar() {
           setAvatarError(false);
           try {
             localStorage.setItem('portfolio_avatar_url', finalUrl);
-          } catch {}
+          } catch { }
         }
       }
     } catch {
@@ -40,7 +40,7 @@ export default function Navbar() {
       if (cached && !cached.includes('avatars.githubusercontent.com')) {
         setAvatarUrl(cached);
       }
-    } catch {}
+    } catch { }
 
     loadProfile();
 
@@ -52,7 +52,7 @@ export default function Navbar() {
         setAvatarError(false);
         try {
           localStorage.setItem('portfolio_avatar_url', finalUrl);
-        } catch {}
+        } catch { }
       } else {
         clearProfileCache();
         loadProfile(true);
@@ -142,7 +142,7 @@ export default function Navbar() {
               {name.split(' ')[0]} <span>{name.split(' ').slice(1).join(' ')}</span>
             </span>
           </Link>
- 
+
           {/* Desktop links */}
           <div className={styles.desktopLinks}>
             {links.map(l => (
@@ -150,10 +150,10 @@ export default function Navbar() {
                 {l.label}
               </Link>
             ))}
-            
+
             {/* Theme Toggle Button (Desktop) */}
-            <button 
-              onClick={toggleTheme} 
+            <button
+              onClick={toggleTheme}
               className={styles.themeToggleBtn}
               aria-label="Toggle Theme"
             >
@@ -175,17 +175,17 @@ export default function Navbar() {
                 </svg>
               )}
             </button>
- 
+
             <Link href="#contact" className={styles.hireBtn}>
               Hire Me
             </Link>
           </div>
- 
+
           {/* Mobile Right Controls */}
           <div className={styles.mobileRightControls}>
             {/* Theme Toggle Button (Mobile) */}
-            <button 
-              onClick={toggleTheme} 
+            <button
+              onClick={toggleTheme}
               className={styles.mobileThemeToggleBtn}
               aria-label="Toggle Theme"
             >
@@ -207,10 +207,10 @@ export default function Navbar() {
                 </svg>
               )}
             </button>
- 
+
             {/* Mobile Hamburger toggle */}
-            <button 
-              onClick={() => setOpen(o => !o)} 
+            <button
+              onClick={() => setOpen(o => !o)}
               className={styles.mobileBtn}
               aria-label={open ? "Close Navigation Menu" : "Open Navigation Menu"}
               aria-expanded={open}
@@ -224,26 +224,26 @@ export default function Navbar() {
           </div>
         </div>
       </div>
- 
+
       {/* Mobile Menu Backdrop & Drawer */}
       {open && (
         <>
           <div className={styles.mobileBackdrop} onClick={() => setOpen(false)} />
           <div className={styles.mobileMenu}>
             {links.map(l => (
-              <Link 
-                key={l.id} 
-                href={`#${l.id}`} 
-                onClick={() => setOpen(false)} 
+              <Link
+                key={l.id}
+                href={`#${l.id}`}
+                onClick={() => setOpen(false)}
                 className={styles.mobileLink}
               >
                 {l.label}
               </Link>
             ))}
             <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--border-color)' }}>
-              <Link 
-                href="#contact" 
-                onClick={() => setOpen(false)} 
+              <Link
+                href="#contact"
+                onClick={() => setOpen(false)}
                 className={styles.mobileHireBtn}
               >
                 Hire Me

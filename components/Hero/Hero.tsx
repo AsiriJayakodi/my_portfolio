@@ -10,7 +10,7 @@ import { fetchProfileData, clearProfileCache } from '@/lib/profileClient';
 import Hero3DBackground from '@/components/ThreeScene/Hero3DBackground';
 import ErrorBoundary from '@/components/ErrorBoundary';
 
-const subscribe = () => () => {};
+const subscribe = () => () => { };
 const getClientSnapshot = () => true;
 const getServerSnapshot = () => false;
 
@@ -76,7 +76,13 @@ interface ProfileData {
   cgpaVal?: string;
 }
 
-export default function Hero({ isAdmin = false }: { isAdmin?: boolean }) {
+export default function Hero({
+  isAdmin = false,
+  initialHeroImageSrc,
+}: {
+  isAdmin?: boolean;
+  initialHeroImageSrc?: string;
+}) {
   const router = useRouter();
   const isClient = useSyncExternalStore(subscribe, getClientSnapshot, getServerSnapshot);
   const [profile, setProfile] = useState<ProfileData | null>(null);
@@ -94,7 +100,7 @@ export default function Hero({ isAdmin = false }: { isAdmin?: boolean }) {
     document.documentElement.setAttribute('data-theme', next);
     try {
       localStorage.setItem('portfolio-theme', next);
-    } catch {}
+    } catch { }
   };
 
   const handleDownloadCV = async (e: React.MouseEvent) => {
@@ -106,13 +112,13 @@ export default function Hero({ isAdmin = false }: { isAdmin?: boolean }) {
       if (!res.ok) {
         throw new Error('CV not available');
       }
-      
+
       const disposition = res.headers.get('content-disposition');
       let filename = 'Asiri-Indrajith-Jayakodi-CV.pdf';
       if (disposition && disposition.indexOf('attachment') !== -1) {
         const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
         const matches = filenameRegex.exec(disposition);
-        if (matches != null && matches[1]) { 
+        if (matches != null && matches[1]) {
           filename = matches[1].replace(/['"]/g, '');
         }
       }
@@ -295,11 +301,11 @@ export default function Hero({ isAdmin = false }: { isAdmin?: boolean }) {
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src="/profile-hero.png"
+                  src={initialHeroImageSrc || "/api/assets/profile-hero.png"}
                   alt={profile?.name || "Asiri Indrajith"}
                   className={styles.portraitImg}
                   fetchPriority="high"
-                  decoding="async"
+                  decoding="sync"
                 />
               </div>
             </div>
@@ -311,9 +317,8 @@ export default function Hero({ isAdmin = false }: { isAdmin?: boolean }) {
                 return (
                   <div
                     key={card.id}
-                    className={`${styles.navCardScrollWrap} ${styles[card.slot]} ${
-                      isLeft ? styles.scrollDriftLeft : styles.scrollDriftRight
-                    }`}
+                    className={`${styles.navCardScrollWrap} ${styles[card.slot]} ${isLeft ? styles.scrollDriftLeft : styles.scrollDriftRight
+                      }`}
                   >
                     <Link href={`#${card.id}`} className={styles.navCardLink}>
                       <Card

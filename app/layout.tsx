@@ -3,8 +3,6 @@ import { Inter, Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import SmoothScroll from "@/components/SmoothScroll";
 import CosmicBackground from "@/components/CosmicBackground/CosmicBackground";
-import connectToDatabase from "@/lib/db";
-import Profile from "@/models/Profile";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -24,28 +22,7 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
-function buildFaviconUrl(url: string, size: number): string {
-  const marker = "/image/upload/";
-  if (!url.includes("res.cloudinary.com/") || !url.includes(marker)) {
-    return url;
-  }
-  const innerSize = Math.round(size * 0.92);
-  const transform = `e_trim/c_fit,w_${innerSize},h_${innerSize}/c_pad,w_${size},h_${size}`;
-  return url.replace(marker, `${marker}${transform}/`);
-}
-
 export async function generateMetadata(): Promise<Metadata> {
-  let logoUrl = "";
-  try {
-    await connectToDatabase();
-    const profile = await Profile.findOne({}, { logoUrl: 1 }).lean<{ logoUrl?: string }>();
-    if (profile?.logoUrl) {
-      logoUrl = profile.logoUrl;
-    }
-  } catch {
-    // Fallback when DB is unavailable during build
-  }
-
   return {
     title: "Asiri Indrajith Jayakodi | Portfolio",
     description: "BSc (Hons) in IT Undergraduate at University of Moratuwa. Frontend & Backend Developer, IoT Enthusiast.",
@@ -61,18 +38,15 @@ export async function generateMetadata(): Promise<Metadata> {
       "IoT Enthusiast"
     ],
     authors: [{ name: "Asiri Indrajith Jayakodi" }],
-    ...(logoUrl
-      ? {
-          icons: {
-            icon: [
-              { url: buildFaviconUrl(logoUrl, 64), sizes: "64x64", type: "image/png" },
-              { url: buildFaviconUrl(logoUrl, 128), sizes: "128x128", type: "image/png" },
-            ],
-            shortcut: buildFaviconUrl(logoUrl, 64),
-            apple: { url: buildFaviconUrl(logoUrl, 180), sizes: "180x180", type: "image/png" },
-          },
-        }
-      : {}),
+    icons: {
+      icon: [
+        { url: "/api/assets/favicon-16.png?v=2", sizes: "16x16", type: "image/png" },
+        { url: "/api/assets/favicon-32.png?v=2", sizes: "32x32", type: "image/png" },
+        { url: "/api/assets/favicon-64.png?v=2", sizes: "64x64", type: "image/png" },
+      ],
+      shortcut: "/api/assets/favicon-32.png?v=2",
+      apple: { url: "/api/assets/favicon-180.png?v=2", sizes: "180x180", type: "image/png" },
+    },
     openGraph: {
       title: "Asiri Indrajith Jayakodi | Portfolio",
       description: "BSc (Hons) in IT Undergraduate at University of Moratuwa. Frontend & Backend Developer, IoT Enthusiast.",
@@ -103,7 +77,6 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
-        <link rel="preload" as="image" href="/profile-hero.png" type="image/png" fetchPriority="high" />
         <script
           dangerouslySetInnerHTML={{
             __html: `

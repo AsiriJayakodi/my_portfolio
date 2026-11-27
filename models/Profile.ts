@@ -41,7 +41,7 @@ const ProfileSchema: Schema = new Schema({
   github: { type: String, required: true },
   linkedin: { type: String, required: true },
   resumeUrl: { type: String, required: true },
-  avatarUrl: { type: String, default: "/profile.webp" },
+  avatarUrl: { type: String, default: "/api/assets/profile.webp" },
   logoUrl: { type: String, default: "" },
   education: { type: [EducationSchema], default: [] },
   certifications: { type: [String], default: [] },
@@ -53,8 +53,4 @@ const ProfileSchema: Schema = new Schema({
   strict: false,
 });
 
-if (mongoose.models.Profile) {
-  delete mongoose.models.Profile;
-}
-
-export default mongoose.model<IProfile>('Profile', ProfileSchema);
+export default mongoose.models.Profile || mongoose.model<IProfile>('Profile', ProfileSchema);

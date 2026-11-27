@@ -10,11 +10,11 @@ const DEFAULT_PROFILE = {
   intro: "Third-year IT Undergraduate at University of Moratuwa specializing in full-stack software engineering and serverless cloud architectures.",
   email: "asiriindrajithjayakodi@gmail.com",
   phone: "+94 78 438 3898",
-  location: "Kurunegala / Colombo, Sri Lanka",
+  location: "Colombo, Sri Lanka",
   github: "https://github.com/AsiriJayakodi",
   linkedin: "https://linkedin.com/in/asiri-indrajith",
   resumeUrl: "/cv.pdf",
-  avatarUrl: "/profile.webp",
+  avatarUrl: "/api/assets/profile.webp",
   education: [
     { title: "BSc (Hons) in Information Technology", subtitle: "University of Moratuwa • CGPA: 3.27/4.0 (2023 - Present)" },
     { title: "G.C.E. Advanced Level (2022/23)", subtitle: "Maliyadeva College -- Kurunegala • ICT (A), Combined Maths (B), Physics (B)" },
