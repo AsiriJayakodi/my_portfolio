@@ -1,18 +1,18 @@
 "use client";
 import styles from "./Hero.module.css";
 import Link from "next/link";
-import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useSyncExternalStore } from 'react';
 import { ArrowUpRight, Download, Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { fetchProfileData, clearProfileCache } from '@/lib/profileClient';
+import Hero3DBackground from '@/components/ThreeScene/Hero3DBackground';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
-const Hero3DBackground = dynamic(
-  () => import('@/components/ThreeScene/Hero3DBackground'),
-  { ssr: false }
-);
+const subscribe = () => () => { };
+const getClientSnapshot = () => true;
+const getServerSnapshot = () => false;
 
 const ROLES = [
   'IT Undergraduate',
@@ -76,8 +76,15 @@ interface ProfileData {
   cgpaVal?: string;
 }
 
-export default function Hero({ isAdmin = false }: { isAdmin?: boolean }) {
+export default function Hero({
+  isAdmin = false,
+  initialHeroImageSrc,
+}: {
+  isAdmin?: boolean;
+  initialHeroImageSrc?: string;
+}) {
   const router = useRouter();
+  const isClient = useSyncExternalStore(subscribe, getClientSnapshot, getServerSnapshot);
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [downloading, setDownloading] = useState(false);
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
@@ -93,7 +100,7 @@ export default function Hero({ isAdmin = false }: { isAdmin?: boolean }) {
     document.documentElement.setAttribute('data-theme', next);
     try {
       localStorage.setItem('portfolio-theme', next);
-    } catch {}
+    } catch { }
   };
 
   const handleDownloadCV = async (e: React.MouseEvent) => {
@@ -105,13 +112,13 @@ export default function Hero({ isAdmin = false }: { isAdmin?: boolean }) {
       if (!res.ok) {
         throw new Error('CV not available');
       }
-      
+
       const disposition = res.headers.get('content-disposition');
       let filename = 'Asiri-Indrajith-Jayakodi-CV.pdf';
       if (disposition && disposition.indexOf('attachment') !== -1) {
         const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
         const matches = filenameRegex.exec(disposition);
-        if (matches != null && matches[1]) { 
+        if (matches != null && matches[1]) {
           filename = matches[1].replace(/['"]/g, '');
         }
       }
@@ -252,11 +259,16 @@ export default function Hero({ isAdmin = false }: { isAdmin?: boolean }) {
 
   return (
     <section id="hero" ref={ref} onMouseMove={handleMouse} className={styles.heroSection}>
-      {/* Subtle grid */}
+      {/* Subtle grid + instant SSR starfield before WebGL finishes initializing */}
       <div className={styles.gridOverlay} />
+      <div className={styles.heroInstantStars} aria-hidden="true" />
 
       {/* React Three Fiber 3D background */}
-      <Hero3DBackground />
+      {isClient && (
+        <ErrorBoundary>
+          <Hero3DBackground />
+        </ErrorBoundary>
+      )}
 
       {/* Radial spotlight */}
       <div className={styles.spotlight} style={{
@@ -289,11 +301,11 @@ export default function Hero({ isAdmin = false }: { isAdmin?: boolean }) {
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src="/profile-hero.png"
+                  src={initialHeroImageSrc || "/api/assets/profile-hero.png"}
                   alt={profile?.name || "Asiri Indrajith"}
                   className={styles.portraitImg}
                   fetchPriority="high"
-                  decoding="async"
+                  decoding="sync"
                 />
               </div>
             </div>
@@ -305,9 +317,8 @@ export default function Hero({ isAdmin = false }: { isAdmin?: boolean }) {
                 return (
                   <div
                     key={card.id}
-                    className={`${styles.navCardScrollWrap} ${styles[card.slot]} ${
-                      isLeft ? styles.scrollDriftLeft : styles.scrollDriftRight
-                    }`}
+                    className={`${styles.navCardScrollWrap} ${styles[card.slot]} ${isLeft ? styles.scrollDriftLeft : styles.scrollDriftRight
+                      }`}
                   >
                     <Link href={`#${card.id}`} className={styles.navCardLink}>
                       <Card

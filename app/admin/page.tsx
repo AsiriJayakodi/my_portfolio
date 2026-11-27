@@ -30,7 +30,7 @@ export default function AdminPage() {
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
 
   // Profile Photo state
-  const [profileAvatarUrl, setProfileAvatarUrl] = useState<string>('/profile.webp');
+  const [profileAvatarUrl, setProfileAvatarUrl] = useState<string>('/api/assets/profile.webp');
   const [selectedCropImage, setSelectedCropImage] = useState<string | null>(null);
   const [photoUploading, setPhotoUploading] = useState(false);
   const [photoSuccess, setPhotoSuccess] = useState('');
@@ -741,7 +741,7 @@ export default function AdminPage() {
                     >
                       Choose Photo
                     </button>
-                    {profileAvatarUrl && !profileAvatarUrl.includes('avatars.githubusercontent.com') && profileAvatarUrl !== '/profile.webp' && (
+                    {profileAvatarUrl && !profileAvatarUrl.includes('avatars.githubusercontent.com') && profileAvatarUrl !== '/api/assets/profile.webp' && (
                       <button
                         type="button"
                         onClick={() => setShowDeletePhotoConfirm(true)}

@@ -1,0 +1,46 @@
+.brandLink {
+  position: fixed;
+  top: 24px;
+  left: 24px;
+  z-index: 90;
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  background: transparent;
+  border: none;
+  padding: 0;
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+.brandLink:hover {
+  transform: translateY(-2px) scale(1.06);
+  opacity: 0.88;
+}
+
+.brandImg {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  user-select: none;
+  -webkit-user-drag: none;
+  transform: scale(1.35);
+  filter: brightness(0) invert(1);
+  transition: filter 0.25s ease;
+}
+
+[data-theme='light'] .brandImg {
+  filter: brightness(0);
+}
+
+@media (max-width: 600px) {
+  .brandLink {
+    top: 14px;
+    left: 16px;
+    width: 34px;
+    height: 34px;
+  }
+}
