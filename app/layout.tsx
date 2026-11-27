@@ -24,6 +24,16 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
+function buildFaviconUrl(url: string, size: number): string {
+  const marker = "/image/upload/";
+  if (!url.includes("res.cloudinary.com/") || !url.includes(marker)) {
+    return url;
+  }
+  const innerSize = Math.round(size * 0.92);
+  const transform = `e_trim/c_fit,w_${innerSize},h_${innerSize}/c_pad,w_${size},h_${size}`;
+  return url.replace(marker, `${marker}${transform}/`);
+}
+
 export async function generateMetadata(): Promise<Metadata> {
   let logoUrl = "";
   try {
@@ -54,8 +64,12 @@ export async function generateMetadata(): Promise<Metadata> {
     ...(logoUrl
       ? {
           icons: {
-            icon: logoUrl,
-            apple: logoUrl,
+            icon: [
+              { url: buildFaviconUrl(logoUrl, 64), sizes: "64x64", type: "image/png" },
+              { url: buildFaviconUrl(logoUrl, 128), sizes: "128x128", type: "image/png" },
+            ],
+            shortcut: buildFaviconUrl(logoUrl, 64),
+            apple: { url: buildFaviconUrl(logoUrl, 180), sizes: "180x180", type: "image/png" },
           },
         }
       : {}),
